@@ -9,10 +9,10 @@ This guide is tailored for a 2-member team, with tasks clearly separated for eac
 
 ### Member 1: Project Setup, Routing, and Theme
 
-- [ ] **Install dependencies:**  
-  - [ ] `@mui/material`, `@mui/icons-material`
-  - [ ] `react-router`, `axios`
-- [ ] **Create folder structure:**  
+- [x] **Install dependencies:**  
+  - [x] `@mui/material`, `@mui/icons-material`
+  - [x] `react-router`, `axios`
+- [x] **Create folder structure:**  
   ```
   src/
     ├── features/        
