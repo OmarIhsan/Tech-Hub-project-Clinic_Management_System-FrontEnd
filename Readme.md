@@ -7,7 +7,7 @@ This guide is tailored for a 2-member team, with tasks clearly separated for eac
 
 ## Week 1: Project Setup & Core Scaffolding
 
-### Member 1: Project Setup, Routing, and Theme
+### Omar Aziz: Project Setup, Routing, and Theme
 
 - [x] **Install dependencies:**  
   - [x] `@mui/material`, `@mui/icons-material`
@@ -29,7 +29,7 @@ This guide is tailored for a 2-member team, with tasks clearly separated for eac
 - [ ] **Set up MUI theme:**  
   - [ ] Create `theme/` module for custom MUI theme
 
-### Member 2: Core Features Scaffolding & Types
+### Omar Ihsan: Core Features Scaffolding & Types
 
 - [ ] **Scaffold initial feature modules:**  
   - [ ] `features/auth`: Login page skeleton
@@ -46,7 +46,7 @@ This guide is tailored for a 2-member team, with tasks clearly separated for eac
 
 ## Week 2: CRUD Screens & API Integration
 
-### Member 1: Patient & Doctor CRUD + API Layer
+### Omar Aziz: Patient & Doctor CRUD + API Layer
 
 - [ ] **Build patient screens:**  
   - [ ] List, Create, Edit forms (connect to API)
@@ -60,7 +60,7 @@ This guide is tailored for a 2-member team, with tasks clearly separated for eac
 - [ ] **Validation:**  
   - [ ] Create Zod schemas for patient/doctor forms
 
-### Member 2: Appointments, Treatment Plans, Medical Records
+### Omar Ihsan: Appointments, Treatment Plans, Medical Records
 
 - [ ] **Appointment screens:**  
   - [ ] List, filter by doctor/status, create form
@@ -78,7 +78,7 @@ This guide is tailored for a 2-member team, with tasks clearly separated for eac
 
 ## Week 3: Polish, Dashboard, and QA
 
-### Member 1: Dashboard & UI Components
+### Omar Aziz: Dashboard & UI Components
 
 - [ ] **Dashboard module:**  
   - [ ] `features/dashboard`: Total patients, upcoming appointments, active plans
@@ -90,7 +90,7 @@ This guide is tailored for a 2-member team, with tasks clearly separated for eac
 - [ ] **Role-based access wrappers:**  
   - [ ] Implement wrappers if needed
 
-### Member 2: File Uploads, Testing, Documentation
+### Omar Ihsan: File Uploads, Testing, Documentation
 
 - [ ] **File uploads:**  
   - [ ] `features/clinicalDocuments`: Upload + preview
