@@ -11,7 +11,7 @@ This guide is tailored for a 2-member team, with tasks clearly separated for eac
 
 - [ ] **Install dependencies:**  
   - [ ] `@mui/material`, `@mui/icons-material`
-  - [ ] `react-router-dom`, `axios`, `react-query`, `zod`, `react-hook-form`
+  - [ ] `react-router`, `axios`
 - [ ] **Create folder structure:**  
   ```
   src/
