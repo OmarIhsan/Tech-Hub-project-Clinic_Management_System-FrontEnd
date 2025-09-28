@@ -1,37 +1,31 @@
 Here’s the full content formatted as a Markdown file, ready for use in your project documentation:
 
 ```markdown
-# Frontend Implementation Guide – Clinic App (React + TypeScript + MUI)
+# Frontend Guide – Clinic Management System (React + TypeScript + MUI)
 
-This guide outlines a 3-week development plan for building the frontend of the Clinic App, based on the architecture used in [typescript-task](https://github.com/OmarIhsan/typescript-task). It assumes a team of two frontend developers working alongside backend teammates.
+This guide outlines a 3-week development plan for building the frontend of the Clinic Management System
 
 ---
 
 ## Week 1: Project Setup & Core Scaffolding
 
-**Goal**: Establish the foundation using your modular architecture.
-
 ### Setup & Configuration
 
-- Clone boilerplate from `typescript-task` and rename to `clinic-app`
 - Install dependencies:
   - `@mui/material`, `@mui/icons-material`
   - `react-router-dom`, `axios`, `react-query`, `zod`, `react-hook-form`
-- Configure:
-  - `vite.config.ts` or `tsconfig.json` for path aliases (`@features`, `@components`, `@services`, etc.)
-  - `theme.ts` inside `@/theme` for MUI customization
 
 ### Folder Structure
 
 ```
 src/
-  ├── features/         # Screens and domain logic
-  ├── components/       # Reusable UI components
-  ├── services/         # API layer
-  ├── types/            # Shared types/interfaces
-  ├── hooks/            # Custom hooks
-  ├── theme/            # MUI theme config
-  └── router/           # Route definitions
+  ├── features/        
+  ├── components/      
+  ├── services/         
+  ├── types/            
+  ├── hooks/            
+  ├── theme/           
+  └── router/           
 ```
 
 ### Initial Modules
