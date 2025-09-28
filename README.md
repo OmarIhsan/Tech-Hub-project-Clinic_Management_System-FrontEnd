@@ -1,103 +1,119 @@
-Here’s the full content formatted as a Markdown file, ready for use in your project documentation:
-
-```markdown
 # Frontend Guide – Clinic Management System (React + TypeScript + MUI)
 
-This guide outlines a 3-week development plan for building the frontend of the Clinic Management System
+**Team Setup:**  
+This guide is tailored for a 2-member team, with tasks clearly separated for each developer per week.
 
 ---
 
 ## Week 1: Project Setup & Core Scaffolding
 
-### Setup & Configuration
+### Member 1: Project Setup, Routing, and Theme
 
-- Install dependencies:
+- **Install dependencies:**  
   - `@mui/material`, `@mui/icons-material`
   - `react-router-dom`, `axios`, `react-query`, `zod`, `react-hook-form`
+- **Create folder structure:**  
+  ```
+  src/
+    ├── features/        
+    ├── components/      
+    ├── services/         
+    ├── types/            
+    ├── hooks/            
+    ├── theme/           
+    └── router/           
+  ```
+- **Setup basic routing:**  
+  - Implement React Router for main pages
+  - Create placeholder pages for each feature
+- **Set up MUI theme:**  
+  - Create `theme/` module for custom MUI theme
 
-### Folder Structure
+### Member 2: Core Features Scaffolding & Types
 
-```
-src/
-  ├── features/        
-  ├── components/      
-  ├── services/         
-  ├── types/            
-  ├── hooks/            
-  ├── theme/           
-  └── router/           
-```
-
-### Initial Modules
-
-- `features/auth`: Login page, token handling
-- `features/patients`: List + Create/Edit form
-- `features/doctors`: List + Create/Edit form
-- `services/api.ts`: Axios instance with interceptors
-- `types/index.ts`: Shared interfaces (Patient, Doctor, Appointment, etc.)
+- **Scaffold initial feature modules:**  
+  - `features/auth`: Login page skeleton
+  - `features/patients`: List + Create/Edit form skeleton
+  - `features/doctors`: List + Create/Edit form skeleton
+- **Create types and interfaces:**  
+  - `types/index.ts`: Patient, Doctor, Appointment, etc.
+- **API service base:**  
+  - Create `services/api.ts` (Axios instance with interceptors)
+- **Set up hooks and basic services:**  
+  - Create folder and starter file for custom hooks
 
 ---
 
 ## Week 2: CRUD Screens & API Integration
 
-**Goal**: Build core screens and connect to backend using your `services` layer.
+### Member 1: Patient & Doctor CRUD + API Layer
 
-### Entity Modules
+- **Build patient screens:**  
+  - List, Create, Edit forms (connect to API)
+- **Build doctor screens:**  
+  - List, Create, Edit forms (connect to API)
+- **Develop API services:**  
+  - `services/patientService.ts`
+  - `services/doctorService.ts`
+- **Integrate react-query:**  
+  - For data fetching, caching, loading states
+- **Validation:**  
+  - Create Zod schemas for patient/doctor forms
 
-- `features/appointments`: List, filter by doctor/status, create form
-- `features/treatmentPlans`: Form with dynamic steps, status control
-- `features/medicalRecords`: Diagnosis + findings + treatment
-- `features/procedures`: Linked to treatment plans
+### Member 2: Appointments, Treatment Plans, Medical Records
 
-### Component Development
-
-- `components/FormInput`, `SelectField`, `DatePicker`, `FileUpload`
-- `components/TableView`: Reusable table with pagination
-- `components/StatusBadge`: For appointment/treatment status
-
-### API Layer
-
-- `services/patientService.ts`, `doctorService.ts`, etc.
-- Use `react-query` for caching, loading, and error states
-- Define DTOs and validation schemas with `zod`
-
-### UX Patterns
-
-- Skeleton loaders, toast notifications, error alerts
-- Form validation with `react-hook-form` + `zod`
-- Role-based access wrappers (if needed)
+- **Appointment screens:**  
+  - List, filter by doctor/status, create form
+- **Treatment plans:**  
+  - Dynamic form steps, status control
+- **Medical records:**  
+  - Diagnosis, findings, treatment
+- **Develop API services:**  
+  - `services/appointmentService.ts`
+  - `services/treatmentPlanService.ts`
+- **Validation:**  
+  - Zod schemas for appointments/treatment plans
 
 ---
 
 ## Week 3: Polish, Dashboard, and QA
 
-**Goal**: Finalize UX, add dashboard, and prepare for handoff.
+### Member 1: Dashboard & UI Components
 
-### Dashboard Module
+- **Dashboard module:**  
+  - `features/dashboard`: Total patients, upcoming appointments, active plans
+  - Use MUI `Card`, `Grid`, `Typography`
+  - (Optional) Add charts with `recharts`
+- **Reusable UI components:**  
+  - `components/TableView`: Table with pagination
+  - `components/StatusBadge`: Appointment/treatment status
+- **Role-based access wrappers:**  
+  - Implement wrappers if needed
 
-- `features/dashboard`: Total patients, upcoming appointments, active plans
-- Use MUI `Card`, `Grid`, and `Typography` for layout
-- Optional: Add charts with `recharts`
+### Member 2: File Uploads, Testing, Documentation
 
-### File Uploads
-
-- `features/clinicalDocuments`: Upload + preview
-- Drag-and-drop with MUI + file type validation
-
-### QA & Testing
-
-- Write unit tests for `components/` using `vitest` or `jest`
-- Manual test flows: login → create patient → schedule appointment → add treatment plan → upload document
-
-### Documentation & Handoff
-
-- Create `README.md` with setup, folder structure, and dev guide
-- Document API endpoints and screen responsibilities
-- Optional: Record Loom walkthrough for future devs
+- **File uploads:**  
+  - `features/clinicalDocuments`: Upload + preview
+  - Drag-and-drop, file type validation
+- **Form Components:**  
+  - `components/FormInput`, `SelectField`, `DatePicker`, `FileUpload`
+- **Testing:**  
+  - Unit tests for key components using `vitest` or `jest`
+  - Manual test flows: login → create patient → schedule appointment → add treatment plan → upload document
+- **Documentation:**  
+  - Update `README.md` with setup, folder structure, and dev guide
+  - Document API endpoints and screen responsibilities
+  - (Optional) Record Loom walkthrough for future devs
 
 ---
 
-This guide is designed to help your team move fast while maintaining clarity, modularity, and production-readiness.
-```
+## Collaboration Tips
 
-Let me know if you’d like this saved as a downloadable `.md` file or want to generate starter code for any of the modules.
+- **Daily sync:** 15-minute standup or async check-in.
+- **Branching:** Each member works on their own feature branches.
+- **Code review:** Peer review before merging to main.
+- **Issue tracking:** Use GitHub Issues or Projects to track progress/tasks.
+
+---
+
+This split should help both developers work efficiently and avoid stepping on each other’s toes, while covering all major milestones for a production-ready frontend.
