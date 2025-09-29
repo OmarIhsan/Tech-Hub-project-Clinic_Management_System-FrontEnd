@@ -46,7 +46,7 @@ This guide is tailored for a 2-member team, with tasks clearly separated for eac
 
 ### Omar Ihsan: Core Features Scaffolding & Types
 
-- [ ] **Scaffold initial feature modules:**  
+- [x] **Scaffold initial feature modules:**  
   - [x] `features/auth`:  
     - Create `src/features/auth/`
     - Add `Login.tsx` with a simple form (email, password, submit button)
