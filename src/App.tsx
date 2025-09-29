@@ -1,23 +1,19 @@
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import './App.css'
+import Login from './features/auth/Login';
+import PatientList from './features/patients/PatientList';
+import PatientForm from './features/patients/PatientForm';
+import DoctorList from './features/doctors/DoctorList';
+import DoctorForm from './features/doctors/DoctorForm';
 
 
-// start here
 function App() {
   const [count, setCount] = useState(0)
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
+    <BrowserRouter>
+      <>
       <h1>Vite + React</h1>
       <div className="card">
         <button onClick={() => setCount((count) => count + 1)}>
@@ -30,7 +26,17 @@ function App() {
       <p className="read-the-docs">
         Click on the Vite and React logos to learn more
       </p>
-    </>
+      </>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/patients" element={<PatientList />} />
+        <Route path="/patients/new" element={<PatientForm />} />
+        <Route path="/patients/:id/edit" element={<PatientForm />} />
+        <Route path="/doctors" element={<DoctorList />} />
+        <Route path="/doctors/new" element={<DoctorForm />} />
+        <Route path="/doctors/:id/edit" element={<DoctorForm />} />
+      </Routes>
+    </BrowserRouter>
   )
 }
 

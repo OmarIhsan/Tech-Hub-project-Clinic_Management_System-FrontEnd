@@ -5,6 +5,21 @@ This guide is tailored for a 2-member team, with tasks clearly separated for eac
 
 ---
 
+## UI Choices Demo (Sample)
+
+**Name:** Omar Aziz
+
+| Option                  | Choice                                         |
+|-------------------------|------------------------------------------------|
+| Theme                   | Blue & White (Light) / Blue & Black (Dark)     |
+| Dark/Light Mode Switch  | iOS Switch                                     |
+| Font                    | Dubai                                          |
+| Button Style            | MUI Button                                     |
+| Navigation              | Icon Navigation                                |
+| Floating Add Button     | MUI Floating Action Button                     |
+
+---
+
 ## Week 1: Project Setup & Core Scaffolding
 
 ### Omar Aziz: Project Setup, Routing, and Theme
@@ -32,9 +47,20 @@ This guide is tailored for a 2-member team, with tasks clearly separated for eac
 ### Omar Ihsan: Core Features Scaffolding & Types
 
 - [ ] **Scaffold initial feature modules:**  
-  - [ ] `features/auth`: Login page skeleton
-  - [ ] `features/patients`: List + Create/Edit form skeleton
-  - [ ] `features/doctors`: List + Create/Edit form skeleton
+  - [x] `features/auth`:  
+    - Create `src/features/auth/`
+    - Add `Login.tsx` with a simple form (email, password, submit button)
+    - Add route `/login` in your router
+  - [x] `features/patients`:  
+    - Create `src/features/patients/`
+    - Add `PatientList.tsx` (table or list of patients)
+    - Add `PatientForm.tsx` (form for create/edit patient)
+    - Add routes `/patients`, `/patients/new`, `/patients/:id/edit`
+  - [x] `features/doctors`:  
+    - Create `src/features/doctors/`
+    - Add `DoctorList.tsx` (table or list of doctors)
+    - Add `DoctorForm.tsx` (form for create/edit doctor)
+    - Add routes `/doctors`, `/doctors/new`, `/doctors/:id/edit`
 - [ ] **Create types and interfaces:**  
   - [ ] `types/index.ts`: Patient, Doctor, Appointment, etc.
 - [ ] **API service base:**  
