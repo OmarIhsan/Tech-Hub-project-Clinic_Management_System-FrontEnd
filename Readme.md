@@ -40,7 +40,7 @@ This guide is tailored for a 2-member team, with tasks clearly separated for eac
   ```
 - [ ] **Setup basic routing:**
   **Routes are being added at the end of App.tsx file**
-  - [ ] Implement React Router for main pages
+  - [ ] Implement React Router for main pages and navigations
   - [ ] Create placeholder pages for each feature
 - [ ] **Set up MUI theme:**  
   - [ ] Create `theme/` module for custom MUI theme
