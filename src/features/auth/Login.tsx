@@ -3,13 +3,13 @@ import {
   Container,
   Paper,
   TextField,
-  Button,
   Typography,
   Box,
   Alert,
 } from '@mui/material';
 import { useAuthContext } from '../../context/useAuthContext';
 import { useNavigate } from 'react-router';
+import MButton from '../../components/MButton';
 
 const Login = () => {
   const [email, setEmail] = useState<string>('');
@@ -81,7 +81,7 @@ const Login = () => {
               required
             />
 
-            <Button
+            <MButton
               type="submit"
               fullWidth
               variant="contained"
@@ -89,7 +89,7 @@ const Login = () => {
               disabled={loading}
             >
               {loading ? 'Logging in...' : 'Login'}
-            </Button>
+            </MButton>
           </form>
         </Paper>
       </Box>

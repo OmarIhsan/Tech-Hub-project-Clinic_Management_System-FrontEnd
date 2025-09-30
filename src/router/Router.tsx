@@ -4,6 +4,8 @@ import PatientList from '../features/patients/PatientList';
 import PatientForm from '../features/patients/PatientForm';
 import DoctorList from '../features/doctors/DoctorList';
 import DoctorForm from '../features/doctors/DoctorForm';
+import AppointmentList from '../features/appointments/AppointmentList';
+import AppointmentForm from '../features/appointments/AppointmentForm';
 
 const AppRouter = () => (
   <Routes>
@@ -14,6 +16,9 @@ const AppRouter = () => (
     <Route path="/doctors" element={<DoctorList />} />
     <Route path="/doctors/new" element={<DoctorForm />} />
     <Route path="/doctors/:id/edit" element={<DoctorForm />} />
+    <Route path="/appointments" element={<AppointmentList />} />
+    <Route path="/appointments/new" element={<AppointmentForm />} />
+    <Route path="/appointments/:id/edit" element={<AppointmentForm />} />
   </Routes>
 );
 

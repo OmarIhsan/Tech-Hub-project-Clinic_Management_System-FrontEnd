@@ -5,18 +5,14 @@ This guide is tailored for a 2-member team, with tasks clearly separated for eac
 
 ---
 
-## UI Choices Demo (Sample)
-
-**Name:** Omar Aziz
-
 | Option                  | Choice                                         |
 |-------------------------|------------------------------------------------|
 | Theme                   | Blue & White (Light) / Blue & Black (Dark)     |
-| Dark/Light Mode Switch  | iOS Switch                                     |
+| Dark/Light Mode Switch  | iOS Switch         **implemented as IOSSwitch**|
 | Font                    | Dubai                                          |
-| Button Style            | MUI Button                                     |
-| Navigation              | Icon Navigation                                |
-| Floating Add Button     | MUI Floating Action Button                     |
+| Button Style            | MUI Button           **implemented as MButton**|
+| Navigation              | Icon Navigation           **as NvigationIcons**|
+| Floating Add Button     | MUI Floating Action Button **flotingaddbutton**|
 
 ---
 

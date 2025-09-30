@@ -8,10 +8,10 @@ import {
   TableRow,
   TableCell,
   TableBody,
-  Button,
   Typography,
   Box,
 } from '@mui/material';
+import MButton from '../../components/MButton';
 
 interface Doctor {
   id: string;
@@ -38,14 +38,14 @@ const DoctorList = () => {
             Doctors
           </Typography>
           <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
-            <Button
+            <MButton
               component={Link}
               to="/doctors/new"
               variant="contained"
               color="primary"
             >
               Add Doctor
-            </Button>
+            </MButton>
           </Box>
           <Table>
             <TableHead>
@@ -63,14 +63,14 @@ const DoctorList = () => {
                   <TableCell>{doctor.specialty}</TableCell>
                   <TableCell>{doctor.contact}</TableCell>
                   <TableCell>
-                    <Button
+                    <MButton
                       component={Link}
                       to={`/doctors/${doctor.id}/edit`}
                       variant="outlined"
                       size="small"
                     >
                       Edit
-                    </Button>
+                    </MButton>
                   </TableCell>
                 </TableRow>
               ))}

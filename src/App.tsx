@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { BrowserRouter } from 'react-router-dom';
 import './App.css'
 import AppRouter from './router/Router';
+import MButton from './components/MButton';
 
 function App() {
   const [count, setCount] = useState(0)
@@ -11,9 +12,9 @@ function App() {
       <>
         <h1>Vite + React</h1>
         <div className="card">
-          <button onClick={() => setCount((count) => count + 1)}>
+          <MButton onClick={() => setCount((count) => count + 1)}>
             count is {count}
-          </button>
+          </MButton>
           <p>
             Edit <code>src/App.tsx</code> and save to test HMR
           </p>

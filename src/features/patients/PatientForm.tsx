@@ -4,11 +4,11 @@ import {
   Container,
   Paper,
   TextField,
-  Button,
   Typography,
   Box,
   Alert,
 } from '@mui/material';
+import MButton from '../../components/MButton';
 
 interface Patient {
   name: string;
@@ -113,9 +113,9 @@ const PatientForm = () => {
               margin="normal"
               required
             />
-            <Button type="submit" variant="contained" fullWidth sx={{ mt: 3 }}>
+            <MButton type="submit" variant="contained" fullWidth sx={{ mt: 3 }}>
               {id ? 'Update Patient' : 'Create Patient'}
-            </Button>
+            </MButton>
           </form>
         </Paper>
       </Box>
