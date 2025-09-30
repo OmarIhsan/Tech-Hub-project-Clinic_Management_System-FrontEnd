@@ -62,12 +62,13 @@ This guide is tailored for a 2-member team, with tasks clearly separated for eac
     - Add `DoctorList.tsx` (table or list of doctors)
     - Add `DoctorForm.tsx` (form for create/edit doctor)
     - Add routes `/doctors`, `/doctors/new`, `/doctors/:id/edit`
-- [ ] **Create types and interfaces:**  
-  - [ ] `types/index.ts`: Patient, Doctor, Appointment, etc.
-- [ ] **API service base:**  
+- [x] **Create types and interfaces:**  
+  - [x] `types/index.ts`: Patient, Doctor, Appointment, etc.
+- [---] **API service base:**  
+    **Fake right now, must be replaced with actual api server when backend team complete it**
   - [ ] Create `services/api.ts` (Axios instance with interceptors)
-- [ ] **Set up hooks and basic services:**  
-  - [ ] Create folder and starter file for custom hooks
+- [x] **Set up hooks and basic services:**  
+  - [x] Create folder and starter file for custom hooks
 
 ---
 
