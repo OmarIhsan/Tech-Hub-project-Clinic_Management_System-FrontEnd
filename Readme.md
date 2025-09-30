@@ -39,7 +39,7 @@ This guide is tailored for a 2-member team, with tasks clearly separated for eac
   - [ ] Implement React Router for main pages and navigations
   - [ ] Create placeholder pages for each feature
 - [ ] **Set up MUI theme:**  
-  - [ ] Create `theme/` module for custom MUI theme
+  - [x] Create `theme/` module for custom MUI theme
 
 ### Omar Ihsan: Core Features Scaffolding & Types
 
