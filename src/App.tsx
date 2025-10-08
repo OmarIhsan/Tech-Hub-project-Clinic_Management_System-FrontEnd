@@ -1,8 +1,10 @@
+
 import { useState } from 'react'
 import { BrowserRouter } from 'react-router-dom';
 import './App.css'
 import AppRouter from './router/Router';
 import MButton from './components/MButton';
+import NavigationIcons from "./components/NavigationIcons";
 
 function App() {
   const [count, setCount] = useState(0)
@@ -24,8 +26,9 @@ function App() {
         </p>
       </>
       <AppRouter />
+      <NavigationIcons />
     </BrowserRouter>
-  )
-}
+  );
+};
 
 export default App
