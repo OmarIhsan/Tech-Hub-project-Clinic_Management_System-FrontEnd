@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   Container,
   Paper,
@@ -10,25 +10,57 @@ import {
   TableBody,
   Typography,
   Box,
+  CircularProgress,
+  Alert,
 } from '@mui/material';
-import MButton from '../../components/MButton';
-
-interface Patient {
-  id: string;
-  name: string;
-  age: string;
-  contact: string;
-}
+import { Patient } from '../../types';
+import { patientAPI } from '../../services/api';
+import MOutlineButton from '../../components/MOutlineButton';
+import FloatingAddButton from '../../components/FloatingAddButton';
 
 const PatientList = () => {
+  const navigate = useNavigate();
   const [patients, setPatients] = useState<Patient[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string>('');
 
   useEffect(() => {
-    fetch('/api/patients')
-      .then((res) => res.json())
-      .then((data) => setPatients(data))
-      .catch(() => setPatients([]));
+    const fetchPatients = async () => {
+      try {
+        setLoading(true);
+        setError('');
+        const data = await patientAPI.getAll();
+        setPatients(data);
+      } catch (err) {
+        setError('Failed to load patients. Please try again.');
+        console.error('Failed to fetch patients:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPatients();
   }, []);
+
+  if (loading) {
+    return (
+      <Container maxWidth="md">
+        <Box sx={{ mt: 8, mb: 4, display: 'flex', justifyContent: 'center' }}>
+          <CircularProgress />
+        </Box>
+      </Container>
+    );
+  }
+
+  if (error) {
+    return (
+      <Container maxWidth="md">
+        <Box sx={{ mt: 8, mb: 4 }}>
+          <Alert severity="error">{error}</Alert>
+        </Box>
+      </Container>
+    );
+  }
 
   return (
     <Container maxWidth="md">
@@ -37,16 +69,7 @@ const PatientList = () => {
           <Typography variant="h4" align="center" gutterBottom>
             Patients
           </Typography>
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
-            <MButton
-              component={Link}
-              to="/patients/new"
-              variant="contained"
-              color="primary"
-            >
-              Add Patient
-            </MButton>
-          </Box>
+
           <Table>
             <TableHead>
               <TableRow>
@@ -63,14 +86,13 @@ const PatientList = () => {
                   <TableCell>{patient.age}</TableCell>
                   <TableCell>{patient.contact}</TableCell>
                   <TableCell>
-                    <MButton
+                    <MOutlineButton
                       component={Link}
                       to={`/patients/${patient.id}/edit`}
-                      variant="outlined"
                       size="small"
                     >
                       Edit
-                    </MButton>
+                    </MOutlineButton>
                   </TableCell>
                 </TableRow>
               ))}
@@ -78,6 +100,11 @@ const PatientList = () => {
           </Table>
         </Paper>
       </Box>
+      
+      <FloatingAddButton
+        onClick={() => navigate('/patients/new')}
+        ariaLabel="Add new patient"
+      />
     </Container>
   );
 };

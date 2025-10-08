@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   Container,
   Paper,
@@ -14,24 +14,47 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
+  CircularProgress,
+  Alert,
 } from '@mui/material';
-import { Appointment, Doctor } from '../../types';
-import MButton from '../../components/MButton';
+import { Appointment, Doctor, Patient } from '../../types';
+import { appointmentService, doctorAPI, patientAPI } from '../../services/api';
+import MOutlineButton from '../../components/MOutlineButton';
+import FloatingAddButton from '../../components/FloatingAddButton';
 
 
 const AppointmentList = () => {
+  const navigate = useNavigate();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [doctors, setDoctors] = useState<Doctor[]>([]);
+  const [patients, setPatients] = useState<Patient[]>([]);
   const [doctorFilter, setDoctorFilter] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<string>('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string>('');
 
   useEffect(() => {
-    fetch('/api/appointments')
-      .then((res) => res.json())
-      .then((data) => setAppointments(data));
-    fetch('/api/doctors')
-      .then((res) => res.json())
-      .then((data) => setDoctors(data));
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError('');
+        const [appointmentsResponse, doctorsData, patientsData] = await Promise.all([
+          appointmentService.getAll(),
+          doctorAPI.getAll(),
+          patientAPI.getAll(),
+        ]);
+        setAppointments(appointmentsResponse.data);
+        setDoctors(doctorsData);
+        setPatients(patientsData);
+      } catch (err) {
+        setError('Failed to load data. Please try again.');
+        console.error('Failed to fetch data:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
   }, []);
 
   const filteredAppointments = appointments.filter((appt) => {
@@ -40,6 +63,26 @@ const AppointmentList = () => {
       (!statusFilter || appt.status === statusFilter)
     );
   });
+
+  if (loading) {
+    return (
+      <Container maxWidth="md">
+        <Box sx={{ mt: 8, mb: 4, display: 'flex', justifyContent: 'center' }}>
+          <CircularProgress />
+        </Box>
+      </Container>
+    );
+  }
+
+  if (error) {
+    return (
+      <Container maxWidth="md">
+        <Box sx={{ mt: 8, mb: 4 }}>
+          <Alert severity="error">{error}</Alert>
+        </Box>
+      </Container>
+    );
+  }
 
   return (
     <Container maxWidth="md">
@@ -77,14 +120,7 @@ const AppointmentList = () => {
                 <MenuItem value="cancelled">Cancelled</MenuItem>
               </Select>
             </FormControl>
-            <MButton
-              component={Link}
-              variant="contained"
-              color="primary"
-              to="/appointments/new"
-            >
-              Add Appointment
-            </MButton>
+
           </Box>
           <Table>
             <TableHead>
@@ -99,21 +135,39 @@ const AppointmentList = () => {
             <TableBody>
               {filteredAppointments.map((appt) => (
                 <TableRow key={appt.id}>
-                  <TableCell>{appt.patientId}</TableCell>
+                  <TableCell>
+                    {patients.find((p) => p.id === appt.patientId)?.name || appt.patientId}
+                  </TableCell>
                   <TableCell>
                     {doctors.find((d) => d.id === appt.doctorId)?.name || appt.doctorId}
                   </TableCell>
                   <TableCell>{new Date(appt.date).toLocaleString()}</TableCell>
-                  <TableCell>{appt.status}</TableCell>
                   <TableCell>
-                    <MButton
+                    <Box
+                      sx={{
+                        px: 2,
+                        py: 0.5,
+                        borderRadius: 1,
+                        bgcolor: appt.status === 'scheduled' ? 'primary.main' 
+                               : appt.status === 'completed' ? 'success.main'
+                               : 'error.main',
+                        color: 'white',
+                        textAlign: 'center',
+                        fontSize: '0.875rem',
+                        textTransform: 'capitalize'
+                      }}
+                    >
+                      {appt.status}
+                    </Box>
+                  </TableCell>
+                  <TableCell>
+                    <MOutlineButton
                       component={Link}
                       to={`/appointments/${appt.id}/edit`}
-                      variant="outlined"
                       size="small"
                     >
                       Edit
-                    </MButton>
+                    </MOutlineButton>
                   </TableCell>
                 </TableRow>
               ))}
@@ -121,6 +175,11 @@ const AppointmentList = () => {
           </Table>
         </Paper>
       </Box>
+      
+      <FloatingAddButton
+        onClick={() => navigate('/appointments/new')}
+        ariaLabel="Add new appointment"
+      />
     </Container>
   );
 };

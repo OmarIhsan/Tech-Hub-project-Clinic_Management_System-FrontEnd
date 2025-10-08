@@ -86,17 +86,17 @@ This guide is tailored for a 2-member team, with tasks clearly separated for eac
 
 ### Omar Ihsan: Appointments, Treatment Plans, Medical Records
 
-- [ ] **Appointment screens:**  
-  - [ ] List, filter by doctor/status, create form
-- [ ] **Treatment plans:**  
-  - [ ] Dynamic form steps, status control
-- [ ] **Medical records:**  
-  - [ ] Diagnosis, findings, treatment
-- [ ] **Develop API services:**  
-  - [ ] `services/appointmentService.ts`
-  - [ ] `services/treatmentPlanService.ts`
-- [ ] **Validation:**  
-  - [ ] Zod schemas for appointments/treatment plans
+- [x] **Appointment screens:**  
+  - [x] List, filter by doctor/status, create form
+- [x] **Treatment plans:**  
+  - [x] Dynamic form steps, status control
+- [x] **Medical records:**  
+  - [x] Diagnosis, findings, treatment
+- [x] **Develop API services:**  
+  - [x] `services/appointmentService.ts`
+  - [x] `services/treatmentPlanService.ts`
+- [x] **Validation:**  
+  - [x] Validation schemas for appointments/treatment plans (TypeScript-based)
 
 ---
 

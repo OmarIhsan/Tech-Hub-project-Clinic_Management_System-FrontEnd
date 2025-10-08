@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   Container,
   Paper,
@@ -11,7 +11,8 @@ import {
   Typography,
   Box,
 } from '@mui/material';
-import MButton from '../../components/MButton';
+import MOutlineButton from '../../components/MOutlineButton';
+import FloatingAddButton from '../../components/FloatingAddButton';
 
 interface Doctor {
   id: string;
@@ -21,6 +22,7 @@ interface Doctor {
 }
 
 const DoctorList = () => {
+  const navigate = useNavigate();
   const [doctors, setDoctors] = useState<Doctor[]>([]);
 
   useEffect(() => {
@@ -37,16 +39,7 @@ const DoctorList = () => {
           <Typography variant="h4" align="center" gutterBottom>
             Doctors
           </Typography>
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
-            <MButton
-              component={Link}
-              to="/doctors/new"
-              variant="contained"
-              color="primary"
-            >
-              Add Doctor
-            </MButton>
-          </Box>
+
           <Table>
             <TableHead>
               <TableRow>
@@ -63,14 +56,13 @@ const DoctorList = () => {
                   <TableCell>{doctor.specialty}</TableCell>
                   <TableCell>{doctor.contact}</TableCell>
                   <TableCell>
-                    <MButton
+                    <MOutlineButton
                       component={Link}
                       to={`/doctors/${doctor.id}/edit`}
-                      variant="outlined"
                       size="small"
                     >
                       Edit
-                    </MButton>
+                    </MOutlineButton>
                   </TableCell>
                 </TableRow>
               ))}
@@ -78,6 +70,11 @@ const DoctorList = () => {
           </Table>
         </Paper>
       </Box>
+      
+      <FloatingAddButton
+        onClick={() => navigate('/doctors/new')}
+        ariaLabel="Add new doctor"
+      />
     </Container>
   );
 };

@@ -1,30 +1,31 @@
-import { useState } from 'react'
 import { BrowserRouter } from 'react-router-dom';
-import './App.css'
+import { CssBaseline, Box, AppBar, Toolbar, Typography, ThemeProvider } from '@mui/material';
+import { lightTheme } from './components/theme';
 import AppRouter from './router/Router';
-import MButton from './components/MButton';
+import NavigationIcon from './components/NavigationIcons';
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <BrowserRouter>
-      <>
-        <h1>Vite + React</h1>
-        <div className="card">
-          <MButton onClick={() => setCount((count) => count + 1)}>
-            count is {count}
-          </MButton>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test HMR
-          </p>
-        </div>
-        <p className="read-the-docs">
-          Click on the Vite and React logos to learn more
-        </p>
-      </>
-      <AppRouter />
-    </BrowserRouter>
+    <ThemeProvider theme={lightTheme}>
+      <CssBaseline />
+      <BrowserRouter>
+        <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+          <AppBar position="static">
+            <Toolbar>
+              <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+                Clinic Management System
+              </Typography>
+            </Toolbar>
+          </AppBar>
+          
+          <Box sx={{ flexGrow: 1 }}>
+            <AppRouter />
+          </Box>
+          
+          <NavigationIcon />
+        </Box>
+      </BrowserRouter>
+    </ThemeProvider>
   )
 }
 

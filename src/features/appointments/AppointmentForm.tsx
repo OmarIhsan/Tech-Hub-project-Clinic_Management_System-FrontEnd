@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   Container,
@@ -11,9 +11,11 @@ import {
   Select,
   FormControl,
   InputLabel,
+  CircularProgress,
 } from '@mui/material';
 import { SelectChangeEvent } from '@mui/material/Select';
 import { Appointment, Patient, Doctor } from '../../types';
+import { appointmentService, patientAPI, doctorAPI } from '../../services/api';
 import MButton from '../../components/MButton';
 
 
@@ -29,20 +31,36 @@ const AppointmentForm = () => {
   });
   const [patients, setPatients] = useState<Patient[]>([]);
   const [doctors, setDoctors] = useState<Doctor[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string>('');
 
   useEffect(() => {
-    fetch('/api/patients')
-      .then((res) => res.json())
-      .then((data) => setPatients(data));
-    fetch('/api/doctors')
-      .then((res) => res.json())
-      .then((data) => setDoctors(data));
-    if (id) {
-      fetch(`/api/appointments/${id}`)
-        .then((res) => res.json())
-        .then((data) => setAppointment(data));
-    }
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError('');
+        const [patientsData, doctorsData] = await Promise.all([
+          patientAPI.getAll(),
+          doctorAPI.getAll(),
+        ]);
+        setPatients(patientsData);
+        setDoctors(doctorsData);
+        
+        if (id) {
+          const appointmentResponse = await appointmentService.getById(id);
+          const appointmentData = appointmentResponse.data;
+          setAppointment(appointmentData);
+        }
+      } catch (err) {
+        setError('Failed to load data. Please try again.');
+        console.error('Failed to fetch data:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
   }, [id]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | { name?: string; value: unknown }>) => {
@@ -58,24 +76,43 @@ const AppointmentForm = () => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError('');
+    
     if (!appointment.patientId || !appointment.doctorId || !appointment.date) {
       setError('Please fill in all required fields');
       return;
     }
+    
     try {
-      const method = id ? 'PUT' : 'POST';
-      const url = id ? `/api/appointments/${id}` : '/api/appointments';
-      const res = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(appointment),
-      });
-      if (!res.ok) throw new Error('Failed to save appointment');
+      setSaving(true);
+      if (id) {
+        await appointmentService.update(id, appointment);
+      } else {
+        await appointmentService.create({
+          patientId: appointment.patientId,
+          doctorId: appointment.doctorId,
+          date: appointment.date,
+          status: appointment.status ?? 'scheduled',
+          notes: appointment.notes
+        });
+      }
       navigate('/appointments');
-    } catch {
+    } catch (err) {
       setError('Failed to save appointment');
+      console.error('Failed to save appointment:', err);
+    } finally {
+      setSaving(false);
     }
   };
+
+  if (loading) {
+    return (
+      <Container maxWidth="sm">
+        <Box sx={{ mt: 8, mb: 4, display: 'flex', justifyContent: 'center' }}>
+          <CircularProgress />
+        </Box>
+      </Container>
+    );
+  }
 
   return (
     <Container maxWidth="sm">
@@ -157,8 +194,14 @@ const AppointmentForm = () => {
               multiline
               rows={3}
             />
-            <MButton type="submit" variant="contained" fullWidth sx={{ mt: 3 }}>
-              {id ? 'Update Appointment' : 'Create Appointment'}
+            <MButton 
+              type="submit" 
+              variant="contained" 
+              fullWidth 
+              sx={{ mt: 3 }}
+              disabled={saving}
+            >
+              {saving ? 'Saving...' : id ? 'Update Appointment' : 'Create Appointment'}
             </MButton>
           </form>
         </Paper>
