@@ -30,7 +30,7 @@ const Login = () => {
       return;
     }
 
-    // Assuming 'login' is defined in useAuthContext and handles authentication
+    
     const result = await login(email, password);
 
     if (result && result.success) {

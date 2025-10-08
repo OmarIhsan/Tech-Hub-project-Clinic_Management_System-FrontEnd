@@ -1,4 +1,4 @@
-// import api from '../config/axios'; // Uncomment when connecting to real API
+
 import { TreatmentPlan, TreatmentStep } from '../types';
 
 interface CreateTreatmentPlanData {
@@ -34,7 +34,7 @@ interface CreateTreatmentStepData {
   notes?: string;
 }
 
-// Mock treatment plans data
+
 const mockTreatmentPlans: TreatmentPlan[] = [
   {
     id: '1',
@@ -116,18 +116,16 @@ const mockTreatmentPlans: TreatmentPlan[] = [
   }
 ];
 
-// Utility function to simulate API delay
+
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 export const treatmentPlanService = {
-  /**
-   * Get all treatment plans
-   */
+  
   getAll: async (): Promise<{ data: TreatmentPlan[] }> => {
     try {
       await delay(500);
-      // In production: const response = await api.get('/treatment-plans');
-      // return response;
+      
+      
       return { data: mockTreatmentPlans };
     } catch (error) {
       console.error('Error fetching treatment plans:', error);
@@ -135,14 +133,12 @@ export const treatmentPlanService = {
     }
   },
 
-  /**
-   * Get treatment plan by ID
-   */
+  
   getById: async (id: string): Promise<{ data: TreatmentPlan }> => {
     try {
       await delay(300);
-      // In production: const response = await api.get(`/treatment-plans/${id}`);
-      // return response;
+      
+      
       const plan = mockTreatmentPlans.find(p => p.id === id);
       if (!plan) {
         throw new Error('Treatment plan not found');
@@ -154,14 +150,12 @@ export const treatmentPlanService = {
     }
   },
 
-  /**
-   * Get treatment plans by patient ID
-   */
+  
   getByPatientId: async (patientId: string): Promise<{ data: TreatmentPlan[] }> => {
     try {
       await delay(400);
-      // In production: const response = await api.get(`/treatment-plans/patient/${patientId}`);
-      // return response;
+      
+      
       const plans = mockTreatmentPlans.filter(p => p.patientId === patientId);
       return { data: plans };
     } catch (error) {
@@ -170,14 +164,12 @@ export const treatmentPlanService = {
     }
   },
 
-  /**
-   * Get treatment plans by doctor ID
-   */
+  
   getByDoctorId: async (doctorId: string): Promise<{ data: TreatmentPlan[] }> => {
     try {
       await delay(400);
-      // In production: const response = await api.get(`/treatment-plans/doctor/${doctorId}`);
-      // return response;
+      
+      
       const plans = mockTreatmentPlans.filter(p => p.doctorId === doctorId);
       return { data: plans };
     } catch (error) {
@@ -186,14 +178,12 @@ export const treatmentPlanService = {
     }
   },
 
-  /**
-   * Get treatment plans by status
-   */
+  
   getByStatus: async (status: 'active' | 'completed' | 'cancelled' | 'on-hold'): Promise<{ data: TreatmentPlan[] }> => {
     try {
       await delay(400);
-      // In production: const response = await api.get(`/treatment-plans/status/${status}`);
-      // return response;
+      
+      
       const plans = mockTreatmentPlans.filter(p => p.status === status);
       return { data: plans };
     } catch (error) {
@@ -202,14 +192,12 @@ export const treatmentPlanService = {
     }
   },
 
-  /**
-   * Get treatment plans by priority
-   */
+  
   getByPriority: async (priority: 'low' | 'medium' | 'high'): Promise<{ data: TreatmentPlan[] }> => {
     try {
       await delay(400);
-      // In production: const response = await api.get(`/treatment-plans/priority/${priority}`);
-      // return response;
+      
+      
       const plans = mockTreatmentPlans.filter(p => p.priority === priority);
       return { data: plans };
     } catch (error) {
@@ -218,14 +206,12 @@ export const treatmentPlanService = {
     }
   },
 
-  /**
-   * Create new treatment plan
-   */
+  
   create: async (planData: CreateTreatmentPlanData): Promise<{ data: TreatmentPlan }> => {
     try {
       await delay(1000);
-      // In production: const response = await api.post('/treatment-plans', planData);
-      // return response;
+      
+      
       const currentDate = new Date().toISOString();
       const newPlan: TreatmentPlan = {
         ...planData,
@@ -245,14 +231,12 @@ export const treatmentPlanService = {
     }
   },
 
-  /**
-   * Update treatment plan
-   */
+  
   update: async (id: string, planData: UpdateTreatmentPlanData): Promise<{ data: TreatmentPlan }> => {
     try {
       await delay(800);
-      // In production: const response = await api.put(`/treatment-plans/${id}`, planData);
-      // return response;
+      
+      
       const index = mockTreatmentPlans.findIndex(p => p.id === id);
       if (index === -1) {
         throw new Error('Treatment plan not found');
@@ -269,13 +253,11 @@ export const treatmentPlanService = {
     }
   },
 
-  /**
-   * Delete treatment plan
-   */
+  
   delete: async (id: string): Promise<void> => {
     try {
       await delay(500);
-      // In production: await api.delete(`/treatment-plans/${id}`);
+      
       const index = mockTreatmentPlans.findIndex(p => p.id === id);
       if (index === -1) {
         throw new Error('Treatment plan not found');
@@ -287,14 +269,12 @@ export const treatmentPlanService = {
     }
   },
 
-  /**
-   * Add step to treatment plan
-   */
+  
   addStep: async (planId: string, stepData: CreateTreatmentStepData): Promise<{ data: TreatmentStep }> => {
     try {
       await delay(600);
-      // In production: const response = await api.post(`/treatment-plans/${planId}/steps`, stepData);
-      // return response;
+      
+      
       const plan = mockTreatmentPlans.find(p => p.id === planId);
       if (!plan) {
         throw new Error('Treatment plan not found');
@@ -312,14 +292,12 @@ export const treatmentPlanService = {
     }
   },
 
-  /**
-   * Update treatment step
-   */
+  
   updateStep: async (planId: string, stepId: string, stepData: Partial<TreatmentStep>): Promise<{ data: TreatmentStep }> => {
     try {
       await delay(600);
-      // In production: const response = await api.put(`/treatment-plans/${planId}/steps/${stepId}`, stepData);
-      // return response;
+      
+      
       const plan = mockTreatmentPlans.find(p => p.id === planId);
       if (!plan) {
         throw new Error('Treatment plan not found');
@@ -337,14 +315,12 @@ export const treatmentPlanService = {
     }
   },
 
-  /**
-   * Update step status
-   */
+  
   updateStepStatus: async (planId: string, stepId: string, status: 'pending' | 'in-progress' | 'completed' | 'cancelled'): Promise<{ data: TreatmentStep }> => {
     try {
       await delay(300);
-      // In production: const response = await api.patch(`/treatment-plans/${planId}/steps/${stepId}/status`, { status });
-      // return response;
+      
+      
       const plan = mockTreatmentPlans.find(p => p.id === planId);
       if (!plan) {
         throw new Error('Treatment plan not found');
@@ -365,13 +341,11 @@ export const treatmentPlanService = {
     }
   },
 
-  /**
-   * Delete treatment step
-   */
+  
   deleteStep: async (planId: string, stepId: string): Promise<void> => {
     try {
       await delay(500);
-      // In production: await api.delete(`/treatment-plans/${planId}/steps/${stepId}`);
+      
       const plan = mockTreatmentPlans.find(p => p.id === planId);
       if (!plan) {
         throw new Error('Treatment plan not found');
@@ -388,14 +362,12 @@ export const treatmentPlanService = {
     }
   },
 
-  /**
-   * Complete treatment plan
-   */
+  
   complete: async (id: string, notes?: string): Promise<{ data: TreatmentPlan }> => {
     try {
       await delay(600);
-      // In production: const response = await api.patch(`/treatment-plans/${id}/complete`, { notes });
-      // return response;
+      
+      
       const index = mockTreatmentPlans.findIndex(p => p.id === id);
       if (index === -1) {
         throw new Error('Treatment plan not found');
@@ -414,14 +386,12 @@ export const treatmentPlanService = {
     }
   },
 
-  /**
-   * Cancel treatment plan
-   */
+  
   cancel: async (id: string, reason?: string): Promise<{ data: TreatmentPlan }> => {
     try {
       await delay(600);
-      // In production: const response = await api.patch(`/treatment-plans/${id}/cancel`, { reason });
-      // return response;
+      
+      
       const index = mockTreatmentPlans.findIndex(p => p.id === id);
       if (index === -1) {
         throw new Error('Treatment plan not found');
@@ -440,14 +410,12 @@ export const treatmentPlanService = {
     }
   },
 
-  /**
-   * Get treatment plan progress summary
-   */
+  
   getProgress: async (id: string): Promise<{ data: { completed: number; total: number; percentage: number } }> => {
     try {
       await delay(200);
-      // In production: const response = await api.get(`/treatment-plans/${id}/progress`);
-      // return response;
+      
+      
       const plan = mockTreatmentPlans.find(p => p.id === id);
       if (!plan) {
         throw new Error('Treatment plan not found');
@@ -463,5 +431,5 @@ export const treatmentPlanService = {
   }
 };
 
-// Default export following the pattern from source project
+
 export default treatmentPlanService;

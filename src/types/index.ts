@@ -60,7 +60,7 @@ export interface MedicalFinding {
   normalRange?: string;
   severity?: 'low' | 'medium' | 'high' | 'critical';
   recordedDate: string;
-  recordedBy: string; // doctorId
+  recordedBy: string; 
 }
 
 export interface MedicalRecord {

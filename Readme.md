@@ -11,8 +11,8 @@ This guide is tailored for a 2-member team, with tasks clearly separated for eac
 | Dark/Light Mode Switch  | iOS Switch         **implemented as IOSSwitch**|
 | Font                    | Dubai                                          |
 | Button Style            | MUI Button           **implemented as MButton**|
-| Navigation              | Icon Navigation           **as NvigationIcons**|
-| Floating Add Button     | MUI Floating Action Button **flotingaddbutton**|
+| Navigation              | Icon Navigation          **as NavigationIcons**|
+| Floating Add Button     | MUI Floating Action Button**FloatingAddButton**|
 
 ---
 
@@ -34,11 +34,11 @@ This guide is tailored for a 2-member team, with tasks clearly separated for eac
     ├── theme/           
     └── router/           
   ```
-- [ ] **Setup basic routing:**
+- [x] **Setup basic routing:**
   **Routes are being added in router/Router**
-  - [ ] Implement React Router for main pages and navigations
-  - [ ] Create placeholder pages for each feature
-- [ ] **Set up MUI theme:**  
+  - [x] Implement React Router for main pages and navigations
+  - [x] Create placeholder pages for each feature
+- [x] **Set up MUI theme:**  
   - [x] Create `theme/` module for custom MUI theme
 
 ### Omar Ihsan: Core Features Scaffolding & Types
@@ -62,7 +62,7 @@ This guide is tailored for a 2-member team, with tasks clearly separated for eac
   - [x] `types/index.ts`: Patient, Doctor, Appointment, etc.
 - [---] **API service base:**  
     **Fake right now, must be replaced with actual api server when backend team complete it**
-  - [ ] Create `services/api.ts` (Axios instance with interceptors)
+  - [---] Create `services/api.ts` (Axios instance with interceptors, ***mock data*** for dev)
 - [x] **Set up hooks and basic services:**  
   - [x] Create folder and starter file for custom hooks
 
@@ -72,17 +72,17 @@ This guide is tailored for a 2-member team, with tasks clearly separated for eac
 
 ### Omar Aziz: Patient & Doctor CRUD + API Layer
 
-- [ ] **Build patient screens:**  
-  - [ ] List, Create, Edit forms (connect to API)
-- [ ] **Build doctor screens:**  
-  - [ ] List, Create, Edit forms (connect to API)
+- [x] **Build patient screens:**  
+  - [x] List, Create, Edit forms (mock API, PatientList.tsx, PatientForm.tsx)
+- [x] **Build doctor screens:**  
+  - [x] List, Create, Edit forms (mock API, DoctorList.tsx, DoctorForm.tsx)
 - [ ] **Develop API services:**  
-  - [ ] `services/patientService.ts`
-  - [ ] `services/doctorService.ts`
+  - [ ] `services/patientService.ts` (not found, handled in api.ts)
+  - [ ] `services/doctorService.ts` (not found, handled in api.ts)
 - [ ] **Integrate react-query:**  
-  - [ ] For data fetching, caching, loading states
+  - [ ] For data fetching, caching, loading states (not implemented)
 - [ ] **Validation:**  
-  - [ ] Create Zod schemas for patient/doctor forms
+  - [ ] Validation schemas for patient/doctor forms (not implemented)
 
 ### Omar Ihsan: Appointments, Treatment Plans, Medical Records
 
@@ -95,8 +95,8 @@ This guide is tailored for a 2-member team, with tasks clearly separated for eac
 - [x] **Develop API services:**  
   - [x] `services/appointmentService.ts`
   - [x] `services/treatmentPlanService.ts`
-- [x] **Validation:**  
-  - [x] Validation schemas for appointments/treatment plans (TypeScript-based)
+- [---] **Validation:**  
+  - [ ] Validation schemas for appointments/treatment plans (TypeScript-based)
 
 ---
 
@@ -105,41 +105,41 @@ This guide is tailored for a 2-member team, with tasks clearly separated for eac
 ### Omar Aziz: Dashboard & UI Components
 
 - [ ] **Dashboard module:**  
-  - [ ] `features/dashboard`: Total patients, upcoming appointments, active plans
+  - [ ] `features/dashboard`: Total patients, upcoming appointments, active plans (not implemented)
   - [ ] Use MUI `Card`, `Grid`, `Typography`
   - [ ] (Optional) Add charts with `recharts`
 - [ ] **Reusable UI components:**  
-  - [ ] `components/TableView`: Table with pagination
-  - [ ] `components/StatusBadge`: Appointment/treatment status
+  - [ ] `components/TableView`: Table with pagination (not implemented)
+  - [ ] `components/StatusBadge`: Appointment/treatment status (not implemented)
 - [ ] **Role-based access wrappers:**  
-  - [ ] Implement wrappers if needed
+  - [ ] Implement wrappers if needed (not implemented)
 
 ### Omar Ihsan: File Uploads, Testing, Documentation
 
 - [ ] **File uploads:**  
-  - [ ] `features/clinicalDocuments`: Upload + preview
-  - [ ] Drag-and-drop, file type validation
+  - [ ] `features/clinicalDocuments`: Upload + preview (not implemented)
+  - [ ] Drag-and-drop, file type validation (not implemented)
 - [ ] **Form Components:**  
-  - [ ] `components/FormInput`
-  - [ ] `SelectField`
-  - [ ] `DatePicker`
-  - [ ] `FileUpload`
+  - [ ] `components/FormInput` (not implemented)
+  - [ ] `SelectField` (not implemented)
+  - [ ] `DatePicker` (not implemented)
+  - [ ] `FileUpload` (not implemented)
 - [ ] **Testing:**  
-  - [ ] Unit tests for key components using `vitest` or `jest`
-  - [ ] Manual test flows: login → create patient → schedule appointment → add treatment plan → upload document
+  - [ ] Unit tests for key components using `vitest` or `jest` (not implemented)
+  - [ ] Manual test flows: login → create patient → schedule appointment → add treatment plan → upload document (not documented)
 - [ ] **Documentation:**  
   - [ ] Update `README.md` with setup, folder structure, and dev guide
-  - [ ] Document API endpoints and screen responsibilities
-  - [ ] (Optional) Record Loom walkthrough for future devs
+  - [ ] Document API endpoints and screen responsibilities (not completed)
+  - [ ] (Optional) Record Loom walkthrough for future devs (not completed)
 
 ---
 
 ## Collaboration Tips
 
-- [ ] **Daily sync:** 15-minute standup or async check-in.
-- [ ] **Branching:** Each member works on their own feature branches.
-- [ ] **Code review:** Peer review before merging to main.
-- [ ] **Issue tracking:** Use GitHub Issues or Projects to track progress/tasks.
+  - [ ] **Daily sync:** 15-minute standup or async check-in.
+  - [ ] **Branching:** Each member works on their own feature branches.
+  - [ ] **Code review:** Peer review before merging to main.
+  - [ ] **Issue tracking:** Use GitHub Issues or Projects to track progress/tasks.
 
 ---
 

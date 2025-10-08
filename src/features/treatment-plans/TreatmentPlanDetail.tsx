@@ -74,7 +74,7 @@ const TreatmentPlanDetail = () => {
       setUpdatingStep(stepId);
       await treatmentPlanService.updateStepStatus(id, stepId, newStatus);
       
-      // Update local state
+      
       setTreatmentPlan(prev => {
         if (!prev) return prev;
         return {
@@ -160,7 +160,7 @@ const TreatmentPlanDetail = () => {
     <Container maxWidth="lg">
       <Box sx={{ mt: 8, mb: 4 }}>
         <Paper sx={{ p: 4 }}>
-          {/* Header */}
+          
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3 }}>
             <Box>
               <Typography variant="h4" gutterBottom>
@@ -185,7 +185,7 @@ const TreatmentPlanDetail = () => {
             </Box>
           </Box>
 
-          {/* Progress Overview */}
+          
           <Card variant="outlined" sx={{ mb: 3 }}>
             <CardContent>
               <Typography variant="h6" gutterBottom>
@@ -246,7 +246,7 @@ const TreatmentPlanDetail = () => {
             </Grid>
           </Grid>
 
-          {/* Treatment Steps */}
+          
           <Card variant="outlined" sx={{ mb: 3 }}>
             <CardContent>
               <Typography variant="h6" gutterBottom>
@@ -345,7 +345,7 @@ const TreatmentPlanDetail = () => {
             </CardContent>
           </Card>
 
-          {/* Plan Details */}
+          
           <Card variant="outlined" sx={{ mb: 3 }}>
             <CardContent>
               <Typography variant="h6" gutterBottom>
@@ -376,7 +376,7 @@ const TreatmentPlanDetail = () => {
 
           <Divider sx={{ my: 3 }} />
 
-          {/* Action Buttons */}
+          
           <Box sx={{ display: 'flex', gap: 2, justifyContent: 'space-between' }}>
             <MOutlineButton
               onClick={() => navigate('/treatment-plans')}

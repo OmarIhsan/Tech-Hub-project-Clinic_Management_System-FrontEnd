@@ -1,4 +1,4 @@
-// import api from '../config/axios'; // Uncomment when connecting to real API
+
 import { Appointment } from '../types';
 
 interface CreateAppointmentData {
@@ -15,7 +15,7 @@ interface UpdateAppointmentData {
   notes?: string;
 }
 
-// Mock data for development
+
 const mockAppointments: Appointment[] = [
   {
     id: '1',
@@ -51,18 +51,16 @@ const mockAppointments: Appointment[] = [
   },
 ];
 
-// Utility function to simulate API delay
+
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 export const appointmentService = {
-  /**
-   * Get all appointments
-   */
+  
   getAll: async (): Promise<{ data: Appointment[] }> => {
     try {
       await delay(500);
-      // In production: const response = await api.get('/appointments');
-      // return response;
+      
+      
       return { data: mockAppointments };
     } catch (error) {
       console.error('Error fetching appointments:', error);
@@ -70,14 +68,12 @@ export const appointmentService = {
     }
   },
 
-  /**
-   * Get appointment by ID
-   */
+  
   getById: async (id: string): Promise<{ data: Appointment }> => {
     try {
       await delay(300);
-      // In production: const response = await api.get(`/appointments/${id}`);
-      // return response;
+      
+      
       const appointment = mockAppointments.find(a => a.id === id);
       if (!appointment) {
         throw new Error('Appointment not found');
@@ -89,14 +85,12 @@ export const appointmentService = {
     }
   },
 
-  /**
-   * Get appointments by patient ID
-   */
+  
   getByPatientId: async (patientId: string): Promise<{ data: Appointment[] }> => {
     try {
       await delay(400);
-      // In production: const response = await api.get(`/appointments/patient/${patientId}`);
-      // return response;
+      
+      
       const appointments = mockAppointments.filter(a => a.patientId === patientId);
       return { data: appointments };
     } catch (error) {
@@ -105,14 +99,12 @@ export const appointmentService = {
     }
   },
 
-  /**
-   * Get appointments by doctor ID
-   */
+  
   getByDoctorId: async (doctorId: string): Promise<{ data: Appointment[] }> => {
     try {
       await delay(400);
-      // In production: const response = await api.get(`/appointments/doctor/${doctorId}`);
-      // return response;
+      
+      
       const appointments = mockAppointments.filter(a => a.doctorId === doctorId);
       return { data: appointments };
     } catch (error) {
@@ -121,14 +113,12 @@ export const appointmentService = {
     }
   },
 
-  /**
-   * Get appointments by status
-   */
+  
   getByStatus: async (status: 'scheduled' | 'completed' | 'cancelled'): Promise<{ data: Appointment[] }> => {
     try {
       await delay(400);
-      // In production: const response = await api.get(`/appointments/status/${status}`);
-      // return response;
+      
+      
       const appointments = mockAppointments.filter(a => a.status === status);
       return { data: appointments };
     } catch (error) {
@@ -137,14 +127,12 @@ export const appointmentService = {
     }
   },
 
-  /**
-   * Create new appointment
-   */
+  
   create: async (appointmentData: CreateAppointmentData): Promise<{ data: Appointment }> => {
     try {
       await delay(800);
-      // In production: const response = await api.post('/appointments', appointmentData);
-      // return response;
+      
+      
       const newAppointment: Appointment = {
         ...appointmentData,
         id: Date.now().toString(),
@@ -157,14 +145,12 @@ export const appointmentService = {
     }
   },
 
-  /**
-   * Update appointment
-   */
+  
   update: async (id: string, appointmentData: UpdateAppointmentData): Promise<{ data: Appointment }> => {
     try {
       await delay(800);
-      // In production: const response = await api.put(`/appointments/${id}`, appointmentData);
-      // return response;
+      
+      
       const index = mockAppointments.findIndex(a => a.id === id);
       if (index === -1) {
         throw new Error('Appointment not found');
@@ -177,14 +163,12 @@ export const appointmentService = {
     }
   },
 
-  /**
-   * Cancel appointment
-   */
+  
   cancel: async (id: string, reason?: string): Promise<{ data: Appointment }> => {
     try {
       await delay(500);
-      // In production: const response = await api.patch(`/appointments/${id}/cancel`, { reason });
-      // return response;
+      
+      
       const index = mockAppointments.findIndex(a => a.id === id);
       if (index === -1) {
         throw new Error('Appointment not found');
@@ -201,14 +185,12 @@ export const appointmentService = {
     }
   },
 
-  /**
-   * Complete appointment
-   */
+  
   complete: async (id: string, notes?: string): Promise<{ data: Appointment }> => {
     try {
       await delay(500);
-      // In production: const response = await api.patch(`/appointments/${id}/complete`, { notes });
-      // return response;
+      
+      
       const index = mockAppointments.findIndex(a => a.id === id);
       if (index === -1) {
         throw new Error('Appointment not found');
@@ -225,13 +207,11 @@ export const appointmentService = {
     }
   },
 
-  /**
-   * Delete appointment
-   */
+  
   delete: async (id: string): Promise<void> => {
     try {
       await delay(500);
-      // In production: await api.delete(`/appointments/${id}`);
+      
       const index = mockAppointments.findIndex(a => a.id === id);
       if (index === -1) {
         throw new Error('Appointment not found');
@@ -243,14 +223,12 @@ export const appointmentService = {
     }
   },
 
-  /**
-   * Get appointments for a specific date range
-   */
+  
   getByDateRange: async (startDate: string, endDate: string): Promise<{ data: Appointment[] }> => {
     try {
       await delay(400);
-      // In production: const response = await api.get(`/appointments/range?start=${startDate}&end=${endDate}`);
-      // return response;
+      
+      
       const start = new Date(startDate);
       const end = new Date(endDate);
       const appointments = mockAppointments.filter(a => {
@@ -264,14 +242,12 @@ export const appointmentService = {
     }
   },
 
-  /**
-   * Reschedule appointment
-   */
+  
   reschedule: async (id: string, newDate: string, reason?: string): Promise<{ data: Appointment }> => {
     try {
       await delay(600);
-      // In production: const response = await api.patch(`/appointments/${id}/reschedule`, { date: newDate, reason });
-      // return response;
+      
+      
       const index = mockAppointments.findIndex(a => a.id === id);
       if (index === -1) {
         throw new Error('Appointment not found');
@@ -290,5 +266,5 @@ export const appointmentService = {
   }
 };
 
-// Default export following the pattern from source project
+
 export default appointmentService;

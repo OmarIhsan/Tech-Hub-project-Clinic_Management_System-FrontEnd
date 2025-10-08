@@ -1,6 +1,3 @@
-// Validation schemas for appointments and treatment plans
-// Note: Using TypeScript interfaces for validation. Consider installing 'zod' for more robust validation.
-
 export interface AppointmentValidationSchema {
   patientId: string;
   doctorId: string;
@@ -31,7 +28,7 @@ export interface TreatmentStepValidationSchema {
   notes?: string;
 }
 
-// Validation functions
+
 export class ValidationError extends Error {
   constructor(message: string, public field?: string) {
     super(message);
@@ -40,9 +37,7 @@ export class ValidationError extends Error {
 }
 
 export const appointmentValidation = {
-  /**
-   * Validate appointment data for creation
-   */
+  
   validateCreate: (data: unknown): AppointmentValidationSchema => {
     if (!data || typeof data !== 'object') {
       throw new ValidationError('Invalid appointment data');
@@ -50,7 +45,7 @@ export const appointmentValidation = {
 
     const appointment = data as Record<string, unknown>;
 
-    // Required fields
+    
     if (!appointment.patientId || typeof appointment.patientId !== 'string') {
       throw new ValidationError('Patient ID is required and must be a string', 'patientId');
     }
@@ -63,26 +58,26 @@ export const appointmentValidation = {
       throw new ValidationError('Date is required and must be a string', 'date');
     }
 
-    // Validate date format
+    
     const dateRegex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/;
     if (!dateRegex.test(appointment.date)) {
       throw new ValidationError('Date must be in format YYYY-MM-DDTHH:mm', 'date');
     }
 
-    // Validate date is not in the past (for scheduling)
+    
     const appointmentDate = new Date(appointment.date);
     const now = new Date();
     if (appointmentDate < now) {
       throw new ValidationError('Appointment date cannot be in the past', 'date');
     }
 
-    // Validate status
+    
     const validStatuses = ['scheduled', 'completed', 'cancelled'];
     if (!appointment.status || !validStatuses.includes(appointment.status as string)) {
       throw new ValidationError('Status must be one of: scheduled, completed, cancelled', 'status');
     }
 
-    // Optional fields
+    
     if (appointment.notes && typeof appointment.notes !== 'string') {
       throw new ValidationError('Notes must be a string', 'notes');
     }
@@ -96,9 +91,7 @@ export const appointmentValidation = {
     };
   },
 
-  /**
-   * Validate appointment data for update
-   */
+  
   validateUpdate: (data: unknown): Partial<AppointmentValidationSchema> => {
     if (!data || typeof data !== 'object') {
       throw new ValidationError('Invalid appointment data');
@@ -107,7 +100,7 @@ export const appointmentValidation = {
     const appointment = data as Record<string, unknown>;
     const result: Partial<AppointmentValidationSchema> = {};
 
-    // Optional fields for update
+    
     if (appointment.date !== undefined) {
       if (typeof appointment.date !== 'string') {
         throw new ValidationError('Date must be a string', 'date');
@@ -139,9 +132,7 @@ export const appointmentValidation = {
 };
 
 export const treatmentPlanValidation = {
-  /**
-   * Validate treatment plan data for creation
-   */
+  
   validateCreate: (data: unknown): TreatmentPlanValidationSchema => {
     if (!data || typeof data !== 'object') {
       throw new ValidationError('Invalid treatment plan data');
@@ -149,7 +140,7 @@ export const treatmentPlanValidation = {
 
     const plan = data as Record<string, unknown>;
 
-    // Required fields
+    
     if (!plan.patientId || typeof plan.patientId !== 'string') {
       throw new ValidationError('Patient ID is required and must be a string', 'patientId');
     }
@@ -186,7 +177,7 @@ export const treatmentPlanValidation = {
       throw new ValidationError('Expected end date is required and must be a string', 'expectedEndDate');
     }
 
-    // Validate date format
+    
     const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
     if (!dateRegex.test(plan.startDate)) {
       throw new ValidationError('Start date must be in format YYYY-MM-DD', 'startDate');
@@ -196,26 +187,26 @@ export const treatmentPlanValidation = {
       throw new ValidationError('Expected end date must be in format YYYY-MM-DD', 'expectedEndDate');
     }
 
-    // Validate end date is after start date
+    
     const startDate = new Date(plan.startDate);
     const endDate = new Date(plan.expectedEndDate);
     if (endDate <= startDate) {
       throw new ValidationError('Expected end date must be after start date', 'expectedEndDate');
     }
 
-    // Validate status
+    
     const validStatuses = ['active', 'completed', 'cancelled', 'on-hold'];
     if (!plan.status || !validStatuses.includes(plan.status as string)) {
       throw new ValidationError('Status must be one of: active, completed, cancelled, on-hold', 'status');
     }
 
-    // Validate priority
+    
     const validPriorities = ['low', 'medium', 'high'];
     if (!plan.priority || !validPriorities.includes(plan.priority as string)) {
       throw new ValidationError('Priority must be one of: low, medium, high', 'priority');
     }
 
-    // Optional fields
+    
     if (plan.notes && typeof plan.notes !== 'string') {
       throw new ValidationError('Notes must be a string', 'notes');
     }
@@ -234,9 +225,7 @@ export const treatmentPlanValidation = {
     };
   },
 
-  /**
-   * Validate treatment plan data for update
-   */
+  
   validateUpdate: (data: unknown): Partial<TreatmentPlanValidationSchema> => {
     if (!data || typeof data !== 'object') {
       throw new ValidationError('Invalid treatment plan data');
@@ -245,7 +234,7 @@ export const treatmentPlanValidation = {
     const plan = data as Record<string, unknown>;
     const result: Partial<TreatmentPlanValidationSchema> = {};
 
-    // Optional fields for update
+    
     if (plan.title !== undefined) {
       if (typeof plan.title !== 'string') {
         throw new ValidationError('Title must be a string', 'title');
@@ -312,9 +301,7 @@ export const treatmentPlanValidation = {
 };
 
 export const treatmentStepValidation = {
-  /**
-   * Validate treatment step data for creation
-   */
+  
   validateCreate: (data: unknown): TreatmentStepValidationSchema => {
     if (!data || typeof data !== 'object') {
       throw new ValidationError('Invalid treatment step data');
@@ -322,7 +309,7 @@ export const treatmentStepValidation = {
 
     const step = data as Record<string, unknown>;
 
-    // Required fields
+    
     if (!step.title || typeof step.title !== 'string') {
       throw new ValidationError('Title is required and must be a string', 'title');
     }
@@ -343,7 +330,7 @@ export const treatmentStepValidation = {
       throw new ValidationError('Due date is required and must be a string', 'dueDate');
     }
 
-    // Validate date format
+    
     const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
     if (!dateRegex.test(step.dueDate)) {
       throw new ValidationError('Due date must be in format YYYY-MM-DD', 'dueDate');
@@ -353,13 +340,13 @@ export const treatmentStepValidation = {
       throw new ValidationError('Assigned doctor ID is required and must be a string', 'assignedDoctorId');
     }
 
-    // Validate status
+    
     const validStatuses = ['pending', 'in-progress', 'completed', 'cancelled'];
     if (!step.status || !validStatuses.includes(step.status as string)) {
       throw new ValidationError('Status must be one of: pending, in-progress, completed, cancelled', 'status');
     }
 
-    // Optional fields
+    
     if (step.notes && typeof step.notes !== 'string') {
       throw new ValidationError('Notes must be a string', 'notes');
     }
@@ -374,9 +361,7 @@ export const treatmentStepValidation = {
     };
   },
 
-  /**
-   * Validate treatment step data for update
-   */
+  
   validateUpdate: (data: unknown): Partial<TreatmentStepValidationSchema> => {
     if (!data || typeof data !== 'object') {
       throw new ValidationError('Invalid treatment step data');
@@ -385,7 +370,7 @@ export const treatmentStepValidation = {
     const step = data as Record<string, unknown>;
     const result: Partial<TreatmentStepValidationSchema> = {};
 
-    // Optional fields for update
+    
     if (step.title !== undefined) {
       if (typeof step.title !== 'string') {
         throw new ValidationError('Title must be a string', 'title');
@@ -443,49 +428,39 @@ export const treatmentStepValidation = {
   },
 };
 
-// Utility functions for common validations
+
 export const validationUtils = {
-  /**
-   * Validate UUID format
-   */
+  
   isValidUUID: (id: string): boolean => {
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
     return uuidRegex.test(id);
   },
 
-  /**
-   * Validate date string format
-   */
+  
   isValidDate: (dateString: string): boolean => {
     const date = new Date(dateString);
     return !isNaN(date.getTime());
   },
 
-  /**
-   * Validate email format
-   */
+  
   isValidEmail: (email: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   },
 
-  /**
-   * Validate phone number format
-   */
+  
   isValidPhone: (phone: string): boolean => {
     const phoneRegex = /^\+?[\d\s\-()]{10,}$/;
     return phoneRegex.test(phone);
   },
 
-  /**
-   * Sanitize string input
-   */
+  
   sanitizeString: (input: string): string => {
     return input.trim().replace(/\s+/g, ' ');
   },
 };
 
-// Export all validation schemas and functions
+
 export default {
   appointmentValidation,
   treatmentPlanValidation,

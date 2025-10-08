@@ -1,7 +1,7 @@
 import api from '../config/axios';
 import { Patient, Doctor, MedicalRecord } from '../types';
 
-// Re-export services from dedicated service files
+
 export { default as appointmentService } from './appointmentService';
 export { default as treatmentPlanService } from './treatmentPlanService';
 
@@ -24,7 +24,7 @@ export const authAPI = {
   getProfile: () => api.get('/auth/profile'),
 };
 
-// Mock data for development
+
 const mockPatients: Patient[] = [
   { id: '1', name: 'John Doe', age: '30', contact: '123-456-7890' },
   { id: '2', name: 'Jane Smith', age: '25', contact: '098-765-4321' },
@@ -39,7 +39,7 @@ const mockDoctors: Doctor[] = [
   { id: '4', name: 'Dr. Shepherd', specialty: 'Neurology', contact: '444-555-6666' },
 ];
 
-// Utility function to simulate API delay
+
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 export const patientAPI = {
@@ -110,7 +110,7 @@ export const doctorAPI = {
 
 
 
-// Mock medical records data
+
 const mockMedicalRecords: MedicalRecord[] = [
   {
     id: '1',
