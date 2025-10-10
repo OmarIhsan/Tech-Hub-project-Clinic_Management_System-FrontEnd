@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router';
 import {
   Container,
   Paper,
@@ -63,7 +63,6 @@ const PatientForm = () => {
 
     try {
       setSubmitting(true);
-      // validate
       validation.patientValidation.validateCreate(patient);
 
       if (id) {
@@ -72,9 +71,12 @@ const PatientForm = () => {
         await createMutation.mutateAsync(patient);
       }
       navigate('/patients');
-    } catch (err: any) {
+    } catch (err: unknown) {
       if (err instanceof ValidationError) {
         setError(err.message);
+      } else if (err instanceof Error) {
+        console.error('Failed to save patient:', err);
+        setError('Failed to save patient');
       } else {
         console.error('Failed to save patient:', err);
         setError('Failed to save patient');

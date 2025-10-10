@@ -1,7 +1,75 @@
 # Frontend Guide – Clinic Management System (React + TypeScript + MUI)
 
 **Team Setup:**  
-This guide is tailored for a 2-member team, with tasks clearly separated for each developer per week.
+This guide is tailored for a 2-member team, with tasks c---
+
+## New Features Implemented
+
+### Clinical Documents Management
+- **Route:** `/documents`
+- **Features:**
+  - Document listing with type-based filtering
+  - File upload with drag-and-drop support
+  - Document preview dialog
+  - File type validation (PDF, images, documents)
+  - File size validation (configurable)
+  - Mock data integration
+
+### Reusable Form Components
+- **FormInput:** Enhanced TextField with error handling
+- **SelectField:** Dropdown with options support (string arrays or objects)
+- **DatePicker:** Date input with validation and clear functionality
+- **FileUpload:** Drag-and-drop file upload with progress and validation
+
+### Demo Page
+- **Route:** `/demo`
+- **Purpose:** Showcase all form components with live examples
+- **Features:** Interactive form with real-time data preview
+
+### Usage Examples
+
+```jsx
+// FormInput
+<FormInput
+  label="Patient Name"
+  value={name}
+  onChange={(e) => setName(e.target.value)}
+  error={nameError}
+  required
+/>
+
+// SelectField
+<SelectField
+  label="Document Type"
+  value={docType}
+  onChange={(e) => setDocType(e.target.value)}
+  options={[
+    { value: 'lab-result', label: 'Lab Result' },
+    { value: 'imaging', label: 'Medical Imaging' }
+  ]}
+/>
+
+// DatePicker
+<DatePicker
+  label="Appointment Date"
+  value={appointmentDate}
+  onChange={setAppointmentDate}
+  minDate={new Date()}
+/>
+
+// FileUpload
+<FileUpload
+  onFilesChange={setFiles}
+  acceptedTypes={['.pdf', '.jpg', '.png']}
+  maxFileSize={10 * 1024 * 1024} // 10MB
+  maxFiles={5}
+  multiple
+/>
+```
+
+---
+
+This split should help both developers work efficiently and avoid stepping on each other's toes, while covering all major milestones for a production-ready frontend.rly separated for each developer per week.
 
 ---
 
@@ -82,8 +150,8 @@ This guide is tailored for a 2-member team, with tasks clearly separated for eac
   - [x] `services/doctorService.ts` (implemented inside `src/services/api.ts` as `doctorAPI`)
   - Note: A mock API is provided at `src/services/api.ts` (exports `patientAPI`, `doctorAPI`, `medicalRecordAPI`, etc.).
     Use these for local CRUD testing — no backend required for basic development. Open the `/patients` and `/doctors` routes to exercise create/edit/delete flows.
-- [ ] **Integrate react-query:**  
-  - [ ] For data fetching, caching, loading states (not implemented)
+ - [x] **Integrate react-query:**  
+  - [x] For data fetching and caching (QueryClient wired in `src/main.tsx`, components use `@tanstack/react-query`)
 - [ ] **Validation:**  
   - [ ] Validation schemas for patient/doctor forms (not implemented)
 
@@ -119,19 +187,19 @@ This guide is tailored for a 2-member team, with tasks clearly separated for eac
 
 ### Omar Ihsan: File Uploads, Testing, Documentation
 
-- [ ] **File uploads:**  
-  - [ ] `features/clinicalDocuments`: Upload + preview (not implemented)
-  - [ ] Drag-and-drop, file type validation (not implemented)
-- [ ] **Form Components:**  
-  - [ ] `components/FormInput` (not implemented)
-  - [ ] `SelectField` (not implemented)
-  - [ ] `DatePicker` (not implemented)
-  - [ ] `FileUpload` (not implemented)
+- [x] **File uploads:**  
+  - [x] `features/clinical-documents`: Upload + preview (implemented with mock data)
+  - [x] Drag-and-drop, file type validation (implemented with full validation)
+- [x] **Form Components:**  
+  - [x] `components/FormInput` (implemented with error handling)
+  - [x] `SelectField` (implemented with options support)
+  - [x] `DatePicker` (implemented with validation)
+  - [x] `FileUpload` (implemented with drag-and-drop)
 - [ ] **Testing:**  
   - [ ] Unit tests for key components using `vitest` or `jest` (not implemented)
   - [ ] Manual test flows: login → create patient → schedule appointment → add treatment plan → upload document (not documented)
-- [ ] **Documentation:**  
-  - [ ] Update `README.md` with setup, folder structure, and dev guide
+ - [x] **Documentation:**  
+  - [x] Update `README.md` with setup, folder structure, and dev guide
   - [ ] Document API endpoints and screen responsibilities (not completed)
   - [ ] (Optional) Record Loom walkthrough for future devs (not completed)
 

@@ -4,14 +4,15 @@ import PeopleIcon from '@mui/icons-material/People';
 import LocalHospitalIcon from '@mui/icons-material/LocalHospital';
 import EventNoteIcon from '@mui/icons-material/EventNote';
 import AssignmentIcon from '@mui/icons-material/Assignment';
-import { useNavigate, useLocation } from 'react-router-dom';
-// useState is imported via React namespace
+import DescriptionIcon from '@mui/icons-material/Description';
+import { useNavigate, useLocation } from 'react-router';
 
 const getTabValue = (pathname) => {
   if (pathname.includes('/patients')) return 1;
   if (pathname.includes('/doctors')) return 2;
   if (pathname.includes('/treatment-plans')) return 3;
-  return 0; // default to appointments
+  if (pathname.includes('/documents')) return 4;
+  return 0; 
 };
 
 const NavigationIcons = () => {
@@ -34,6 +35,9 @@ const NavigationIcons = () => {
       case 3:
         navigate('/treatment-plans');
         break;
+      case 4:
+        navigate('/documents');
+        break;
       default:
         break;
     }
@@ -46,6 +50,7 @@ const NavigationIcons = () => {
         <BottomNavigationAction label="Patients" icon={<PeopleIcon />} />
         <BottomNavigationAction label="Doctors" icon={<LocalHospitalIcon />} />
         <BottomNavigationAction label="Treatment Plans" icon={<AssignmentIcon />} />
+        <BottomNavigationAction label="Documents" icon={<DescriptionIcon />} />
       </BottomNavigation>
     </Paper>
   );

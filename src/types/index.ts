@@ -3,7 +3,6 @@ export interface Patient {
   name: string;
   age: string;
   contact: string;
-  // Schema-aligned fields
   patient_id?: number;
   full_name?: string;
   gender?: string;
@@ -19,8 +18,7 @@ export interface Doctor {
   name: string;
   specialty: string;
   contact: string;
-  // Schema-aligned fields
-  doctor_id?: number;
+   doctor_id?: number;
   full_name?: string;
   gender?: string;
   phone?: string;
@@ -99,8 +97,7 @@ export interface Appointment {
   date: string; 
   status: 'scheduled' | 'completed' | 'cancelled';
   notes?: string;
-  // Schema-aligned fields
-  appointment_id?: number;
+   appointment_id?: number;
   patient_id?: number;
   doctor_id?: number;
   appointment_time?: string;
@@ -133,8 +130,7 @@ export interface TreatmentPlan {
   createdDate: string;
   lastUpdated: string;
   notes?: string;
-  // Schema-aligned fields
-  plan_id?: number;
+   plan_id?: number;
   patient_id?: number;
   doctor_id?: number;
   appointment_id?: number;
@@ -206,8 +202,7 @@ export interface MedicalRecord {
   createdDate: string;
   lastUpdated: string;
   notes?: string;
-  // Schema-aligned fields
-  record_id?: number;
+   record_id?: number;
   patient_id?: number;
   doctor_id?: number;
   clinical_findings?: string;

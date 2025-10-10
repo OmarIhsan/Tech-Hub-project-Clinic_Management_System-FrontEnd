@@ -12,6 +12,8 @@ import TreatmentPlanForm from '../features/treatment-plans/TreatmentPlanForm';
 import MedicalRecordList from '../features/medical-records/MedicalRecordList';
 import MedicalRecordDetail from '../features/medical-records/MedicalRecordDetail';
 import MedicalRecordForm from '../features/medical-records/MedicalRecordForm';
+import ClinicalDocumentList from '../features/clinical-documents/ClinicalDocumentList';
+import FormComponentsDemo from '../features/demo/FormComponentsDemo';
 
 const AppRouter = () => (
   <Routes>
@@ -34,6 +36,8 @@ const AppRouter = () => (
     <Route path="/medical-records/new" element={<MedicalRecordForm />} />
     <Route path="/medical-records/:id" element={<MedicalRecordDetail />} />
     <Route path="/medical-records/:id/edit" element={<MedicalRecordForm />} />
+    <Route path="/documents" element={<ClinicalDocumentList />} />
+    <Route path="/demo" element={<FormComponentsDemo />} />
   </Routes>
 );
 

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router';
 import {
   Container,
   Paper,
@@ -13,7 +13,6 @@ import {
 } from '@mui/material';
 import MOutlineButton from '../../components/MOutlineButton';
 import FloatingAddButton from '../../components/FloatingAddButton';
-// Types used for runtime reference
 import { doctorAPI } from '../../services/api';
 import { CircularProgress, Alert } from '@mui/material';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';

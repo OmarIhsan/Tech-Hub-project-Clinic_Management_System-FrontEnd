@@ -1,7 +1,6 @@
 import api from '../config/axios';
 import { Patient, Doctor, MedicalRecord } from '../types';
 
-// Export all services
 export { default as appointmentService } from './appointmentService';
 export { default as treatmentPlanService } from './treatmentPlanService';
 export { default as staffService } from './staffService';

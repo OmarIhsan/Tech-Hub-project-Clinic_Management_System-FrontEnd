@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router';
 import {
   Container,
   Paper,
@@ -17,7 +17,6 @@ import {
   CircularProgress,
   Alert,
 } from '@mui/material';
-// Types used for runtime reference
 import { appointmentService, doctorAPI, patientAPI } from '../../services/api';
 import MOutlineButton from '../../components/MOutlineButton';
 import FloatingAddButton from '../../components/FloatingAddButton';

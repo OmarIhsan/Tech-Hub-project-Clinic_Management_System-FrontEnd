@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router';
 import {
   Container,
   Paper,
@@ -13,7 +13,6 @@ import {
   CircularProgress,
   Alert,
 } from '@mui/material';
-import { Patient } from '../../types';
 import { patientAPI } from '../../services/api';
 import MOutlineButton from '../../components/MOutlineButton';
 import FloatingAddButton from '../../components/FloatingAddButton';
@@ -24,17 +23,17 @@ const PatientList = () => {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const queryClient = useQueryClient();
 
-  const { data: patients = [], isLoading, isError } = useQuery<Patient[]>({
+  const { data: patients = [], isLoading, isError } = useQuery({
     queryKey: ['patients'],
-    queryFn: () => patientAPI.getAll(),
+    queryFn: () => patientAPI.getAll()
   });
 
-  const deleteMutation = useMutation<void, Error, string>({
-    mutationFn: (id: string) => patientAPI.delete(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['patients'] }),
+  const deleteMutation = useMutation({
+    mutationFn: (id) => patientAPI.delete(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['patients'] })
   });
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id) => {
     const ok = window.confirm('Are you sure you want to delete this patient?');
     if (!ok) return;
 
@@ -43,7 +42,6 @@ const PatientList = () => {
       await deleteMutation.mutateAsync(id);
     } catch (err) {
       console.error('Failed to delete patient:', err);
-      // keep simple UI error
     } finally {
       setActionLoading(null);
     }

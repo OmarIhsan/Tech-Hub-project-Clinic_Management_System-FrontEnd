@@ -465,7 +465,6 @@ export default {
   appointmentValidation,
   treatmentPlanValidation,
   treatmentStepValidation,
-  // patient & doctor validation helpers added for basic forms
   patientValidation: {
     validateCreate: (data: unknown) => {
       if (!data || typeof data !== 'object') {
