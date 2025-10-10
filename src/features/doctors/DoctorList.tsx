@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Container,
@@ -13,7 +13,7 @@ import {
 } from '@mui/material';
 import MOutlineButton from '../../components/MOutlineButton';
 import FloatingAddButton from '../../components/FloatingAddButton';
-import { Doctor } from '../../types';
+// Types used for runtime reference
 import { doctorAPI } from '../../services/api';
 import { CircularProgress, Alert } from '@mui/material';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -23,17 +23,20 @@ const DoctorList = () => {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const queryClient = useQueryClient();
 
-  const { data: doctors = [], isLoading, isError } = useQuery<Doctor[]>({
+  const { data: doctors = [], isLoading, isError } = useQuery({
     queryKey: ['doctors'],
     queryFn: () => doctorAPI.getAll(),
   });
 
-  const deleteMutation = useMutation<void, Error, string>({
-    mutationFn: (id: string) => doctorAPI.delete(id),
+  const deleteMutation = useMutation({
+    mutationFn: async (id) => {
+      await doctorAPI.delete(id);
+      return id;
+    },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['doctors'] }),
   });
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id) => {
     const ok = window.confirm('Are you sure you want to delete this doctor?');
     if (!ok) return;
     try {

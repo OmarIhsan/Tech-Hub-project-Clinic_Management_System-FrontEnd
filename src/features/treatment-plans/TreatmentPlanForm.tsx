@@ -13,17 +13,15 @@ import {
   InputLabel,
   CircularProgress,
 } from '@mui/material';
-import { SelectChangeEvent } from '@mui/material/Select';
-import { TreatmentPlan, Patient, Doctor } from '../../types';
 import { treatmentPlanService, patientAPI, doctorAPI } from '../../services/api';
 import MButton from '../../components/MButton';
 import MOutlineButton from '../../components/MOutlineButton';
 
 const TreatmentPlanForm = () => {
-  const { id } = useParams<{ id: string }>();
+  const { id } = useParams();
   const navigate = useNavigate();
   
-  const [treatmentPlan, setTreatmentPlan] = useState<Partial<TreatmentPlan>>({
+  const [treatmentPlan, setTreatmentPlan] = useState({
     patientId: '',
     doctorId: '',
     title: '',
@@ -37,11 +35,11 @@ const TreatmentPlanForm = () => {
     notes: '',
   });
   
-  const [patients, setPatients] = useState<Patient[]>([]);
-  const [doctors, setDoctors] = useState<Doctor[]>([]);
+  const [patients, setPatients] = useState([]);
+  const [doctors, setDoctors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string>('');
+  const [error, setError] = useState('');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -88,7 +86,7 @@ const TreatmentPlanForm = () => {
         await treatmentPlanService.create({
           ...planData,
           steps: planData.steps || []
-        } as any);
+        });
       }
       navigate('/treatment-plans');
     } catch (err) {
@@ -128,7 +126,13 @@ const TreatmentPlanForm = () => {
               <Box sx={{ flex: '1 1 300px' }}>
                 <FormControl fullWidth>
                   <InputLabel>Patient *</InputLabel>
-                  <Select name="patientId" value={treatmentPlan.patientId || ''} label="Patient *" onChange={(e: SelectChangeEvent) => setTreatmentPlan(prev => ({ ...prev, patientId: e.target.value }))} required>
+                  <Select 
+                    name="patientId" 
+                    value={treatmentPlan.patientId || ''} 
+                    label="Patient *" 
+                    onChange={(e) => setTreatmentPlan(prev => ({ ...prev, patientId: e.target.value }))} 
+                    required
+                  >
                     {patients.map((p) => (<MenuItem key={p.id} value={p.id}>{p.name}</MenuItem>))}
                   </Select>
                 </FormControl>
@@ -136,7 +140,13 @@ const TreatmentPlanForm = () => {
               <Box sx={{ flex: '1 1 300px' }}>
                 <FormControl fullWidth>
                   <InputLabel>Doctor *</InputLabel>
-                  <Select name="doctorId" value={treatmentPlan.doctorId || ''} label="Doctor *" onChange={(e: SelectChangeEvent) => setTreatmentPlan(prev => ({ ...prev, doctorId: e.target.value }))} required>
+                  <Select 
+                    name="doctorId" 
+                    value={treatmentPlan.doctorId || ''} 
+                    label="Doctor *" 
+                    onChange={(e) => setTreatmentPlan(prev => ({ ...prev, doctorId: e.target.value }))} 
+                    required
+                  >
                     {doctors.map((d) => (<MenuItem key={d.id} value={d.id}>{d.name} - {d.specialty}</MenuItem>))}
                   </Select>
                 </FormControl>
@@ -183,7 +193,12 @@ const TreatmentPlanForm = () => {
               <Box sx={{ flex: '1 1 200px' }}>
                 <FormControl fullWidth>
                   <InputLabel>Priority</InputLabel>
-                  <Select name="priority" value={treatmentPlan.priority || 'medium'} label="Priority" onChange={(e: SelectChangeEvent) => setTreatmentPlan(prev => ({ ...prev, priority: e.target.value as TreatmentPlan['priority'] }))}>
+                  <Select 
+                    name="priority" 
+                    value={treatmentPlan.priority || 'medium'} 
+                    label="Priority" 
+                    onChange={(e) => setTreatmentPlan(prev => ({ ...prev, priority: e.target.value }))}
+                  >
                     <MenuItem value="low">Low</MenuItem>
                     <MenuItem value="medium">Medium</MenuItem>
                     <MenuItem value="high">High</MenuItem>

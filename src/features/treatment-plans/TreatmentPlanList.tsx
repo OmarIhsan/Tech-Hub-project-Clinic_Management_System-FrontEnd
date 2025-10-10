@@ -19,20 +19,20 @@ import {
   Chip,
   LinearProgress,
 } from '@mui/material';
-import { TreatmentPlan, TreatmentStep, Patient, Doctor } from '../../types';
+// Types are used for runtime operations, keeping import for reference
 import { treatmentPlanService, patientAPI, doctorAPI } from '../../services/api';
 import MOutlineButton from '../../components/MOutlineButton';
 import FloatingAddButton from '../../components/FloatingAddButton';
 
 const TreatmentPlanList = () => {
   const navigate = useNavigate();
-  const [treatmentPlans, setTreatmentPlans] = useState<TreatmentPlan[]>([]);
-  const [patients, setPatients] = useState<Patient[]>([]);
-  const [doctors, setDoctors] = useState<Doctor[]>([]);
-  const [statusFilter, setStatusFilter] = useState<string>('');
-  const [priorityFilter, setPriorityFilter] = useState<string>('');
+  const [treatmentPlans, setTreatmentPlans] = useState([]);
+  const [patients, setPatients] = useState([]);
+  const [doctors, setDoctors] = useState([]);
+  const [statusFilter, setStatusFilter] = useState('');
+  const [priorityFilter, setPriorityFilter] = useState('');
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string>('');
+  const [error, setError] = useState('');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -65,7 +65,7 @@ const TreatmentPlanList = () => {
     );
   });
 
-  const getStatusColor = (status: string): 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning' => {
+  const getStatusColor = (status) => {
     switch (status) {
       case 'active': return 'success';
       case 'completed': return 'primary';
@@ -76,7 +76,7 @@ const TreatmentPlanList = () => {
     }
   };
 
-  const getPriorityColor = (priority: string): 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning' => {
+  const getPriorityColor = (priority) => {
     switch (priority) {
       case 'urgent': return 'error';
       case 'high': return 'warning';
@@ -86,7 +86,7 @@ const TreatmentPlanList = () => {
     }
   };
 
-  const calculateProgress = (steps: TreatmentStep[]) => {
+  const calculateProgress = (steps) => {
     if (steps.length === 0) return 0;
     const completedSteps = steps.filter(step => step.status === 'completed').length;
     return (completedSteps / steps.length) * 100;
@@ -151,8 +151,6 @@ const TreatmentPlanList = () => {
                 <MenuItem value="low">Low</MenuItem>
               </Select>
             </FormControl>
-            
-
           </Box>
 
           <Table>

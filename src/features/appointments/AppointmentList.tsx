@@ -17,7 +17,7 @@ import {
   CircularProgress,
   Alert,
 } from '@mui/material';
-import { Appointment, Doctor, Patient } from '../../types';
+// Types used for runtime reference
 import { appointmentService, doctorAPI, patientAPI } from '../../services/api';
 import MOutlineButton from '../../components/MOutlineButton';
 import FloatingAddButton from '../../components/FloatingAddButton';
@@ -25,9 +25,9 @@ import FloatingAddButton from '../../components/FloatingAddButton';
 
 const AppointmentList = () => {
   const navigate = useNavigate();
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
-  const [doctors, setDoctors] = useState<Doctor[]>([]);
-  const [patients, setPatients] = useState<Patient[]>([]);
+  const [appointments, setAppointments] = useState([]);
+  const [doctors, setDoctors] = useState([]);
+  const [patients, setPatients] = useState([]);
   const [doctorFilter, setDoctorFilter] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<string>('');
   const [loading, setLoading] = useState(true);
@@ -43,9 +43,9 @@ const AppointmentList = () => {
           doctorAPI.getAll(),
           patientAPI.getAll(),
         ]);
-        setAppointments(appointmentsResponse.data);
-        setDoctors(doctorsData);
-        setPatients(patientsData);
+        setAppointments(appointmentsResponse.data || []);
+        setDoctors(doctorsData || []);
+        setPatients(patientsData || []);
       } catch (err) {
         setError('Failed to load data. Please try again.');
         console.error('Failed to fetch data:', err);

@@ -4,14 +4,22 @@ import PeopleIcon from '@mui/icons-material/People';
 import LocalHospitalIcon from '@mui/icons-material/LocalHospital';
 import EventNoteIcon from '@mui/icons-material/EventNote';
 import AssignmentIcon from '@mui/icons-material/Assignment';
-import { useNavigate } from 'react-router';
-import { useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+// useState is imported via React namespace
 
-const NavigationIcons: React.FC = () => {
-  const [value, setValue] = useState(0);
+const getTabValue = (pathname) => {
+  if (pathname.includes('/patients')) return 1;
+  if (pathname.includes('/doctors')) return 2;
+  if (pathname.includes('/treatment-plans')) return 3;
+  return 0; // default to appointments
+};
+
+const NavigationIcons = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const [value, setValue] = React.useState(getTabValue(location.pathname));
 
-  const handleChange = (event: React.SyntheticEvent | null, newValue: number) => {
+  const handleChange = (event, newValue) => {
     setValue(newValue);
     switch (newValue) {
       case 0:

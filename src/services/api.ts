@@ -1,8 +1,15 @@
 import api from '../config/axios';
 import { Patient, Doctor, MedicalRecord } from '../types';
 
+// Export all services
 export { default as appointmentService } from './appointmentService';
 export { default as treatmentPlanService } from './treatmentPlanService';
+export { default as staffService } from './staffService';
+export { default as clinicalDocumentService } from './clinicalDocumentService';
+export { default as patientImageService } from './patientImageService';
+export { default as procedureService } from './procedureService';
+export { default as expenseService } from './expenseService';
+export { default as otherIncomeService } from './otherIncomeService';
 
 interface LoginCredentials {
   email: string;
@@ -30,52 +37,90 @@ const mockPatients: Patient[] = [
     name: 'John Doe',
     age: '30',
     contact: '123-456-7890',
+    patient_id: 1,
     full_name: 'Johnathan Doe',
     gender: 'male',
     date_of_birth: '1994-06-01',
     phone: '123-456-7890',
     email: 'john.doe@example.com',
-    address: '123 Main St, Springfield',
-    meta: { patient_id: 1 }
+    address: '123 Main St, Springfield, IL 62701',
+    meta: { 
+      registration_date: '2024-01-01',
+      emergency_contact: 'Mary Doe - 123-456-7891',
+      insurance_provider: 'HealthFirst Insurance'
+    }
   },
   {
     id: '2',
     name: 'Jane Smith',
     age: '25',
     contact: '098-765-4321',
+    patient_id: 2,
     full_name: 'Jane A. Smith',
     gender: 'female',
     date_of_birth: '1999-02-14',
     phone: '098-765-4321',
     email: 'jane.smith@example.com',
-    address: '456 Oak Ave, Springfield',
-    meta: { patient_id: 2 }
+    address: '456 Oak Ave, Springfield, IL 62702',
+    meta: { 
+      registration_date: '2024-01-05',
+      emergency_contact: 'Robert Smith - 098-765-4322',
+      insurance_provider: 'MediCare Plus'
+    }
   },
   {
     id: '3',
     name: 'Bob Johnson',
     age: '45',
     contact: '555-123-4567',
+    patient_id: 3,
     full_name: 'Robert Johnson',
     gender: 'male',
     date_of_birth: '1980-11-21',
     phone: '555-123-4567',
     email: 'bob.johnson@example.com',
-    address: '789 Pine Rd, Springfield',
-    meta: { patient_id: 3 }
+    address: '789 Pine Rd, Springfield, IL 62703',
+    meta: { 
+      registration_date: '2024-01-10',
+      emergency_contact: 'Linda Johnson - 555-123-4568',
+      insurance_provider: 'United Health'
+    }
   },
   {
     id: '4',
     name: 'Alice Brown',
     age: '35',
     contact: '444-567-8901',
+    patient_id: 4,
     full_name: 'Alice Brown',
     gender: 'female',
     date_of_birth: '1989-05-12',
     phone: '444-567-8901',
     email: 'alice.brown@example.com',
-    address: '321 Cedar Ln, Springfield',
-    meta: { patient_id: 4 }
+    address: '321 Cedar Ln, Springfield, IL 62704',
+    meta: { 
+      registration_date: '2024-01-12',
+      emergency_contact: 'Michael Brown - 444-567-8902',
+      insurance_provider: 'Aetna Health'
+    }
+  },
+  {
+    id: '5',
+    name: 'David Wilson',
+    age: '28',
+    contact: '777-888-9999',
+    patient_id: 5,
+    full_name: 'David Michael Wilson',
+    gender: 'male',
+    date_of_birth: '1996-08-30',
+    phone: '777-888-9999',
+    email: 'david.wilson@example.com',
+    address: '567 Maple Dr, Springfield, IL 62705',
+    meta: { 
+      registration_date: '2024-01-18',
+      emergency_contact: 'Sarah Wilson - 777-888-9998',
+      insurance_provider: 'Blue Cross Blue Shield'
+    }
   }
 ];
 
@@ -85,48 +130,90 @@ const mockDoctors: Doctor[] = [
     name: 'Dr. Wilson',
     specialty: 'Cardiology',
     contact: '111-222-3333',
+    doctor_id: 1,
     full_name: 'Dr. Andrew Wilson',
     gender: 'male',
     phone: '111-222-3333',
-    email: 'andrew.wilson@example.com',
+    email: 'andrew.wilson@clinic.com',
     hire_date: '2015-03-01',
-    meta: { doctor_id: 1 }
+    meta: { 
+      license_number: 'MD12345',
+      specialization_board: 'American Board of Cardiology',
+      years_experience: 15,
+      education: 'MD from Harvard Medical School'
+    }
   },
   {
     id: '2',
     name: 'Dr. House',
     specialty: 'Internal Medicine',
     contact: '222-333-4444',
+    doctor_id: 2,
     full_name: 'Dr. Gregory House',
     gender: 'male',
     phone: '222-333-4444',
-    email: 'greg.house@example.com',
+    email: 'greg.house@clinic.com',
     hire_date: '2010-06-12',
-    meta: { doctor_id: 2 }
+    meta: { 
+      license_number: 'MD23456',
+      specialization_board: 'American Board of Internal Medicine',
+      years_experience: 20,
+      education: 'MD from Johns Hopkins University'
+    }
   },
   {
     id: '3',
     name: 'Dr. Grey',
     specialty: 'Surgery',
     contact: '333-444-5555',
+    doctor_id: 3,
     full_name: 'Dr. Meredith Grey',
     gender: 'female',
     phone: '333-444-5555',
-    email: 'meredith.grey@example.com',
+    email: 'meredith.grey@clinic.com',
     hire_date: '2018-09-03',
-    meta: { doctor_id: 3 }
+    meta: { 
+      license_number: 'MD34567',
+      specialization_board: 'American Board of Surgery',
+      years_experience: 8,
+      education: 'MD from University of Washington'
+    }
   },
   {
     id: '4',
     name: 'Dr. Shepherd',
     specialty: 'Neurology',
     contact: '444-555-6666',
+    doctor_id: 4,
     full_name: 'Dr. Derek Shepherd',
     gender: 'male',
     phone: '444-555-6666',
-    email: 'derek.shepherd@example.com',
+    email: 'derek.shepherd@clinic.com',
     hire_date: '2012-01-20',
-    meta: { doctor_id: 4 }
+    meta: { 
+      license_number: 'MD45678',
+      specialization_board: 'American Board of Neurology',
+      years_experience: 18,
+      education: 'MD from Columbia University'
+    }
+  },
+  {
+    id: '5',
+    name: 'Dr. Torres',
+    specialty: 'Orthopedics',
+    contact: '555-666-7777',
+    doctor_id: 5,
+    full_name: 'Dr. Callie Torres',
+    gender: 'female',
+    phone: '555-666-7777',
+    email: 'callie.torres@clinic.com',
+    hire_date: '2016-11-15',
+    meta: { 
+      license_number: 'MD56789',
+      specialization_board: 'American Board of Orthopedic Surgery',
+      years_experience: 12,
+      education: 'MD from Stanford University'
+    }
   }
 ];
 
@@ -209,6 +296,19 @@ const mockMedicalRecords: MedicalRecord[] = [
     doctorId: '1',
     appointmentId: '1',
     recordDate: '2024-01-15',
+    record_id: 1,
+    patient_id: 1,
+    doctor_id: 1,
+    clinical_findings: 'Patient presents with elevated BP and glucose levels. No acute distress.',
+    allergies: 'Penicillin, Shellfish',
+    medical_conditions: 'Hypertension, Type 2 Diabetes Mellitus',
+    current_meds_json: {
+      current_medications: [
+        { name: 'Lisinopril', dosage: '10mg', frequency: 'daily' },
+        { name: 'Metformin', dosage: '500mg', frequency: 'twice daily' }
+      ]
+    },
+    created_at: '2024-01-15T10:30:00Z',
     diagnosis: {
       primary: 'Hypertension',
       secondary: ['Type 2 Diabetes'],
@@ -283,6 +383,16 @@ const mockMedicalRecords: MedicalRecord[] = [
     patientId: '2',
     doctorId: '2',
     recordDate: '2024-01-16',
+    record_id: 2,
+    patient_id: 2,
+    doctor_id: 2,
+    clinical_findings: 'Patient presents with cough and mild throat irritation. No fever or significant congestion.',
+    allergies: 'None known',
+    medical_conditions: 'No significant past medical history',
+    current_meds_json: {
+      current_medications: []
+    },
+    created_at: '2024-01-16T14:45:00Z',
     diagnosis: {
       primary: 'Upper Respiratory Infection',
       icd10Code: 'J06.9',
@@ -334,6 +444,133 @@ const mockMedicalRecords: MedicalRecord[] = [
     status: 'finalized',
     createdDate: '2024-01-16T14:45:00Z',
     lastUpdated: '2024-01-16T14:45:00Z'
+  },
+  {
+    id: '3',
+    patientId: '3',
+    doctorId: '3',
+    appointmentId: '3',
+    recordDate: '2024-01-17',
+    record_id: 3,
+    patient_id: 3,
+    doctor_id: 3,
+    clinical_findings: 'Pre-operative assessment for planned surgery. Patient stable with normal vital signs.',
+    allergies: 'Latex, Codeine',
+    medical_conditions: 'History of appendectomy, otherwise healthy',
+    current_meds_json: {
+      current_medications: [
+        { name: 'Multivitamin', dosage: '1 tablet', frequency: 'daily' }
+      ]
+    },
+    created_at: '2024-01-17T09:30:00Z',
+    diagnosis: {
+      primary: 'Pre-operative assessment',
+      icd10Code: 'Z01.818',
+      severity: 'mild',
+      confidence: 'confirmed'
+    },
+    findings: [
+      {
+        id: '5',
+        type: 'vital-sign',
+        title: 'Blood Pressure',
+        description: 'Normal blood pressure reading',
+        value: '120/80',
+        unit: 'mmHg',
+        normalRange: '120/80 mmHg',
+        severity: 'low',
+        recordedDate: '2024-01-17T09:15:00Z',
+        recordedBy: '3'
+      }
+    ],
+    treatment: {
+      prescribed: false,
+      recommendations: [
+        'Clear liquids only after midnight before surgery',
+        'Arrive 2 hours before scheduled procedure',
+        'Bring list of all medications'
+      ]
+    },
+    followUp: {
+      required: true,
+      scheduledDate: '2024-01-24',
+      instructions: 'Post-operative follow-up'
+    },
+    status: 'finalized',
+    createdDate: '2024-01-17T09:45:00Z',
+    lastUpdated: '2024-01-17T09:45:00Z'
+  },
+  {
+    id: '4',
+    patientId: '4',
+    doctorId: '4',
+    recordDate: '2024-01-18',
+    record_id: 4,
+    patient_id: 4,
+    doctor_id: 4,
+    clinical_findings: 'Patient reports intermittent headaches and mild dizziness. Neurological exam shows no focal deficits.',
+    allergies: 'Aspirin',
+    medical_conditions: 'Migraine headaches, anxiety',
+    current_meds_json: {
+      current_medications: [
+        { name: 'Sumatriptan', dosage: '50mg', frequency: 'as needed for migraine' },
+        { name: 'Sertraline', dosage: '25mg', frequency: 'daily' }
+      ]
+    },
+    created_at: '2024-01-18T11:30:00Z',
+    diagnosis: {
+      primary: 'Migraine without aura',
+      secondary: ['Anxiety disorder'],
+      icd10Code: 'G43.009',
+      severity: 'moderate',
+      confidence: 'confirmed'
+    },
+    findings: [
+      {
+        id: '6',
+        type: 'symptom',
+        title: 'Headache',
+        description: 'Throbbing headache, primarily left-sided, duration 4-6 hours',
+        severity: 'medium',
+        recordedDate: '2024-01-18T11:15:00Z',
+        recordedBy: '4'
+      },
+      {
+        id: '7',
+        type: 'observation',
+        title: 'Neurological Exam',
+        description: 'Cranial nerves II-XII intact, no focal motor or sensory deficits',
+        severity: 'low',
+        recordedDate: '2024-01-18T11:20:00Z',
+        recordedBy: '4'
+      }
+    ],
+    treatment: {
+      prescribed: true,
+      medications: [
+        {
+          name: 'Propranolol',
+          dosage: '40mg',
+          frequency: 'Twice daily',
+          duration: '3 months',
+          instructions: 'Take with food for migraine prevention'
+        }
+      ],
+      recommendations: [
+        'Keep headache diary',
+        'Identify and avoid triggers',
+        'Regular sleep schedule',
+        'Stress management techniques'
+      ]
+    },
+    followUp: {
+      required: true,
+      scheduledDate: '2024-02-18',
+      instructions: 'Follow-up for migraine management and medication review'
+    },
+    status: 'finalized',
+    createdDate: '2024-01-18T11:45:00Z',
+    lastUpdated: '2024-01-18T11:45:00Z'
   }
 ];
 

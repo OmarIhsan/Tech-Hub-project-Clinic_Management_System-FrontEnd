@@ -66,12 +66,12 @@ const TreatmentPlanDetail = () => {
     fetchData();
   }, [id]);
 
-  const updateStepStatus = async (stepId: string, newStatus: import('../../types').TreatmentStep['status']): Promise<void> => {
+  const updateStepStatus = async (stepId, newStatus) => {
     if (!treatmentPlan || !id) return;
     
     try {
       setUpdatingStep(stepId);
-  await treatmentPlanService.updateStepStatus(id, stepId, newStatus as any);
+  await treatmentPlanService.updateStepStatus(id, stepId, newStatus);
       
       
       setTreatmentPlan(prev => {
@@ -98,7 +98,7 @@ const TreatmentPlanDetail = () => {
     }
   };
 
-  const getStatusColor = (status: TreatmentPlan['status']): 'success' | 'primary' | 'default' | 'error' | 'warning' => {
+  const getStatusColor = (status) => {
     switch (status) {
       case 'active': return 'success';
       case 'completed': return 'primary';
@@ -109,7 +109,7 @@ const TreatmentPlanDetail = () => {
     }
   };
 
-  const getPriorityColor = (priority: TreatmentPlan['priority']): 'error' | 'warning' | 'info' | 'default' => {
+  const getPriorityColor = (priority) => {
     switch (priority) {
       case 'urgent': return 'error';
       case 'high': return 'warning';
@@ -119,7 +119,7 @@ const TreatmentPlanDetail = () => {
     }
   };
 
-  const getStepStatusIcon = (status: string): React.ReactElement | undefined => {
+  const getStepStatusIcon = (status) => {
     switch (status) {
       case 'completed': return <CheckIcon />;
       case 'in-progress': return <PlayArrowIcon />;
@@ -129,7 +129,7 @@ const TreatmentPlanDetail = () => {
     }
   };
 
-  const calculateProgress = (steps: { status: string }[]): number => {
+  const calculateProgress = (steps) => {
     if (!steps || steps.length === 0) return 0;
     const completedSteps = steps.filter(step => step.status === 'completed').length;
     return (completedSteps / steps.length) * 100;

@@ -13,8 +13,7 @@ import {
   InputLabel,
   CircularProgress,
 } from '@mui/material';
-import { SelectChangeEvent } from '@mui/material/Select';
-import { Appointment, Patient, Doctor } from '../../types';
+import { Appointment } from '../../types';
 import { appointmentService, patientAPI, doctorAPI } from '../../services/api';
 import MButton from '../../components/MButton';
 
@@ -29,8 +28,8 @@ const AppointmentForm = () => {
     status: 'scheduled',
     notes: '',
   });
-  const [patients, setPatients] = useState<Patient[]>([]);
-  const [doctors, setDoctors] = useState<Doctor[]>([]);
+  const [patients, setPatients] = useState([]);
+  const [doctors, setDoctors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string>('');
@@ -63,17 +62,15 @@ const AppointmentForm = () => {
     fetchData();
   }, [id]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | { name?: string; value: unknown }>) => {
-    const name = e.target.name as string;
+  const handleChange = (e) => {
+    const name = e.target.name;
     setAppointment({ ...appointment, [name]: e.target.value });
   };
-  const handleSelectChange = (
-    e: SelectChangeEvent
-  ) => {
-    setAppointment({ ...appointment, [e.target.name as string]: e.target.value });
+  const handleSelectChange = (e) => {
+    setAppointment({ ...appointment, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     
