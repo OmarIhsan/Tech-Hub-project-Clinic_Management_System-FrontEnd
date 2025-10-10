@@ -47,8 +47,12 @@ const mockTreatmentPlans: TreatmentPlan[] = [
     expectedEndDate: '2024-04-15',
     status: 'active',
     priority: 'high',
-    createdDate: '2024-01-10T10:00:00Z',
-    lastUpdated: '2024-01-15T14:30:00Z',
+  createdDate: '2024-01-10T10:00:00Z',
+  lastUpdated: '2024-01-15T14:30:00Z',
+  prescription_file_path: '/files/prescriptions/plan-1.pdf',
+  prescription_file_type: 'application/pdf',
+  appointmentId: '1',
+  meta: { plan_id: 1 },
     steps: [
       {
         id: '1-1',
@@ -91,8 +95,12 @@ const mockTreatmentPlans: TreatmentPlan[] = [
     expectedEndDate: '2024-07-10',
     status: 'active',
     priority: 'medium',
-    createdDate: '2024-01-08T08:00:00Z',
-    lastUpdated: '2024-01-12T16:00:00Z',
+  createdDate: '2024-01-08T08:00:00Z',
+  lastUpdated: '2024-01-12T16:00:00Z',
+  prescription_file_path: '/files/prescriptions/plan-2.pdf',
+  prescription_file_type: 'application/pdf',
+  appointmentId: '2',
+  meta: { plan_id: 2 },
     steps: [
       {
         id: '2-1',

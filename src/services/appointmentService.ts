@@ -17,11 +17,16 @@ interface UpdateAppointmentData {
 
 
 const mockAppointments: Appointment[] = [
-  {
+  {
     id: '1',
     patientId: '1',
     doctorId: '1',
-    date: '2024-01-15T10:00',
+    date: '2024-01-15T10:00',
+    meta: {
+      appointmentId: '1',
+      appointment_time: '2024-01-15T10:00',
+      appointmentTime: '2024-01-15T10:00'
+    },
     status: 'scheduled',
     notes: 'Regular checkup'
   },
@@ -30,6 +35,11 @@ const mockAppointments: Appointment[] = [
     patientId: '2',
     doctorId: '2',
     date: '2024-01-16T14:30',
+    meta: {
+      appointmentId: '2',
+      appointment_time: '2024-01-16T14:30',
+      appointmentTime: '2024-01-16T14:30'
+    },
     status: 'completed',
     notes: 'Follow-up consultation'
   },
@@ -38,6 +48,11 @@ const mockAppointments: Appointment[] = [
     patientId: '3',
     doctorId: '3',
     date: '2024-01-17T09:15',
+    meta: {
+      appointmentId: '3',
+      appointment_time: '2024-01-17T09:15',
+      appointmentTime: '2024-01-17T09:15'
+    },
     status: 'scheduled',
     notes: 'Pre-surgery consultation'
   },
@@ -46,6 +61,11 @@ const mockAppointments: Appointment[] = [
     patientId: '4',
     doctorId: '1',
     date: '2024-01-18T11:00',
+    meta: {
+      appointmentId: '4',
+      appointment_time: '2024-01-18T11:00',
+      appointmentTime: '2024-01-18T11:00'
+    },
     status: 'cancelled',
     notes: 'Patient requested cancellation'
   },

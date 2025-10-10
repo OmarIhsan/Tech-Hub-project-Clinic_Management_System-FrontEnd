@@ -26,17 +26,109 @@ export const authAPI = {
 
 
 const mockPatients: Patient[] = [
-  { id: '1', name: 'John Doe', age: '30', contact: '123-456-7890' },
-  { id: '2', name: 'Jane Smith', age: '25', contact: '098-765-4321' },
-  { id: '3', name: 'Bob Johnson', age: '45', contact: '555-123-4567' },
-  { id: '4', name: 'Alice Brown', age: '35', contact: '444-567-8901' },
+  {
+    id: '1',
+    name: 'John Doe',
+    age: '30',
+    contact: '123-456-7890',
+    full_name: 'Johnathan Doe',
+    gender: 'male',
+    date_of_birth: '1994-06-01',
+    phone: '123-456-7890',
+    email: 'john.doe@example.com',
+    address: '123 Main St, Springfield',
+    meta: { patient_id: 1 }
+  },
+  {
+    id: '2',
+    name: 'Jane Smith',
+    age: '25',
+    contact: '098-765-4321',
+    full_name: 'Jane A. Smith',
+    gender: 'female',
+    date_of_birth: '1999-02-14',
+    phone: '098-765-4321',
+    email: 'jane.smith@example.com',
+    address: '456 Oak Ave, Springfield',
+    meta: { patient_id: 2 }
+  },
+  {
+    id: '3',
+    name: 'Bob Johnson',
+    age: '45',
+    contact: '555-123-4567',
+    full_name: 'Robert Johnson',
+    gender: 'male',
+    date_of_birth: '1980-11-21',
+    phone: '555-123-4567',
+    email: 'bob.johnson@example.com',
+    address: '789 Pine Rd, Springfield',
+    meta: { patient_id: 3 }
+  },
+  {
+    id: '4',
+    name: 'Alice Brown',
+    age: '35',
+    contact: '444-567-8901',
+    full_name: 'Alice Brown',
+    gender: 'female',
+    date_of_birth: '1989-05-12',
+    phone: '444-567-8901',
+    email: 'alice.brown@example.com',
+    address: '321 Cedar Ln, Springfield',
+    meta: { patient_id: 4 }
+  }
 ];
 
 const mockDoctors: Doctor[] = [
-  { id: '1', name: 'Dr. Wilson', specialty: 'Cardiology', contact: '111-222-3333' },
-  { id: '2', name: 'Dr. House', specialty: 'Internal Medicine', contact: '222-333-4444' },
-  { id: '3', name: 'Dr. Grey', specialty: 'Surgery', contact: '333-444-5555' },
-  { id: '4', name: 'Dr. Shepherd', specialty: 'Neurology', contact: '444-555-6666' },
+  {
+    id: '1',
+    name: 'Dr. Wilson',
+    specialty: 'Cardiology',
+    contact: '111-222-3333',
+    full_name: 'Dr. Andrew Wilson',
+    gender: 'male',
+    phone: '111-222-3333',
+    email: 'andrew.wilson@example.com',
+    hire_date: '2015-03-01',
+    meta: { doctor_id: 1 }
+  },
+  {
+    id: '2',
+    name: 'Dr. House',
+    specialty: 'Internal Medicine',
+    contact: '222-333-4444',
+    full_name: 'Dr. Gregory House',
+    gender: 'male',
+    phone: '222-333-4444',
+    email: 'greg.house@example.com',
+    hire_date: '2010-06-12',
+    meta: { doctor_id: 2 }
+  },
+  {
+    id: '3',
+    name: 'Dr. Grey',
+    specialty: 'Surgery',
+    contact: '333-444-5555',
+    full_name: 'Dr. Meredith Grey',
+    gender: 'female',
+    phone: '333-444-5555',
+    email: 'meredith.grey@example.com',
+    hire_date: '2018-09-03',
+    meta: { doctor_id: 3 }
+  },
+  {
+    id: '4',
+    name: 'Dr. Shepherd',
+    specialty: 'Neurology',
+    contact: '444-555-6666',
+    full_name: 'Dr. Derek Shepherd',
+    gender: 'male',
+    phone: '444-555-6666',
+    email: 'derek.shepherd@example.com',
+    hire_date: '2012-01-20',
+    meta: { doctor_id: 4 }
+  }
 ];
 
 
