@@ -77,8 +77,11 @@ This guide is tailored for a 2-member team, with tasks clearly separated for eac
 - [x] **Build doctor screens:**  
   - [x] List, Create, Edit forms (mock API, DoctorList.tsx, DoctorForm.tsx)
 - [ ] **Develop API services:**  
-  - [ ] `services/patientService.ts` (not found, handled in api.ts)
-  - [ ] `services/doctorService.ts` (not found, handled in api.ts)
+ - [x] **Develop API services:**  
+  - [x] `services/patientService.ts` (implemented inside `src/services/api.ts` as `patientAPI`)
+  - [x] `services/doctorService.ts` (implemented inside `src/services/api.ts` as `doctorAPI`)
+  - Note: A mock API is provided at `src/services/api.ts` (exports `patientAPI`, `doctorAPI`, `medicalRecordAPI`, etc.).
+    Use these for local CRUD testing — no backend required for basic development. Open the `/patients` and `/doctors` routes to exercise create/edit/delete flows.
 - [ ] **Integrate react-query:**  
   - [ ] For data fetching, caching, loading states (not implemented)
 - [ ] **Validation:**  

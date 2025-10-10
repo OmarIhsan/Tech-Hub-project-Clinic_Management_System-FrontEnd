@@ -17,7 +17,6 @@ import {
   CircularProgress,
   Divider,
 } from '@mui/material';
-import Grid from '@mui/material/Grid';
 import CheckIcon from '@mui/icons-material/Check';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import PauseIcon from '@mui/icons-material/Pause';
@@ -67,12 +66,12 @@ const TreatmentPlanDetail = () => {
     fetchData();
   }, [id]);
 
-  const updateStepStatus = async (stepId, newStatus) => {
+  const updateStepStatus = async (stepId: string, newStatus: import('../../types').TreatmentStep['status']): Promise<void> => {
     if (!treatmentPlan || !id) return;
     
     try {
       setUpdatingStep(stepId);
-      await treatmentPlanService.updateStepStatus(id, stepId, newStatus);
+  await treatmentPlanService.updateStepStatus(id, stepId, newStatus as any);
       
       
       setTreatmentPlan(prev => {
@@ -99,7 +98,7 @@ const TreatmentPlanDetail = () => {
     }
   };
 
-  const getStatusColor = (status) => {
+  const getStatusColor = (status: TreatmentPlan['status']): 'success' | 'primary' | 'default' | 'error' | 'warning' => {
     switch (status) {
       case 'active': return 'success';
       case 'completed': return 'primary';
@@ -110,7 +109,7 @@ const TreatmentPlanDetail = () => {
     }
   };
 
-  const getPriorityColor = (priority) => {
+  const getPriorityColor = (priority: TreatmentPlan['priority']): 'error' | 'warning' | 'info' | 'default' => {
     switch (priority) {
       case 'urgent': return 'error';
       case 'high': return 'warning';
@@ -120,18 +119,18 @@ const TreatmentPlanDetail = () => {
     }
   };
 
-  const getStepStatusIcon = (status) => {
+  const getStepStatusIcon = (status: string): React.ReactElement | undefined => {
     switch (status) {
       case 'completed': return <CheckIcon />;
       case 'in-progress': return <PlayArrowIcon />;
       case 'on-hold': return <PauseIcon />;
       case 'cancelled': return <CancelIcon />;
-      default: return null;
+      default: return undefined;
     }
   };
 
-  const calculateProgress = (steps) => {
-    if (steps.length === 0) return 0;
+  const calculateProgress = (steps: { status: string }[]): number => {
+    if (!steps || steps.length === 0) return 0;
     const completedSteps = steps.filter(step => step.status === 'completed').length;
     return (completedSteps / steps.length) * 100;
   };
@@ -207,44 +206,28 @@ const TreatmentPlanDetail = () => {
             </CardContent>
           </Card>
 
-          <Grid container spacing={3} sx={{ mb: 3 }}>
-            <Grid item xs={12} md={6}>
+          <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 3 }}>
+            <Box sx={{ flex: '1 1 300px' }}>
               <Card variant="outlined">
                 <CardContent>
-                  <Typography variant="h6" gutterBottom>
-                    Patient Information
-                  </Typography>
-                  <Typography variant="body1">
-                    <strong>Name:</strong> {patient?.name || 'Unknown'}
-                  </Typography>
-                  <Typography variant="body1">
-                    <strong>Age:</strong> {patient?.age || 'Unknown'}
-                  </Typography>
-                  <Typography variant="body1">
-                    <strong>Contact:</strong> {patient?.contact || 'Unknown'}
-                  </Typography>
+                  <Typography variant="h6" gutterBottom>Patient Information</Typography>
+                  <Typography variant="body1"><strong>Name:</strong> {patient?.name || 'Unknown'}</Typography>
+                  <Typography variant="body1"><strong>Age:</strong> {patient?.age || 'Unknown'}</Typography>
+                  <Typography variant="body1"><strong>Contact:</strong> {patient?.contact || 'Unknown'}</Typography>
                 </CardContent>
               </Card>
-            </Grid>
-            <Grid item xs={12} md={6}>
+            </Box>
+            <Box sx={{ flex: '1 1 300px' }}>
               <Card variant="outlined">
                 <CardContent>
-                  <Typography variant="h6" gutterBottom>
-                    Doctor Information
-                  </Typography>
-                  <Typography variant="body1">
-                    <strong>Name:</strong> {doctor?.name || 'Unknown'}
-                  </Typography>
-                  <Typography variant="body1">
-                    <strong>Specialty:</strong> {doctor?.specialty || 'Unknown'}
-                  </Typography>
-                  <Typography variant="body1">
-                    <strong>Contact:</strong> {doctor?.contact || 'Unknown'}
-                  </Typography>
+                  <Typography variant="h6" gutterBottom>Doctor Information</Typography>
+                  <Typography variant="body1"><strong>Name:</strong> {doctor?.name || 'Unknown'}</Typography>
+                  <Typography variant="body1"><strong>Specialty:</strong> {doctor?.specialty || 'Unknown'}</Typography>
+                  <Typography variant="body1"><strong>Contact:</strong> {doctor?.contact || 'Unknown'}</Typography>
                 </CardContent>
               </Card>
-            </Grid>
-          </Grid>
+            </Box>
+          </Box>
 
           
           <Card variant="outlined" sx={{ mb: 3 }}>
@@ -351,26 +334,26 @@ const TreatmentPlanDetail = () => {
               <Typography variant="h6" gutterBottom>
                 Plan Details
               </Typography>
-              <Grid container spacing={2}>
-                <Grid item xs={12} md={6}>
+              <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+                <Box sx={{ flex: '1 1 300px' }}>
                   <Typography variant="body2" color="text.secondary">Start Date:</Typography>
                   <Typography variant="body1">{new Date(treatmentPlan.startDate).toLocaleDateString()}</Typography>
-                </Grid>
-                <Grid item xs={12} md={6}>
+                </Box>
+                <Box sx={{ flex: '1 1 300px' }}>
                   <Typography variant="body2" color="text.secondary">Expected End Date:</Typography>
                   <Typography variant="body1">{new Date(treatmentPlan.expectedEndDate).toLocaleDateString()}</Typography>
-                </Grid>
-                <Grid item xs={12}>
+                </Box>
+                <Box sx={{ width: '100%' }}>
                   <Typography variant="body2" color="text.secondary">Description:</Typography>
                   <Typography variant="body1">{treatmentPlan.description}</Typography>
-                </Grid>
+                </Box>
                 {treatmentPlan.notes && (
-                  <Grid item xs={12}>
+                  <Box sx={{ width: '100%' }}>
                     <Typography variant="body2" color="text.secondary">Notes:</Typography>
                     <Typography variant="body1">{treatmentPlan.notes}</Typography>
-                  </Grid>
+                  </Box>
                 )}
-              </Grid>
+              </Box>
             </CardContent>
           </Card>
 

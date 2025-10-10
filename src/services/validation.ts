@@ -465,6 +465,95 @@ export default {
   appointmentValidation,
   treatmentPlanValidation,
   treatmentStepValidation,
+  // patient & doctor validation helpers added for basic forms
+  patientValidation: {
+    validateCreate: (data: unknown) => {
+      if (!data || typeof data !== 'object') {
+        throw new ValidationError('Invalid patient data');
+      }
+      const p = data as Record<string, unknown>;
+      if (!p.name || typeof p.name !== 'string' || p.name.trim().length < 2) {
+        throw new ValidationError('Name is required and must be at least 2 characters', 'name');
+      }
+      if (!p.age || typeof p.age !== 'string' || p.age.trim().length === 0) {
+        throw new ValidationError('Age is required', 'age');
+      }
+      if (!p.contact || typeof p.contact !== 'string' || p.contact.trim().length === 0) {
+        throw new ValidationError('Contact is required', 'contact');
+      }
+      return { name: p.name, age: p.age, contact: p.contact };
+    },
+    validateUpdate: (data: unknown) => {
+      if (!data || typeof data !== 'object') {
+        throw new ValidationError('Invalid patient data');
+      }
+      const p = data as Record<string, unknown>;
+      const out: Record<string, unknown> = {};
+      if (p.name !== undefined) {
+        if (typeof p.name !== 'string' || p.name.trim().length < 2) {
+          throw new ValidationError('Name must be at least 2 characters', 'name');
+        }
+        out.name = p.name;
+      }
+      if (p.age !== undefined) {
+        if (typeof p.age !== 'string' || p.age.trim().length === 0) {
+          throw new ValidationError('Age must be provided', 'age');
+        }
+        out.age = p.age;
+      }
+      if (p.contact !== undefined) {
+        if (typeof p.contact !== 'string' || p.contact.trim().length === 0) {
+          throw new ValidationError('Contact must be provided', 'contact');
+        }
+        out.contact = p.contact;
+      }
+      return out;
+    }
+  },
+  doctorValidation: {
+    validateCreate: (data: unknown) => {
+      if (!data || typeof data !== 'object') {
+        throw new ValidationError('Invalid doctor data');
+      }
+      const d = data as Record<string, unknown>;
+      if (!d.name || typeof d.name !== 'string' || d.name.trim().length < 2) {
+        throw new ValidationError('Name is required and must be at least 2 characters', 'name');
+      }
+      if (!d.specialty || typeof d.specialty !== 'string' || d.specialty.trim().length === 0) {
+        throw new ValidationError('Specialty is required', 'specialty');
+      }
+      if (!d.contact || typeof d.contact !== 'string' || d.contact.trim().length === 0) {
+        throw new ValidationError('Contact is required', 'contact');
+      }
+      return { name: d.name, specialty: d.specialty, contact: d.contact };
+    },
+    validateUpdate: (data: unknown) => {
+      if (!data || typeof data !== 'object') {
+        throw new ValidationError('Invalid doctor data');
+      }
+      const d = data as Record<string, unknown>;
+      const out: Record<string, unknown> = {};
+      if (d.name !== undefined) {
+        if (typeof d.name !== 'string' || d.name.trim().length < 2) {
+          throw new ValidationError('Name must be at least 2 characters', 'name');
+        }
+        out.name = d.name;
+      }
+      if (d.specialty !== undefined) {
+        if (typeof d.specialty !== 'string' || d.specialty.trim().length === 0) {
+          throw new ValidationError('Specialty must be provided', 'specialty');
+        }
+        out.specialty = d.specialty;
+      }
+      if (d.contact !== undefined) {
+        if (typeof d.contact !== 'string' || d.contact.trim().length === 0) {
+          throw new ValidationError('Contact must be provided', 'contact');
+        }
+        out.contact = d.contact;
+      }
+      return out;
+    }
+  },
   validationUtils,
   ValidationError,
 };

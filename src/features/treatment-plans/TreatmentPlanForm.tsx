@@ -11,7 +11,6 @@ import {
   Select,
   FormControl,
   InputLabel,
-  Grid,
   CircularProgress,
 } from '@mui/material';
 import { SelectChangeEvent } from '@mui/material/Select';
@@ -125,48 +124,24 @@ const TreatmentPlanForm = () => {
           )}
 
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <Grid container spacing={2}>
-              <Grid item xs={12} md={6}>
+            <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+              <Box sx={{ flex: '1 1 300px' }}>
                 <FormControl fullWidth>
                   <InputLabel>Patient *</InputLabel>
-                  <Select
-                    name="patientId"
-                    value={treatmentPlan.patientId || ''}
-                    label="Patient *"
-                    onChange={(e: SelectChangeEvent) => 
-                      setTreatmentPlan(prev => ({ ...prev, patientId: e.target.value }))
-                    }
-                    required
-                  >
-                    {patients.map((p) => (
-                      <MenuItem key={p.id} value={p.id}>
-                        {p.name}
-                      </MenuItem>
-                    ))}
+                  <Select name="patientId" value={treatmentPlan.patientId || ''} label="Patient *" onChange={(e: SelectChangeEvent) => setTreatmentPlan(prev => ({ ...prev, patientId: e.target.value }))} required>
+                    {patients.map((p) => (<MenuItem key={p.id} value={p.id}>{p.name}</MenuItem>))}
                   </Select>
                 </FormControl>
-              </Grid>
-              <Grid item xs={12} md={6}>
+              </Box>
+              <Box sx={{ flex: '1 1 300px' }}>
                 <FormControl fullWidth>
                   <InputLabel>Doctor *</InputLabel>
-                  <Select
-                    name="doctorId"
-                    value={treatmentPlan.doctorId || ''}
-                    label="Doctor *"
-                    onChange={(e: SelectChangeEvent) => 
-                      setTreatmentPlan(prev => ({ ...prev, doctorId: e.target.value }))
-                    }
-                    required
-                  >
-                    {doctors.map((d) => (
-                      <MenuItem key={d.id} value={d.id}>
-                        {d.name} - {d.specialty}
-                      </MenuItem>
-                    ))}
+                  <Select name="doctorId" value={treatmentPlan.doctorId || ''} label="Doctor *" onChange={(e: SelectChangeEvent) => setTreatmentPlan(prev => ({ ...prev, doctorId: e.target.value }))} required>
+                    {doctors.map((d) => (<MenuItem key={d.id} value={d.id}>{d.name} - {d.specialty}</MenuItem>))}
                   </Select>
                 </FormControl>
-              </Grid>
-            </Grid>
+              </Box>
+            </Box>
 
             <TextField
               label="Treatment Plan Title *"
@@ -198,48 +173,25 @@ const TreatmentPlanForm = () => {
               rows={3}
             />
 
-            <Grid container spacing={2}>
-              <Grid item xs={12} md={4}>
-                <TextField
-                  label="Start Date"
-                  name="startDate"
-                  type="date"
-                  value={treatmentPlan.startDate || ''}
-                  onChange={(e) => setTreatmentPlan(prev => ({ ...prev, startDate: e.target.value }))}
-                  fullWidth
-                  InputLabelProps={{ shrink: true }}
-                />
-              </Grid>
-              <Grid item xs={12} md={4}>
-                <TextField
-                  label="Expected End Date"
-                  name="expectedEndDate"
-                  type="date"
-                  value={treatmentPlan.expectedEndDate || ''}
-                  onChange={(e) => setTreatmentPlan(prev => ({ ...prev, expectedEndDate: e.target.value }))}
-                  fullWidth
-                  InputLabelProps={{ shrink: true }}
-                />
-              </Grid>
-              <Grid item xs={12} md={4}>
+            <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+              <Box sx={{ flex: '1 1 200px' }}>
+                <TextField label="Start Date" name="startDate" type="date" value={treatmentPlan.startDate || ''} onChange={(e) => setTreatmentPlan(prev => ({ ...prev, startDate: e.target.value }))} fullWidth InputLabelProps={{ shrink: true }} />
+              </Box>
+              <Box sx={{ flex: '1 1 200px' }}>
+                <TextField label="Expected End Date" name="expectedEndDate" type="date" value={treatmentPlan.expectedEndDate || ''} onChange={(e) => setTreatmentPlan(prev => ({ ...prev, expectedEndDate: e.target.value }))} fullWidth InputLabelProps={{ shrink: true }} />
+              </Box>
+              <Box sx={{ flex: '1 1 200px' }}>
                 <FormControl fullWidth>
                   <InputLabel>Priority</InputLabel>
-                  <Select
-                    name="priority"
-                    value={treatmentPlan.priority || 'medium'}
-                    label="Priority"
-                    onChange={(e: SelectChangeEvent) => 
-                      setTreatmentPlan(prev => ({ ...prev, priority: e.target.value as TreatmentPlan['priority'] }))
-                    }
-                  >
+                  <Select name="priority" value={treatmentPlan.priority || 'medium'} label="Priority" onChange={(e: SelectChangeEvent) => setTreatmentPlan(prev => ({ ...prev, priority: e.target.value as TreatmentPlan['priority'] }))}>
                     <MenuItem value="low">Low</MenuItem>
                     <MenuItem value="medium">Medium</MenuItem>
                     <MenuItem value="high">High</MenuItem>
                     <MenuItem value="urgent">Urgent</MenuItem>
                   </Select>
                 </FormControl>
-              </Grid>
-            </Grid>
+              </Box>
+            </Box>
 
             <TextField
               label="Additional Notes"

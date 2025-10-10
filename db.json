@@ -1,0 +1,9 @@
+{
+  "doctors": [
+    { "id": "1", "name": "Dr. Ali", "specialty": "Cardiology", "contact": "123456789" },
+    { "id": "2", "name": "Dr. Sara", "specialty": "Dermatology", "contact": "987654321" }
+  ],
+  "patients": [
+    { "id": "1", "name": "John Doe", "age": 30, "contact": "555-1234" }
+  ]
+}

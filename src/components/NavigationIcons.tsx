@@ -1,3 +1,4 @@
+import React from 'react';
 import { BottomNavigation, BottomNavigationAction, Paper } from '@mui/material';
 import PeopleIcon from '@mui/icons-material/People';
 import LocalHospitalIcon from '@mui/icons-material/LocalHospital';
@@ -6,11 +7,11 @@ import AssignmentIcon from '@mui/icons-material/Assignment';
 import { useNavigate } from 'react-router';
 import { useState } from 'react';
 
-const NavigationIcons = () => {
+const NavigationIcons: React.FC = () => {
   const [value, setValue] = useState(0);
   const navigate = useNavigate();
 
-  const handleChange = (_, newValue) => {
+  const handleChange = (event: React.SyntheticEvent | null, newValue: number) => {
     setValue(newValue);
     switch (newValue) {
       case 0:

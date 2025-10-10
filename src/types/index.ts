@@ -2,27 +2,14 @@ export interface Patient {
   id: string;
   name: string;
   age: string;
-  contact: string;
-  full_name?: string;
-  gender?: string;
-  date_of_birth?: string;
-  phone?: string;
-  email?: string;
-  address?: string;
-  meta?: Record<string, unknown>;
+  contact: string;
 }
 
 export interface Doctor {
   id: string;
   name: string;
   specialty: string;
-  contact: string;
-  full_name?: string;
-  gender?: string;
-  phone?: string;
-  email?: string;
-  hire_date?: string;
-  meta?: Record<string, unknown>;
+  contact: string;
 }
 
 
@@ -32,10 +19,7 @@ export interface Appointment {
   doctorId: string;
   date: string; 
   status: 'scheduled' | 'completed' | 'cancelled';
-  notes?: string;
-  appointment_time?: string;
-  appointment_id?: string;
-  meta?: Record<string, unknown>;
+  notes?: string;
 }
 
 export interface TreatmentStep {
@@ -43,7 +27,7 @@ export interface TreatmentStep {
   title: string;
   description: string;
   dueDate: string;
-  status: 'pending' | 'in-progress' | 'completed' | 'cancelled';
+  status: 'pending' | 'in-progress' | 'completed' | 'cancelled' | 'on-hold';
   assignedDoctorId?: string;
   notes?: string;
   completedDate?: string;
@@ -63,12 +47,7 @@ export interface TreatmentPlan {
   steps: TreatmentStep[];
   createdDate: string;
   lastUpdated: string;
-  notes?: string;
-  appointmentId?: string;
-  prescription_file_path?: string;
-  prescription_file_type?: string;
-  created_at?: string;
-  meta?: Record<string, unknown>;
+  notes?: string;
 }
 
 export interface MedicalFinding {
@@ -130,10 +109,5 @@ export interface MedicalRecord {
   status: 'draft' | 'finalized' | 'amended';
   createdDate: string;
   lastUpdated: string;
-  notes?: string;
-  current_meds_json?: Record<string, unknown> | unknown;
-  allergies?: string;
-  medical_conditions?: string;
-  created_at?: string;
-  meta?: Record<string, unknown>;
+  notes?: string;
 }
