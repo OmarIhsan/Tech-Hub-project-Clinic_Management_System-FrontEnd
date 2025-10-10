@@ -23,8 +23,8 @@ import { medicalRecordAPI, patientAPI, doctorAPI } from '../../services/api';
 import MButton from '../../components/MButton';
 import MOutlineButton from '../../components/MOutlineButton';
 
-const MedicalRecordDetail: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+const MedicalRecordDetail = () => {
+  const { id } = useParams();
   const navigate = useNavigate();
   const [medicalRecord, setMedicalRecord] = useState<MedicalRecord | null>(null);
   const [patient, setPatient] = useState<Patient | null>(null);
@@ -59,7 +59,7 @@ const MedicalRecordDetail: React.FC = () => {
     fetchData();
   }, [id]);
 
-  const getStatusColor = (status: MedicalRecord['status']) => {
+  const getStatusColor = (status) => {
     switch (status) {
       case 'draft': return 'warning';
       case 'finalized': return 'success';
@@ -68,7 +68,7 @@ const MedicalRecordDetail: React.FC = () => {
     }
   };
 
-  const getSeverityColor = (severity: string) => {
+  const getSeverityColor = (severity) => {
     switch (severity) {
       case 'mild': return 'success';
       case 'moderate': return 'warning';
@@ -78,7 +78,7 @@ const MedicalRecordDetail: React.FC = () => {
     }
   };
 
-  const getFindingTypeColor = (type: string) => {
+  const getFindingTypeColor = (type) => {
     switch (type) {
       case 'symptom': return 'primary';
       case 'observation': return 'secondary';

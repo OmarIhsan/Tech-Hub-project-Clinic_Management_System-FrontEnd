@@ -7,40 +7,51 @@ import {
   Typography,
   Box,
   Alert,
+  CircularProgress,
 } from '@mui/material';
 import MButton from '../../components/MButton';
-
-interface Doctor {
-  name: string;
-  specialty: string;
-  contact: string;
-}
+import { Doctor } from '../../types';
+import { doctorAPI } from '../../services/api';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import validation, { ValidationError } from '../../services/validation';
 
 const DoctorForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [doctor, setDoctor] = useState<Doctor>({ name: '', specialty: '', contact: '' });
+  const [doctor, setDoctor] = useState<Omit<Doctor, 'id'>>({
+    name: '',
+    specialty: '',
+    contact: '',
+  });
   const [error, setError] = useState<string>('');
+  const [submitting, setSubmitting] = useState(false);
+
+  const queryClient = useQueryClient();
+
+  const { data: loadedDoctor, isLoading: isFetching } = useQuery<Doctor | null>({
+    queryKey: ['doctor', id],
+    queryFn: async () => {
+      if (!id) return null;
+      return await doctorAPI.getById(id);
+    },
+    enabled: !!id,
+  });
 
   useEffect(() => {
-    if (id) {
-      fetch(`/api/doctors/${id}`)
-        .then((res) => {
-          if (!res.ok) throw new Error('Failed to fetch doctor');
-          return res.json();
-        })
-        .then((data) => {
-          setDoctor({
-            name: data.name || '',
-            specialty: data.specialty || '',
-            contact: data.contact || '',
-          });
-        })
-        .catch(() => {
-          setError('Failed to load doctor data');
-        });
+    if (loadedDoctor) {
+      setDoctor({ name: loadedDoctor.name, specialty: loadedDoctor.specialty, contact: loadedDoctor.contact });
     }
-  }, [id]);
+  }, [loadedDoctor]);
+
+  const createMutation = useMutation<Doctor, Error, Omit<Doctor, 'id'>>({
+    mutationFn: (d: Omit<Doctor, 'id'>) => doctorAPI.create(d),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['doctors'] }),
+  });
+
+  const updateMutation = useMutation<Doctor, Error, { id: string; d: Partial<Doctor> }>({
+    mutationFn: ({ id: pid, d }: { id: string; d: Partial<Doctor> }) => doctorAPI.update(pid, d),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['doctors'] }),
+  });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setDoctor({ ...doctor, [e.target.name]: e.target.value });
@@ -49,29 +60,37 @@ const DoctorForm = () => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError('');
-    if (!doctor.name || !doctor.specialty || !doctor.contact) {
-      setError('Please fill in all fields');
-      return;
-    }
 
     try {
-      const method = id ? 'PUT' : 'POST';
-      const url = id ? `/api/doctors/${id}` : '/api/doctors';
-      const res = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(doctor),
-      });
-
-      if (!res.ok) {
-        throw new Error('Failed to save doctor');
+      setSubmitting(true);
+      validation.doctorValidation.validateCreate(doctor);
+      if (id) {
+        await updateMutation.mutateAsync({ id, d: doctor });
+      } else {
+        await createMutation.mutateAsync(doctor);
       }
-
       navigate('/doctors');
-    } catch {
-      setError('Failed to save doctor');
+    } catch (err: any) {
+      if (err instanceof ValidationError) {
+        setError(err.message);
+      } else {
+        console.error('Failed to save doctor:', err);
+        setError('Failed to save doctor');
+      }
+    } finally {
+      setSubmitting(false);
     }
   };
+
+  if (isFetching || submitting) {
+    return (
+      <Container maxWidth="sm">
+        <Box sx={{ mt: 8, mb: 4, display: 'flex', justifyContent: 'center' }}>
+          <CircularProgress />
+        </Box>
+      </Container>
+    );
+  }
 
   return (
     <Container maxWidth="sm">
@@ -113,7 +132,13 @@ const DoctorForm = () => {
               margin="normal"
               required
             />
-            <MButton type="submit" variant="contained" fullWidth sx={{ mt: 3 }}>
+            <MButton
+              type="submit"
+              variant="contained"
+              fullWidth
+              sx={{ mt: 3 }}
+              disabled={submitting}
+            >
               {id ? 'Update Doctor' : 'Create Doctor'}
             </MButton>
           </form>

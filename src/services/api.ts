@@ -1,7 +1,6 @@
 import api from '../config/axios';
 import { Patient, Doctor, MedicalRecord } from '../types';
 
-
 export { default as appointmentService } from './appointmentService';
 export { default as treatmentPlanService } from './treatmentPlanService';
 
@@ -277,3 +276,4 @@ export const medicalRecordAPI = {
     mockMedicalRecords.splice(index, 1);
   },
 };
+ 

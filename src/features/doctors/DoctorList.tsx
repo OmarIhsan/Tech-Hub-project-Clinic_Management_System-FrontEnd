@@ -13,24 +13,48 @@ import {
 } from '@mui/material';
 import MOutlineButton from '../../components/MOutlineButton';
 import FloatingAddButton from '../../components/FloatingAddButton';
-
-interface Doctor {
-  id: string;
-  name: string;
-  specialty: string;
-  contact: string;
-}
+import { Doctor } from '../../types';
+import { doctorAPI } from '../../services/api';
+import { CircularProgress, Alert } from '@mui/material';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 const DoctorList = () => {
   const navigate = useNavigate();
-  const [doctors, setDoctors] = useState<Doctor[]>([]);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    fetch('/api/doctors')
-      .then((res) => res.json())
-      .then((data) => setDoctors(data))
-      .catch(() => setDoctors([]));
-  }, []);
+  const { data: doctors = [], isLoading, isError } = useQuery<Doctor[]>({
+    queryKey: ['doctors'],
+    queryFn: () => doctorAPI.getAll(),
+  });
+
+  const deleteMutation = useMutation<void, Error, string>({
+    mutationFn: (id: string) => doctorAPI.delete(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['doctors'] }),
+  });
+
+  const handleDelete = async (id: string) => {
+    const ok = window.confirm('Are you sure you want to delete this doctor?');
+    if (!ok) return;
+    try {
+      setActionLoading(id);
+      await deleteMutation.mutateAsync(id);
+    } catch (err) {
+      console.error('Failed to delete doctor:', err);
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <Container maxWidth="md">
+        <Box sx={{ mt: 8, mb: 4, display: 'flex', justifyContent: 'center' }}>
+          <CircularProgress />
+        </Box>
+      </Container>
+    );
+  }
 
   return (
     <Container maxWidth="md">
@@ -39,6 +63,8 @@ const DoctorList = () => {
           <Typography variant="h4" align="center" gutterBottom>
             Doctors
           </Typography>
+
+          {isError && <Alert severity="error">Failed to load doctors</Alert>}
 
           <Table>
             <TableHead>
@@ -60,8 +86,17 @@ const DoctorList = () => {
                       component={Link}
                       to={`/doctors/${doctor.id}/edit`}
                       size="small"
+                      sx={{ mr: 1 }}
                     >
                       Edit
+                    </MOutlineButton>
+                    <MOutlineButton
+                      color="error"
+                      size="small"
+                      onClick={() => handleDelete(doctor.id)}
+                      disabled={actionLoading === doctor.id}
+                    >
+                      {actionLoading === doctor.id ? 'Deleting...' : 'Delete'}
                     </MOutlineButton>
                   </TableCell>
                 </TableRow>

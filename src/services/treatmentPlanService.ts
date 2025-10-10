@@ -9,8 +9,8 @@ interface CreateTreatmentPlanData {
   diagnosis: string;
   startDate: string;
   expectedEndDate: string;
-  status: 'active' | 'completed' | 'cancelled' | 'on-hold';
-  priority: 'low' | 'medium' | 'high';
+    status: 'draft' | 'active' | 'completed' | 'cancelled' | 'on-hold';
+    priority: 'low' | 'medium' | 'high' | 'urgent';
   steps: Omit<TreatmentStep, 'id'>[];
   notes?: string;
 }
@@ -20,8 +20,8 @@ interface UpdateTreatmentPlanData {
   description?: string;
   diagnosis?: string;
   expectedEndDate?: string;
-  status?: 'active' | 'completed' | 'cancelled' | 'on-hold';
-  priority?: 'low' | 'medium' | 'high';
+    status?: 'draft' | 'active' | 'completed' | 'cancelled' | 'on-hold';
+    priority?: 'low' | 'medium' | 'high' | 'urgent';
   notes?: string;
 }
 

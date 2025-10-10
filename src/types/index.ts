@@ -27,7 +27,7 @@ export interface TreatmentStep {
   title: string;
   description: string;
   dueDate: string;
-  status: 'pending' | 'in-progress' | 'completed' | 'cancelled';
+  status: 'pending' | 'in-progress' | 'completed' | 'cancelled' | 'on-hold';
   assignedDoctorId?: string;
   notes?: string;
   completedDate?: string;

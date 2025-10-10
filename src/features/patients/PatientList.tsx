@@ -17,32 +17,39 @@ import { Patient } from '../../types';
 import { patientAPI } from '../../services/api';
 import MOutlineButton from '../../components/MOutlineButton';
 import FloatingAddButton from '../../components/FloatingAddButton';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 const PatientList = () => {
   const navigate = useNavigate();
-  const [patients, setPatients] = useState<Patient[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string>('');
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    const fetchPatients = async () => {
-      try {
-        setLoading(true);
-        setError('');
-        const data = await patientAPI.getAll();
-        setPatients(data);
-      } catch (err) {
-        setError('Failed to load patients. Please try again.');
-        console.error('Failed to fetch patients:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const { data: patients = [], isLoading, isError } = useQuery<Patient[]>({
+    queryKey: ['patients'],
+    queryFn: () => patientAPI.getAll(),
+  });
 
-    fetchPatients();
-  }, []);
+  const deleteMutation = useMutation<void, Error, string>({
+    mutationFn: (id: string) => patientAPI.delete(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['patients'] }),
+  });
 
-  if (loading) {
+  const handleDelete = async (id: string) => {
+    const ok = window.confirm('Are you sure you want to delete this patient?');
+    if (!ok) return;
+
+    try {
+      setActionLoading(id);
+      await deleteMutation.mutateAsync(id);
+    } catch (err) {
+      console.error('Failed to delete patient:', err);
+      // keep simple UI error
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  if (isLoading) {
     return (
       <Container maxWidth="md">
         <Box sx={{ mt: 8, mb: 4, display: 'flex', justifyContent: 'center' }}>
@@ -51,12 +58,11 @@ const PatientList = () => {
       </Container>
     );
   }
-
-  if (error) {
+  if (isError) {
     return (
       <Container maxWidth="md">
         <Box sx={{ mt: 8, mb: 4 }}>
-          <Alert severity="error">{error}</Alert>
+          <Alert severity="error">Failed to load patients. Please try again.</Alert>
         </Box>
       </Container>
     );
@@ -90,8 +96,17 @@ const PatientList = () => {
                       component={Link}
                       to={`/patients/${patient.id}/edit`}
                       size="small"
+                      sx={{ mr: 1 }}
                     >
                       Edit
+                    </MOutlineButton>
+                    <MOutlineButton
+                      color="error"
+                      size="small"
+                      onClick={() => handleDelete(patient.id)}
+                      disabled={actionLoading === patient.id}
+                    >
+                      {actionLoading === patient.id ? 'Deleting...' : 'Delete'}
                     </MOutlineButton>
                   </TableCell>
                 </TableRow>

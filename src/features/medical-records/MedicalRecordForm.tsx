@@ -21,16 +21,15 @@ import {
   Step,
   StepLabel,
 } from '@mui/material';
-import { SelectChangeEvent } from '@mui/material/Select';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { MedicalRecord, MedicalFinding, Patient, Doctor } from '../../types';
+import { MedicalRecord, Patient, Doctor } from '../../types';
 import { medicalRecordAPI, patientAPI, doctorAPI } from '../../services/api';
 import MButton from '../../components/MButton';
 import MOutlineButton from '../../components/MOutlineButton';
 
 const MedicalRecordForm = () => {
-  const { id } = useParams<{ id: string }>();
+  const { id } = useParams();
   const navigate = useNavigate();
   const [activeStep, setActiveStep] = useState(0);
   
@@ -57,8 +56,8 @@ const MedicalRecordForm = () => {
     status: 'draft'
   });
   
-  const [patients, setPatients] = useState<Patient[]>([]);
-  const [doctors, setDoctors] = useState<Doctor[]>([]);
+  const [patients, setPatients] = useState<Array<Patient>>([]);
+  const [doctors, setDoctors] = useState<Array<Doctor>>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string>('');
@@ -105,7 +104,7 @@ const MedicalRecordForm = () => {
   };
 
   const addFinding = () => {
-    const newFinding: MedicalFinding = {
+    const newFinding = {
       id: Date.now().toString(),
       type: 'symptom',
       title: '',
@@ -119,14 +118,14 @@ const MedicalRecordForm = () => {
     }));
   };
 
-  const removeFinding = (findingId: string) => {
+  const removeFinding = (findingId) => {
     setMedicalRecord(prev => ({
       ...prev,
       findings: (prev.findings || []).filter(f => f.id !== findingId)
     }));
   };
 
-  const updateFinding = (findingId: string, field: string, value: string) => {
+  const updateFinding = (findingId, field, value) => {
     setMedicalRecord(prev => ({
       ...prev,
       findings: (prev.findings || []).map(finding =>
@@ -146,7 +145,7 @@ const MedicalRecordForm = () => {
     setMedicalRecord(prev => ({
       ...prev,
       treatment: {
-        ...prev.treatment!,
+        ...prev.treatment,
         medications: [...(prev.treatment?.medications || []), newMedication]
       }
     }));
@@ -156,7 +155,7 @@ const MedicalRecordForm = () => {
     setMedicalRecord(prev => ({
       ...prev,
       treatment: {
-        ...prev.treatment!,
+        ...prev.treatment,
         recommendations: [...(prev.treatment?.recommendations || []), '']
       }
     }));
@@ -176,7 +175,7 @@ const MedicalRecordForm = () => {
       if (id) {
         await medicalRecordAPI.update(id, recordData);
       } else {
-        await medicalRecordAPI.create(recordData as Omit<MedicalRecord, 'id'>);
+        await medicalRecordAPI.create(recordData);
       }
       navigate('/medical-records');
     } catch (err) {
@@ -187,49 +186,49 @@ const MedicalRecordForm = () => {
     }
   };
 
-  const renderStepContent = (step: number) => {
+  const renderStepContent = (step) => {
     switch (step) {
       case 0:
         return (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             <Grid container spacing={2}>
               <Grid item xs={12} md={6}>
-                <FormControl fullWidth>
-                  <InputLabel id="patient-label">Patient *</InputLabel>
-                  <Select
-                    labelId="patient-label"
-                    value={medicalRecord.patientId || ''}
-                    label="Patient *"
-                    onChange={(e: SelectChangeEvent) =>
-                      setMedicalRecord(prev => ({ ...prev, patientId: e.target.value }))
-                    }
-                  >
-                    {patients.map((p) => (
-                      <MenuItem key={p.id} value={p.id}>
-                        {p.name}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
+          <FormControl fullWidth>
+            <InputLabel id="patient-label">Patient *</InputLabel>
+            <Select
+              labelId="patient-label"
+              value={medicalRecord.patientId || ''}
+              label="Patient *"
+              onChange={(e) =>
+                setMedicalRecord(prev => ({ ...prev, patientId: e.target.value }))
+              }
+            >
+              {patients.map((p) => (
+                <MenuItem key={p.id} value={p.id}>
+            {p.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
               </Grid>
               <Grid item xs={12} md={6}>
-                <FormControl fullWidth>
-                  <InputLabel id="doctor-label">Doctor *</InputLabel>
-                  <Select
-                    labelId="doctor-label"
-                    value={medicalRecord.doctorId || ''}
-                    label="Doctor *"
-                    onChange={(e: SelectChangeEvent) =>
-                      setMedicalRecord(prev => ({ ...prev, doctorId: e.target.value }))
-                    }
-                  >
-                    {doctors.map((d) => (
-                      <MenuItem key={d.id} value={d.id}>
-                        {d.name} - {d.specialty}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
+          <FormControl fullWidth>
+            <InputLabel id="doctor-label">Doctor *</InputLabel>
+            <Select
+              labelId="doctor-label"
+              value={medicalRecord.doctorId || ''}
+              label="Doctor *"
+              onChange={(e) =>
+                setMedicalRecord(prev => ({ ...prev, doctorId: e.target.value }))
+              }
+            >
+              {doctors.map((d) => (
+                <MenuItem key={d.id} value={d.id}>
+            {d.name} - {d.specialty}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
               </Grid>
             </Grid>
 
@@ -253,181 +252,181 @@ const MedicalRecordForm = () => {
           </Box>
         );
 
-      case 1:
+            case 1:
         return (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
             <Card variant="outlined">
               <CardContent>
-                <Typography variant="h6" gutterBottom>
-                  Primary Diagnosis
-                </Typography>
-                <Grid container spacing={2}>
-                  <Grid item xs={12} md={8}>
-                    <TextField
-                      label="Primary Diagnosis *"
-                      value={medicalRecord.diagnosis?.primary || ''}
-                      onChange={(e) => setMedicalRecord(prev => ({
-                        ...prev,
-                        diagnosis: { ...prev.diagnosis!, primary: e.target.value }
-                      }))}
-                      fullWidth
-                    />
-                  </Grid>
-                  <Grid item xs={12} md={4}>
-                    <TextField
-                      label="ICD-10 Code"
-                      value={medicalRecord.diagnosis?.icd10Code || ''}
-                      onChange={(e) => setMedicalRecord(prev => ({
-                        ...prev,
-                        diagnosis: { ...prev.diagnosis!, icd10Code: e.target.value }
-                      }))}
-                      fullWidth
-                    />
-                  </Grid>
-                </Grid>
-                
-                <Grid container spacing={2} sx={{ mt: 1 }}>
-                  <Grid item xs={12} md={6}>
-                    <FormControl fullWidth>
-                      <InputLabel>Severity</InputLabel>
-                      <Select
-                        value={medicalRecord.diagnosis?.severity || 'mild'}
-                        onChange={(e: SelectChangeEvent) => 
-                          setMedicalRecord(prev => ({
-                            ...prev,
-                            diagnosis: { ...prev.diagnosis!, severity: e.target.value as 'mild' | 'moderate' | 'severe' | 'critical' }
-                          }))
-                        }
-                      >
-                        <MenuItem value="mild">Mild</MenuItem>
-                        <MenuItem value="moderate">Moderate</MenuItem>
-                        <MenuItem value="severe">Severe</MenuItem>
-                        <MenuItem value="critical">Critical</MenuItem>
-                      </Select>
-                    </FormControl>
-                  </Grid>
-                  <Grid item xs={12} md={6}>
-                    <FormControl fullWidth>
-                      <InputLabel>Confidence</InputLabel>
-                      <Select
-                        value={medicalRecord.diagnosis?.confidence || 'suspected'}
-                        onChange={(e: SelectChangeEvent) => 
-                          setMedicalRecord(prev => ({
-                            ...prev,
-                            diagnosis: { ...prev.diagnosis!, confidence: e.target.value as 'suspected' | 'probable' | 'confirmed' }
-                          }))
-                        }
-                      >
-                        <MenuItem value="suspected">Suspected</MenuItem>
-                        <MenuItem value="probable">Probable</MenuItem>
-                        <MenuItem value="confirmed">Confirmed</MenuItem>
-                      </Select>
-                    </FormControl>
-                  </Grid>
-                </Grid>
+          <Typography variant="h6" gutterBottom>
+            Primary Diagnosis
+          </Typography>
+          <Grid container spacing={2}>
+            <Grid item xs={12} md={8}>
+              <TextField
+                label="Primary Diagnosis *"
+                value={medicalRecord.diagnosis?.primary || ''}
+                onChange={(e) => setMedicalRecord(prev => ({
+            ...prev,
+            diagnosis: { ...(prev.diagnosis || {}), primary: e.target.value }
+                }))}
+                fullWidth
+              />
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <TextField
+                label="ICD-10 Code"
+                value={medicalRecord.diagnosis?.icd10Code || ''}
+                onChange={(e) => setMedicalRecord(prev => ({
+            ...prev,
+            diagnosis: { ...(prev.diagnosis || {}), icd10Code: e.target.value }
+                }))}
+                fullWidth
+              />
+            </Grid>
+          </Grid>
+          
+          <Grid container spacing={2} sx={{ mt: 1 }}>
+            <Grid item xs={12} md={6}>
+              <FormControl fullWidth>
+                <InputLabel>Severity</InputLabel>
+                <Select
+            value={medicalRecord.diagnosis?.severity || 'mild'}
+            onChange={(e) => 
+              setMedicalRecord(prev => ({
+                ...prev,
+                diagnosis: { ...(prev.diagnosis || {}), severity: e.target.value }
+              }))
+            }
+                >
+            <MenuItem value="mild">Mild</MenuItem>
+            <MenuItem value="moderate">Moderate</MenuItem>
+            <MenuItem value="severe">Severe</MenuItem>
+            <MenuItem value="critical">Critical</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <FormControl fullWidth>
+                <InputLabel>Confidence</InputLabel>
+                <Select
+            value={medicalRecord.diagnosis?.confidence || 'suspected'}
+            onChange={(e) => 
+              setMedicalRecord(prev => ({
+                ...prev,
+                diagnosis: { ...(prev.diagnosis || {}), confidence: e.target.value }
+              }))
+            }
+                >
+            <MenuItem value="suspected">Suspected</MenuItem>
+            <MenuItem value="probable">Probable</MenuItem>
+            <MenuItem value="confirmed">Confirmed</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+          </Grid>
               </CardContent>
             </Card>
 
             <Card variant="outlined">
               <CardContent>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                  <Typography variant="h6">Clinical Findings</Typography>
-                  <MButton
-                    variant="outlined"
-                    startIcon={<AddIcon />}
-                    onClick={addFinding}
-                  >
-                    Add Finding
-                  </MButton>
-                </Box>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+            <Typography variant="h6">Clinical Findings</Typography>
+            <MButton
+              variant="outlined"
+              startIcon={<AddIcon />}
+              onClick={addFinding}
+            >
+              Add Finding
+            </MButton>
+          </Box>
 
-                {medicalRecord.findings?.map((finding, index) => (
-                  <Card key={finding.id} variant="outlined" sx={{ mb: 2 }}>
-                    <CardContent>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                        <Typography variant="subtitle2">Finding {index + 1}</Typography>
-                        <IconButton onClick={() => removeFinding(finding.id)} color="error">
-                          <DeleteIcon />
-                        </IconButton>
-                      </Box>
-                      
-                      <Grid container spacing={2}>
-                        <Grid item xs={12} md={4}>
-                          <FormControl fullWidth>
-                            <InputLabel>Type</InputLabel>
-                            <Select
-                              value={finding.type}
-                              onChange={(e: SelectChangeEvent) => 
-                                updateFinding(finding.id, 'type', e.target.value)
-                              }
-                            >
-                              <MenuItem value="symptom">Symptom</MenuItem>
-                              <MenuItem value="observation">Observation</MenuItem>
-                              <MenuItem value="test-result">Test Result</MenuItem>
-                              <MenuItem value="vital-sign">Vital Sign</MenuItem>
-                            </Select>
-                          </FormControl>
-                        </Grid>
-                        <Grid item xs={12} md={8}>
-                          <TextField
-                            label="Title"
-                            value={finding.title}
-                            onChange={(e) => updateFinding(finding.id, 'title', e.target.value)}
-                            fullWidth
-                          />
-                        </Grid>
-                      </Grid>
-                      
-                      <TextField
-                        label="Description"
-                        value={finding.description}
-                        onChange={(e) => updateFinding(finding.id, 'description', e.target.value)}
-                        fullWidth
-                        multiline
-                        rows={2}
-                        sx={{ mt: 2 }}
-                      />
-                    </CardContent>
-                  </Card>
-                ))}
+          {medicalRecord.findings?.map((finding, index) => (
+            <Card key={finding.id} variant="outlined" sx={{ mb: 2 }}>
+              <CardContent>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+            <Typography variant="subtitle2">Finding {index + 1}</Typography>
+            <IconButton onClick={() => removeFinding(finding.id)} color="error">
+              <DeleteIcon />
+            </IconButton>
+                </Box>
+                
+                <Grid container spacing={2}>
+            <Grid item xs={12} md={4}>
+              <FormControl fullWidth>
+                <InputLabel>Type</InputLabel>
+                <Select
+                  value={finding.type}
+                  onChange={(e) => 
+              updateFinding(finding.id, 'type', e.target.value)
+                  }
+                >
+                  <MenuItem value="symptom">Symptom</MenuItem>
+                  <MenuItem value="observation">Observation</MenuItem>
+                  <MenuItem value="test-result">Test Result</MenuItem>
+                  <MenuItem value="vital-sign">Vital Sign</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12} md={8}>
+              <TextField
+                label="Title"
+                value={finding.title}
+                onChange={(e) => updateFinding(finding.id, 'title', e.target.value)}
+                fullWidth
+              />
+            </Grid>
+                </Grid>
+                
+                <TextField
+            label="Description"
+            value={finding.description}
+            onChange={(e) => updateFinding(finding.id, 'description', e.target.value)}
+            fullWidth
+            multiline
+            rows={2}
+            sx={{ mt: 2 }}
+                />
+              </CardContent>
+            </Card>
+          ))}
               </CardContent>
             </Card>
           </Box>
         );
 
-      case 2:
+            case 2:
         return (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
             <Card variant="outlined">
               <CardContent>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                  <Typography variant="h6">Medications</Typography>
-                  <MButton
-                    variant="outlined"
-                    startIcon={<AddIcon />}
-                    onClick={addMedication}
-                  >
-                    Add Medication
-                  </MButton>
-                </Box>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+            <Typography variant="h6">Medications</Typography>
+            <MButton
+              variant="outlined"
+              startIcon={<AddIcon />}
+              onClick={addMedication}
+            >
+              Add Medication
+            </MButton>
+          </Box>
 
-                {medicalRecord.treatment?.medications?.map((med, index) => (
-                  <Card key={index} variant="outlined" sx={{ mb: 2 }}>
-                    <CardContent>
-                      <Typography variant="subtitle2" gutterBottom>
-                        Medication {index + 1}
-                      </Typography>
-                      <Grid container spacing={2}>
-                        <Grid item xs={12} md={6}>
-                          <TextField
-                            label="Medication Name"
-                            value={med.name}
-                            onChange={(e) => {
+          {medicalRecord.treatment?.medications?.map((med, index) => (
+            <Card key={index} variant="outlined" sx={{ mb: 2 }}>
+              <CardContent>
+                <Typography variant="subtitle2" gutterBottom>
+            Medication {index + 1}
+                </Typography>
+                <Grid container spacing={2}>
+            <Grid item xs={12} md={6}>
+              <TextField
+                label="Medication Name"
+                value={med.name}
+                onChange={(e) => {
                               const newMeds = [...(medicalRecord.treatment?.medications || [])];
                               newMeds[index] = { ...newMeds[index], name: e.target.value };
                               setMedicalRecord(prev => ({
                                 ...prev,
-                                treatment: { ...prev.treatment!, medications: newMeds }
+                                treatment: { ...prev.treatment, medications: newMeds }
                               }));
                             }}
                             fullWidth
@@ -442,7 +441,7 @@ const MedicalRecordForm = () => {
                               newMeds[index] = { ...newMeds[index], dosage: e.target.value };
                               setMedicalRecord(prev => ({
                                 ...prev,
-                                treatment: { ...prev.treatment!, medications: newMeds }
+                                treatment: { ...prev.treatment, medications: newMeds }
                               }));
                             }}
                             fullWidth
@@ -457,7 +456,7 @@ const MedicalRecordForm = () => {
                               newMeds[index] = { ...newMeds[index], frequency: e.target.value };
                               setMedicalRecord(prev => ({
                                 ...prev,
-                                treatment: { ...prev.treatment!, medications: newMeds }
+                                treatment: { ...prev.treatment, medications: newMeds }
                               }));
                             }}
                             fullWidth
@@ -493,7 +492,7 @@ const MedicalRecordForm = () => {
                       newRecs[index] = e.target.value;
                       setMedicalRecord(prev => ({
                         ...prev,
-                        treatment: { ...prev.treatment!, recommendations: newRecs }
+                        treatment: { ...prev.treatment, recommendations: newRecs }
                       }));
                     }}
                     fullWidth
@@ -516,8 +515,8 @@ const MedicalRecordForm = () => {
                 <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
                   Basic Information
                 </Typography>
-                <Typography>Patient: {patients.find(p => p.id === medicalRecord.patientId)?.name}</Typography>
-                <Typography>Doctor: {doctors.find(d => d.id === medicalRecord.doctorId)?.name}</Typography>
+                <Typography>Patient: {patients.find((p) => p.id === medicalRecord.patientId)?.name}</Typography>
+                <Typography>Doctor: {doctors.find((d) => d.id === medicalRecord.doctorId)?.name}</Typography>
                 <Typography>Date: {medicalRecord.recordDate}</Typography>
               </CardContent>
             </Card>
