@@ -20,7 +20,7 @@ import { treatmentPlanService, patientAPI, doctorAPI } from '../../services/api'
 import MButton from '../../components/MButton';
 import MOutlineButton from '../../components/MOutlineButton';
 
-const TreatmentPlanForm: React.FC = () => {
+const TreatmentPlanForm = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   
