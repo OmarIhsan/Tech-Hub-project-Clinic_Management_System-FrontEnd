@@ -60,7 +60,6 @@ export const patientAPI = {
   delete: async (id: string): Promise<void> => {
     await api.delete(`/patients/${id}`);
   },
-  // return id for consumers
   deleteAndReturnId: async (id: string): Promise<string> => {
     await delay(500);
     const index = mockPatients.findIndex(p => p.id === id);
