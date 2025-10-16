@@ -20,16 +20,7 @@ import {
   CheckCircle as CheckIcon
 } from '@mui/icons-material';
 
-type FileUploadProps = {
-  onFilesChange?: (files: File[]) => void;
-  acceptedTypes?: string[];
-  maxFileSize?: number;
-  maxFiles?: number;
-  multiple?: boolean;
-  disabled?: boolean;
-};
-
-const FileUpload: React.FC<FileUploadProps> = ({ 
+const FileUpload = ({ 
   onFilesChange, 
   acceptedTypes = ['.pdf', '.jpg', '.jpeg', '.png', '.doc', '.docx'],
   maxFileSize = 10 * 1024 * 1024, 
@@ -43,7 +34,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
   const [uploadProgress, setUploadProgress] = useState(0);
   const [error, setError] = useState('');
 
-  const formatFileSize = useCallback((bytes: number) => {
+  const formatFileSize = useCallback((bytes) => {
     if (bytes === 0) return '0 Bytes';
     const k = 1024;
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
@@ -51,11 +42,11 @@ const FileUpload: React.FC<FileUploadProps> = ({
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   }, []);
 
-  const validateFile = useCallback((file: File) => {
+  const validateFile = useCallback((file) => {
     if (file.size > maxFileSize) {
       return `File size exceeds ${formatFileSize(maxFileSize)} limit`;
     }
-    const fileExtension = '.' + file.name.split('.').pop()!.toLowerCase();
+    const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
     if (!acceptedTypes.includes(fileExtension)) {
       return `File type not supported. Accepted types: ${acceptedTypes.join(', ')}`;
     }
@@ -63,8 +54,8 @@ const FileUpload: React.FC<FileUploadProps> = ({
     return null;
   }, [maxFileSize, acceptedTypes, formatFileSize]);
 
-  const handleFiles = useCallback((fileList: FileList | File[]) => {
-    const newFiles = Array.from(fileList) as File[];
+  const handleFiles = useCallback((fileList) => {
+    const newFiles = Array.from(fileList);
     
     if (!multiple && newFiles.length > 1) {
       setError('Only one file is allowed');
@@ -79,7 +70,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
     const validFiles = [];
     const errors = [];
 
-    newFiles.forEach((file: File) => {
+    newFiles.forEach((file) => {
       const err = validateFile(file);
       if (err) {
         errors.push(`${file.name}: ${err}`);
