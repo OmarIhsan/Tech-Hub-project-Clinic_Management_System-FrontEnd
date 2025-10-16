@@ -14,6 +14,7 @@ import {
   CircularProgress,
 } from '@mui/material';
 import { treatmentPlanService, patientAPI, doctorAPI } from '../../services/api';
+import { TreatmentPlan } from '../../types';
 import MButton from '../../components/MButton';
 import MOutlineButton from '../../components/MOutlineButton';
 
@@ -21,7 +22,7 @@ const TreatmentPlanForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   
-  const [treatmentPlan, setTreatmentPlan] = useState({
+  const [treatmentPlan, setTreatmentPlan] = useState<Partial<TreatmentPlan>>({
     patientId: '',
     doctorId: '',
     title: '',
@@ -56,7 +57,7 @@ const TreatmentPlanForm = () => {
         if (id) {
           const treatmentPlanResponse = await treatmentPlanService.getById(id);
           const treatmentPlanData = treatmentPlanResponse.data;
-          setTreatmentPlan(treatmentPlanData);
+          setTreatmentPlan(treatmentPlanData as Partial<TreatmentPlan>);
         }
       } catch (err) {
         setError('Failed to load data. Please try again.');
@@ -76,17 +77,17 @@ const TreatmentPlanForm = () => {
     try {
       const planData = {
         ...treatmentPlan,
-        createdDate: treatmentPlan.createdDate || new Date().toISOString(),
+        createdDate: (treatmentPlan as any).createdDate || new Date().toISOString(),
         lastUpdated: new Date().toISOString(),
-      };
+      } as any;
 
       if (id) {
-        await treatmentPlanService.update(id, planData);
+        await treatmentPlanService.update(id, planData as any);
       } else {
         await treatmentPlanService.create({
-          ...planData,
-          steps: planData.steps || []
-        });
+          ...(planData as any),
+          steps: (planData as any).steps || []
+        } as any);
       }
       navigate('/treatment-plans');
     } catch (err) {
