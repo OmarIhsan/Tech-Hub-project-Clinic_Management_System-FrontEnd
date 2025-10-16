@@ -5,6 +5,7 @@ import {
   CardContent,
   Typography,
   Button,
+  Grid,
   Divider
 } from '@mui/material';
 import { FormInput, SelectField, DatePicker, FileUpload } from '../../components';
@@ -73,92 +74,101 @@ const FormComponentsDemo = () => {
             Reusable Form Components
           </Typography>
           
-          <Box>
-            <Typography variant="subtitle1" gutterBottom>
-              FormInput Component
-            </Typography>
-            
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2, mb: 2 }}>
-              <FormInput
-                label="Name"
-                value={formData.name}
-                onChange={handleInputChange('name')}
-                placeholder="Enter your name"
-                required
-              />
-              
-              <FormInput
-                label="Email"
-                type="email"
-                value={formData.email}
-                onChange={handleInputChange('email')}
-                placeholder="Enter your email"
-                helperText="We'll never share your email"
-              />
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <Box>
+              <Typography variant="subtitle1" gutterBottom>
+                FormInput Component
+              </Typography>
             </Box>
 
-            <Divider sx={{ my: 2 }} />
-            <Typography variant="subtitle1" gutterBottom>
-              SelectField Component
-            </Typography>
-            
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2, mb: 2 }}>
-              <SelectField
-                label="Category"
-                value={formData.category}
-                onChange={handleInputChange('category')}
-                options={categoryOptions}
-                placeholder="Choose a category"
-                required
-                error={false}
-                helperText=""
-              />
-              
-              <SelectField
-                label="Priority"
-                value={formData.priority}
-                onChange={handleInputChange('priority')}
-                options={priorityOptions}
-                placeholder="Select priority level"
-                error={false}
-                helperText=""
-              />
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+              <Box sx={{ flex: '1 1 300px' }}>
+                <FormInput
+                  label="Name"
+                  value={formData.name}
+                  onChange={handleInputChange('name')}
+                  placeholder="Enter your name"
+                  required
+                />
+              </Box>
+
+              <Box sx={{ flex: '1 1 300px' }}>
+                <FormInput
+                  label="Email"
+                  type="email"
+                  value={formData.email}
+                  onChange={handleInputChange('email')}
+                  placeholder="Enter your email"
+                  helperText="We'll never share your email"
+                />
+              </Box>
             </Box>
 
-            <Divider sx={{ my: 2 }} />
-            <Typography variant="subtitle1" gutterBottom>
-              DatePicker Component
-            </Typography>
-            
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2, mb: 2 }}>
-              <DatePicker
-                label="Start Date"
-                value={formData.startDate}
-                onChange={handleInputChange('startDate')}
-                required
-                error={false}
-                helperText=""
-                minDate=""
-                maxDate=""
-              />
-              
-              <DatePicker
-                label="End Date"
-                value={formData.endDate}
-                onChange={handleInputChange('endDate')}
-                minDate={formData.startDate}
-                error={false}
-                helperText=""
-                maxDate=""
-              />
+            <Box>
+              <Divider sx={{ my: 2 }} />
+              <Typography variant="subtitle1" gutterBottom>
+                SelectField Component
+              </Typography>
             </Box>
 
-            <Divider sx={{ my: 2 }} />
-            <Typography variant="subtitle1" gutterBottom>
-              FileUpload Component
-            </Typography>
-            
-            <Box sx={{ mb: 2 }}>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+              <Box sx={{ flex: '1 1 300px' }}>
+                <SelectField
+                  label="Category"
+                  value={formData.category}
+                  onChange={handleInputChange('category')}
+                  options={categoryOptions}
+                  placeholder="Choose a category"
+                  required
+                />
+              </Box>
+
+              <Box sx={{ flex: '1 1 300px' }}>
+                <SelectField
+                  label="Priority"
+                  value={formData.priority}
+                  onChange={handleInputChange('priority')}
+                  options={priorityOptions}
+                  placeholder="Select priority level"
+                />
+              </Box>
+            </Box>
+
+            <Box>
+              <Divider sx={{ my: 2 }} />
+              <Typography variant="subtitle1" gutterBottom>
+                DatePicker Component
+              </Typography>
+            </Box>
+
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+              <Box sx={{ flex: '1 1 300px' }}>
+                <DatePicker
+                  label="Start Date"
+                  value={formData.startDate}
+                  onChange={handleInputChange('startDate')}
+                  required
+                />
+              </Box>
+
+              <Box sx={{ flex: '1 1 300px' }}>
+                <DatePicker
+                  label="End Date"
+                  value={formData.endDate}
+                  onChange={handleInputChange('endDate')}
+                  minDate={formData.startDate}
+                />
+              </Box>
+            </Box>
+
+            <Box>
+              <Divider sx={{ my: 2 }} />
+              <Typography variant="subtitle1" gutterBottom>
+                FileUpload Component
+              </Typography>
+            </Box>
+
+            <Box>
               <FileUpload
                 onFilesChange={handleFilesChange}
                 acceptedTypes={['.pdf', '.jpg', '.jpeg', '.png', '.doc', '.docx']}
@@ -168,20 +178,22 @@ const FormComponentsDemo = () => {
               />
             </Box>
 
-            <Box sx={{ mt: 3, display: 'flex', gap: 2 }}>
-              <Button 
-                variant="contained" 
-                onClick={handleSubmit}
-                disabled={!formData.name || !formData.category}
-              >
-                Submit Form
-              </Button>
-              <Button 
-                variant="outlined" 
-                onClick={handleReset}
-              >
-                Reset
-              </Button>
+            <Box>
+              <Box sx={{ mt: 3, display: 'flex', gap: 2 }}>
+                <Button 
+                  variant="contained" 
+                  onClick={handleSubmit}
+                  disabled={!formData.name || !formData.category}
+                >
+                  Submit Form
+                </Button>
+                <Button 
+                  variant="outlined" 
+                  onClick={handleReset}
+                >
+                  Reset
+                </Button>
+              </Box>
             </Box>
           </Box>
         </CardContent>

@@ -60,6 +60,14 @@ export const patientAPI = {
   delete: async (id: string): Promise<void> => {
     await api.delete(`/patients/${id}`);
   },
+  // return id for consumers
+  deleteAndReturnId: async (id: string): Promise<string> => {
+    await delay(500);
+    const index = mockPatients.findIndex(p => p.id === id);
+    if (index === -1) throw new Error('Patient not found');
+    mockPatients.splice(index, 1);
+    return id;
+  },
 };
 
 export const doctorAPI = {
@@ -81,6 +89,13 @@ export const doctorAPI = {
   },
   delete: async (id: string): Promise<void> => {
     await api.delete(`/doctors/${id}`);
+  },
+  deleteAndReturnId: async (id: string): Promise<string> => {
+    await delay(500);
+    const index = mockDoctors.findIndex(d => d.id === id);
+    if (index === -1) throw new Error('Doctor not found');
+    mockDoctors.splice(index, 1);
+    return id;
   },
 };
 

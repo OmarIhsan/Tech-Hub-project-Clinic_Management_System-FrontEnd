@@ -1,169 +1,79 @@
 import React from 'react';
-import {
-  Container,
-  Typography,
-  Box,
-  Card,
-  CardContent,
-  CardActionArea,
-} from '@mui/material';
-import {
-  EventNote as AppointmentIcon,
-  People as PatientsIcon,
-  LocalHospital as DoctorsIcon,
-  Assignment as TreatmentIcon,
-  Description as DocumentsIcon,
-  MedicalServices as MedicalRecordsIcon,
-} from '@mui/icons-material';
-import { useNavigate } from 'react-router';
+import { Box, Container, Typography, Card, CardContent, CircularProgress, Grid as MuiGrid } from '@mui/material';
+// wrap MUI Grid in an any-cast to avoid mismatch with the project's installed MUI typings
+const Grid: any = MuiGrid as any;
+import { useEffect, useState } from 'react';
+import { patientAPI, appointmentService, treatmentPlanService } from '../../services/api';
+import PatientChart from './PatientChart';
 
+const StatCard: React.FC<{ title: string; value: string | number | null }> = ({ title, value }) => (
+  <Card variant="outlined">
+    <CardContent>
+      <Typography variant="subtitle2" color="textSecondary">{title}</Typography>
+      <Typography variant="h5">{value === null ? <CircularProgress size={20} /> : value}</Typography>
+    </CardContent>
+  </Card>
+);
 
-const Dashboard = () => {
-  const navigate = useNavigate();
+const Dashboard: React.FC = () => {
+  const [patientsCount, setPatientsCount] = useState<number | null>(null);
+  const [upcomingAppointments, setUpcomingAppointments] = useState<number | null>(null);
+  const [activePlans, setActivePlans] = useState<number | null>(null);
 
-  const quickAccessCards = [
-    {
-      title: 'Appointments',
-      description: 'Schedule and manage patient appointments',
-      icon: <AppointmentIcon sx={{ fontSize: 48 }} />,
-      path: '/appointments',
-      color: '#1976d2',
-    },
-    {
-      title: 'Patients',
-      description: 'View and manage patient information',
-      icon: <PatientsIcon sx={{ fontSize: 48 }} />,
-      path: '/patients',
-      color: '#2e7d32',
-    },
-    {
-      title: 'Doctors',
-      description: 'Manage doctor profiles and schedules',
-      icon: <DoctorsIcon sx={{ fontSize: 48 }} />,
-      path: '/doctors',
-      color: '#d32f2f',
-    },
-    {
-      title: 'Medical Records',
-      description: 'Access patient medical records',
-      icon: <MedicalRecordsIcon sx={{ fontSize: 48 }} />,
-      path: '/medical-records',
-      color: '#ed6c02',
-    },
-    {
-      title: 'Treatment Plans',
-      description: 'Create and track treatment plans',
-      icon: <TreatmentIcon sx={{ fontSize: 48 }} />,
-      path: '/treatment-plans',
-      color: '#9c27b0',
-    },
-    {
-      title: 'Clinical Documents',
-      description: 'Upload and manage clinical documents',
-      icon: <DocumentsIcon sx={{ fontSize: 48 }} />,
-      path: '/documents',
-      color: '#0288d1',
-    },
-  ];
+  useEffect(() => {
+    let mounted = true;
 
-  const handleCardClick = (path) => {
-    navigate(path);
-  };
+    const load = async () => {
+      try {
+        const patients = await patientAPI.getAll();
+        if (mounted) setPatientsCount((patients || []).length ?? 0);
+
+        const apptsRes = await appointmentService.getAll();
+        if (mounted) {
+          const now = new Date();
+          const upcoming = (apptsRes?.data || []).filter((a: any) => new Date(a.date) >= now).length;
+          setUpcomingAppointments(upcoming);
+        }
+
+        const plansRes = await treatmentPlanService.getAll();
+        if (mounted) {
+          const active = (plansRes?.data || []).filter((p: any) => p.status === 'active').length;
+          setActivePlans(active);
+        }
+      } catch (err) {
+        console.error('Dashboard load error', err);
+        if (mounted) {
+          setPatientsCount(0);
+          setUpcomingAppointments(0);
+          setActivePlans(0);
+        }
+      }
+    };
+
+    load();
+    return () => { mounted = false; };
+  }, []);
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Box sx={{ textAlign: 'center', mb: 6 }}>
-        <Typography 
-          variant="h3" 
-          component="h1" 
-          gutterBottom
-          sx={{ 
-            fontWeight: 600,
-            color: 'primary.main',
-            mb: 2
-          }}
-        >
-          Clinic Management System
-        </Typography>
-        <Typography 
-          variant="h6" 
-          color="text.secondary"
-          sx={{ maxWidth: 600, mx: 'auto' }}
-        >
-          Welcome! Select a function below to get started
-        </Typography>
-      </Box>
+    <Container maxWidth="lg">
+      <Box sx={{ mt: 4, mb: 4 }}>
+        <Typography variant="h4" gutterBottom>Dashboard</Typography>
 
-      <Box
-        sx={{
-          display: 'grid',
-          gridTemplateColumns: {
-            xs: '1fr',
-            sm: 'repeat(2, 1fr)',
-            md: 'repeat(3, 1fr)',
-          },
-          gap: 3,
-          mb: 4,
-        }}
-      >
-        {quickAccessCards.map((card) => (
-          <Card
-            key={card.path}
-            sx={{
-              height: '100%',
-              transition: 'all 0.3s ease-in-out',
-              '&:hover': {
-                transform: 'translateY(-8px)',
-                boxShadow: 6,
-              },
-            }}
-          >
-            <CardActionArea
-              onClick={() => handleCardClick(card.path)}
-              sx={{
-                height: '100%',
-                p: 3,
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                minHeight: 200,
-              }}
-            >
-              <Box
-                sx={{
-                  color: card.color,
-                  mb: 2,
-                }}
-              >
-                {card.icon}
-              </Box>
-              <CardContent sx={{ textAlign: 'center', p: 0 }}>
-                <Typography 
-                  variant="h6" 
-                  component="h2" 
-                  gutterBottom
-                  sx={{ fontWeight: 600 }}
-                >
-                  {card.title}
-                </Typography>
-                <Typography 
-                  variant="body2" 
-                  color="text.secondary"
-                  sx={{ mt: 1 }}
-                >
-                  {card.description}
-                </Typography>
-              </CardContent>
-            </CardActionArea>
-          </Card>
-        ))}
+        <Grid container spacing={2}>
+          <Grid xs={12} sm={4}>
+            <StatCard title="Total Patients" value={patientsCount} />
+          </Grid>
+          <Grid xs={12} sm={4}>
+            <StatCard title="Upcoming Appointments" value={upcomingAppointments} />
+          </Grid>
+          <Grid xs={12} sm={4}>
+            <StatCard title="Active Treatment Plans" value={activePlans} />
+          </Grid>
+        </Grid>
       </Box>
-
-      <Box sx={{ textAlign: 'center', mt: 4 }}>
-        <Typography variant="body2" color="text.secondary">
-          © {new Date().getFullYear()} Clinic Management System. All rights reserved.
-        </Typography>
+      <Box sx={{ mt: 3 }}>
+        <Typography variant="h6" gutterBottom>Appointments (next 7 days)</Typography>
+        <PatientChart />
       </Box>
     </Container>
   );

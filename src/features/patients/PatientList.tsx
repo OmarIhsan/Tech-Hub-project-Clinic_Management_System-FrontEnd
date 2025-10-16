@@ -28,8 +28,12 @@ const PatientList = () => {
     queryFn: () => patientAPI.getAll()
   });
 
-  const deleteMutation = useMutation({
-    mutationFn: (id) => patientAPI.delete(id),
+  const deleteMutation = useMutation<string, unknown, string>({
+    mutationFn: async (id: string) => {
+      // call the delete() (returns void) then return the id so callers receive the id string
+      await patientAPI.delete(id);
+      return id;
+    },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['patients'] })
   });
 

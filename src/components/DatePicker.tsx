@@ -13,12 +13,12 @@ const DatePicker = ({
   label,
   value,
   onChange,
-  error,
-  helperText,
+  error = undefined,
+  helperText = undefined,
   disabled = false,
   required = false,
-  minDate,
-  maxDate,
+  minDate = undefined,
+  maxDate = undefined,
   ...props
 }) => {
   const hasError = Boolean(error);

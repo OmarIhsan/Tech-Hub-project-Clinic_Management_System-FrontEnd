@@ -20,7 +20,16 @@ import {
   CheckCircle as CheckIcon
 } from '@mui/icons-material';
 
-const FileUpload = ({ 
+type FileUploadProps = {
+  onFilesChange?: (files: File[]) => void;
+  acceptedTypes?: string[];
+  maxFileSize?: number;
+  maxFiles?: number;
+  multiple?: boolean;
+  disabled?: boolean;
+};
+
+const FileUpload: React.FC<FileUploadProps> = ({ 
   onFilesChange, 
   acceptedTypes = ['.pdf', '.jpg', '.jpeg', '.png', '.doc', '.docx'],
   maxFileSize = 10 * 1024 * 1024, 
@@ -34,19 +43,7 @@ const FileUpload = ({
   const [uploadProgress, setUploadProgress] = useState(0);
   const [error, setError] = useState('');
 
-  const validateFile = useCallback((file) => {
-    if (file.size > maxFileSize) {
-      return `File size exceeds ${formatFileSize(maxFileSize)} limit`;
-    }
-    const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
-    if (!acceptedTypes.includes(fileExtension)) {
-      return `File type not supported. Accepted types: ${acceptedTypes.join(', ')}`;
-    }
-
-    return null;
-  }, [maxFileSize, acceptedTypes, formatFileSize]);
-
-  const formatFileSize = useCallback((bytes) => {
+  const formatFileSize = useCallback((bytes: number) => {
     if (bytes === 0) return '0 Bytes';
     const k = 1024;
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
@@ -54,8 +51,20 @@ const FileUpload = ({
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   }, []);
 
-  const handleFiles = useCallback((fileList) => {
-    const newFiles = Array.from(fileList);
+  const validateFile = useCallback((file: File) => {
+    if (file.size > maxFileSize) {
+      return `File size exceeds ${formatFileSize(maxFileSize)} limit`;
+    }
+    const fileExtension = '.' + file.name.split('.').pop()!.toLowerCase();
+    if (!acceptedTypes.includes(fileExtension)) {
+      return `File type not supported. Accepted types: ${acceptedTypes.join(', ')}`;
+    }
+
+    return null;
+  }, [maxFileSize, acceptedTypes, formatFileSize]);
+
+  const handleFiles = useCallback((fileList: FileList | File[]) => {
+    const newFiles = Array.from(fileList) as File[];
     
     if (!multiple && newFiles.length > 1) {
       setError('Only one file is allowed');
@@ -70,10 +79,10 @@ const FileUpload = ({
     const validFiles = [];
     const errors = [];
 
-    newFiles.forEach(file => {
-      const error = validateFile(file);
-      if (error) {
-        errors.push(`${file.name}: ${error}`);
+    newFiles.forEach((file: File) => {
+      const err = validateFile(file);
+      if (err) {
+        errors.push(`${file.name}: ${err}`);
       } else {
         validFiles.push({
           id: Date.now() + Math.random(),

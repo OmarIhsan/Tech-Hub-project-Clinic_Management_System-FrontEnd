@@ -65,17 +65,15 @@ const DocumentUploadDialog = ({ open, onClose, onSuccess, patientId = null }) =>
       }
 
       const uploadPromises = formData.files.map(async (file) => {
+        // Map UI file/document shape to the clinicalDocumentService expected shape
         const documentData = {
-          patientId: formData.patientId,
-          title: file.name, // Added required title property
-          documentType: formData.documentType,
-          description: formData.description,
-          filename: file.name,
-          fileSize: file.size,
-          mimeType: file.type,
-          fileUrl: URL.createObjectURL(file), 
-          uploadDate: new Date().toISOString(),
-          uploadedBy: 'current-user-id' 
+          // service expects numeric patient_id; fallback to 0 when not provided (mock data)
+          patient_id: formData.patientId ? Number(formData.patientId) : 0,
+          document_type: formData.documentType,
+          // use a blob URL as a placeholder file path in the mock service
+          file_path: URL.createObjectURL(file),
+          // include some metadata in the description field if provided
+          consent_version: undefined,
         };
 
         return await clinicalDocumentService.create(documentData);
@@ -151,8 +149,6 @@ const DocumentUploadDialog = ({ open, onClose, onSuccess, patientId = null }) =>
             required
             disabled={loading}
             placeholder="Select document type"
-            error={!!error && !formData.documentType}
-            helperText={!!error && !formData.documentType ? error : ''}
           />
 
           <FormInput

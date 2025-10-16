@@ -27,8 +27,8 @@ const DoctorList = () => {
     queryFn: () => doctorAPI.getAll(),
   });
 
-  const deleteMutation = useMutation({
-    mutationFn: async (id) => {
+  const deleteMutation = useMutation<string, unknown, string>({
+    mutationFn: async (id: string) => {
       await doctorAPI.delete(id);
       return id;
     },
