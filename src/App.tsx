@@ -1,34 +1,47 @@
 
-import { useState } from 'react'
 import { BrowserRouter } from 'react-router';
-import './App.css'
+import { Box, AppBar, Toolbar, Typography } from '@mui/material';
+import { LocalHospital as ClinicIcon } from '@mui/icons-material';
 import AppRouter from './router/Router';
-import MButton from './components/MButton';
-import NavigationIcons from "./components/NavigationIcons";
+import NavigationIcons from './components/NavigationIcons';
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
     <BrowserRouter>
-      <>
-        <h1>Vite + React</h1>
-        <div className="card">
-          <MButton onClick={() => setCount((count) => count + 1)}>
-            count is {count}
-          </MButton>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test HMR
-          </p>
-        </div>
-        <p className="read-the-docs">
-          Click on the Vite and React logos to learn more
-        </p>
-      </>
-      <AppRouter />
-      <NavigationIcons />
+      <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+        <AppBar position="static" elevation={2}>
+          <Toolbar>
+            <ClinicIcon sx={{ mr: 2, fontSize: 32 }} />
+            <Typography 
+              variant="h6" 
+              component="div" 
+              sx={{ 
+                flexGrow: 1,
+                fontWeight: 600,
+                letterSpacing: 0.5
+              }}
+            >
+              Clinic Management System
+            </Typography>
+          </Toolbar>
+        </AppBar>
+
+        <Box 
+          component="main" 
+          sx={{ 
+            flexGrow: 1,
+            pb: 8,
+            backgroundColor: '#f5f5f5',
+            minHeight: 'calc(100vh - 64px)'
+          }}
+        >
+          <AppRouter />
+        </Box>
+
+        <NavigationIcons />
+      </Box>
     </BrowserRouter>
   );
-};
+}
 
-export default App
+export default App;

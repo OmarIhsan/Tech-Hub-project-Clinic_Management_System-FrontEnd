@@ -1,5 +1,6 @@
-import { Routes, Route, Navigate } from 'react-router';
+import { Routes, Route } from 'react-router';
 import Login from '../features/auth/Login';
+import Dashboard from '../features/dashboard/Dashboard';
 import PatientList from '../features/patients/PatientList';
 import PatientForm from '../features/patients/PatientForm';
 import DoctorList from '../features/doctors/DoctorList';
@@ -17,7 +18,7 @@ import FormComponentsDemo from '../features/demo/FormComponentsDemo';
 
 const AppRouter = () => (
   <Routes>
-    <Route path="/" element={<Navigate to="/appointments" replace />} />
+    <Route path="/" element={<Dashboard />} />
     <Route path="/login" element={<Login />} />
     <Route path="/patients" element={<PatientList />} />
     <Route path="/patients/new" element={<PatientForm />} />
