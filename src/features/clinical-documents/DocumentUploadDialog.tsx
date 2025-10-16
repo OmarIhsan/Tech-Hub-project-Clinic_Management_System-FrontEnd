@@ -66,8 +66,9 @@ const DocumentUploadDialog = ({ open, onClose, onSuccess, patientId = null }) =>
 
       const uploadPromises = formData.files.map(async (file) => {
         const documentData = {
-          patient_id: formData.patientId ? Number(formData.patientId) : 0,
-          document_type: formData.documentType,
+          patientId: formData.patientId ? String(formData.patientId) : '',
+          documentType: formData.documentType,
+          title: file.name,
           file_path: URL.createObjectURL(file),
           consent_version: undefined,
         };

@@ -19,7 +19,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 const DoctorList = () => {
   const navigate = useNavigate();
-  const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [actionLoading, setActionLoading] = useState(null);
   const queryClient = useQueryClient();
 
   const { data: doctors = [], isLoading, isError } = useQuery({
@@ -27,10 +27,9 @@ const DoctorList = () => {
     queryFn: () => doctorAPI.getAll(),
   });
 
-  const deleteMutation = useMutation<string, unknown, string>({
-    mutationFn: async (id: string) => {
+  const deleteMutation = useMutation({
+    mutationFn: async (id) => {
       await doctorAPI.delete(id);
-      return id;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['doctors'] }),
   });

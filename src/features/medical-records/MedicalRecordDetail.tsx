@@ -22,7 +22,7 @@ import { medicalRecordAPI, patientAPI, doctorAPI } from '../../services/api';
 import MButton from '../../components/MButton';
 import MOutlineButton from '../../components/MOutlineButton';
 
-const Grid: any = (props: any) => <Box {...props} />;
+const Grid = (props) => <Box {...props} />;
 
 const MedicalRecordDetail = () => {
   const { id } = useParams();

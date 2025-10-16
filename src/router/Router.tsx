@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 import { Routes, Route } from 'react-router';
-=======
-import { Routes, Route, Navigate } from 'react-router-dom';
->>>>>>> 6f497a09cd892c5d6acbb8077daca9325321de45
 import Login from '../features/auth/Login';
 import Dashboard from '../features/dashboard/Dashboard';
 import PatientList from '../features/patients/PatientList';
@@ -19,7 +15,6 @@ import MedicalRecordDetail from '../features/medical-records/MedicalRecordDetail
 import MedicalRecordForm from '../features/medical-records/MedicalRecordForm';
 import ClinicalDocumentList from '../features/clinical-documents/ClinicalDocumentList';
 import FormComponentsDemo from '../features/demo/FormComponentsDemo';
-import Dashboard from '../features/dashboard/Dashboard';
 import ProtectedRoute from '../components/ProtectedRoute';
 import RoleRoute from '../components/RoleRoute';
 
@@ -27,26 +22,25 @@ const AppRouter = () => (
   <Routes>
     <Route path="/" element={<Dashboard />} />
     <Route path="/login" element={<Login />} />
-  <Route path="/patients" element={<ProtectedRoute><PatientList /></ProtectedRoute>} />
+    <Route path="/patients" element={<ProtectedRoute><PatientList /></ProtectedRoute>} />
     <Route path="/patients/new" element={<PatientForm />} />
-  <Route path="/patients/:id/edit" element={<ProtectedRoute><PatientForm /></ProtectedRoute>} />
-  <Route path="/doctors" element={<ProtectedRoute><RoleRoute role="admin"><DoctorList /></RoleRoute></ProtectedRoute>} />
-  <Route path="/doctors/new" element={<ProtectedRoute><RoleRoute role="admin"><DoctorForm /></RoleRoute></ProtectedRoute>} />
-  <Route path="/doctors/:id/edit" element={<ProtectedRoute><RoleRoute role="admin"><DoctorForm /></RoleRoute></ProtectedRoute>} />
-  <Route path="/appointments" element={<ProtectedRoute><AppointmentList /></ProtectedRoute>} />
-  <Route path="/appointments/new" element={<ProtectedRoute><AppointmentForm /></ProtectedRoute>} />
-  <Route path="/appointments/:id/edit" element={<ProtectedRoute><AppointmentForm /></ProtectedRoute>} />
-  <Route path="/treatment-plans" element={<ProtectedRoute><TreatmentPlanList /></ProtectedRoute>} />
-  <Route path="/treatment-plans/new" element={<ProtectedRoute><TreatmentPlanForm /></ProtectedRoute>} />
-  <Route path="/treatment-plans/:id" element={<ProtectedRoute><TreatmentPlanDetail /></ProtectedRoute>} />
-  <Route path="/treatment-plans/:id/edit" element={<ProtectedRoute><TreatmentPlanForm /></ProtectedRoute>} />
-  <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-  <Route path="/medical-records" element={<ProtectedRoute><MedicalRecordList /></ProtectedRoute>} />
-  <Route path="/medical-records/new" element={<ProtectedRoute><MedicalRecordForm /></ProtectedRoute>} />
-  <Route path="/medical-records/:id" element={<ProtectedRoute><MedicalRecordDetail /></ProtectedRoute>} />
-  <Route path="/medical-records/:id/edit" element={<ProtectedRoute><MedicalRecordForm /></ProtectedRoute>} />
-  <Route path="/documents" element={<ProtectedRoute><ClinicalDocumentList /></ProtectedRoute>} />
-  <Route path="/demo" element={<ProtectedRoute><FormComponentsDemo /></ProtectedRoute>} />
+    <Route path="/patients/:id/edit" element={<ProtectedRoute><PatientForm /></ProtectedRoute>} />
+    <Route path="/doctors" element={<ProtectedRoute><RoleRoute role="admin"><DoctorList /></RoleRoute></ProtectedRoute>} />
+    <Route path="/doctors/new" element={<ProtectedRoute><RoleRoute role="admin"><DoctorForm /></RoleRoute></ProtectedRoute>} />
+    <Route path="/doctors/:id/edit" element={<ProtectedRoute><RoleRoute role="admin"><DoctorForm /></RoleRoute></ProtectedRoute>} />
+    <Route path="/appointments" element={<ProtectedRoute><AppointmentList /></ProtectedRoute>} />
+    <Route path="/appointments/new" element={<ProtectedRoute><AppointmentForm /></ProtectedRoute>} />
+    <Route path="/appointments/:id/edit" element={<ProtectedRoute><AppointmentForm /></ProtectedRoute>} />
+    <Route path="/treatment-plans" element={<ProtectedRoute><TreatmentPlanList /></ProtectedRoute>} />
+    <Route path="/treatment-plans/new" element={<ProtectedRoute><TreatmentPlanForm /></ProtectedRoute>} />
+    <Route path="/treatment-plans/:id" element={<ProtectedRoute><TreatmentPlanDetail /></ProtectedRoute>} />
+    <Route path="/treatment-plans/:id/edit" element={<ProtectedRoute><TreatmentPlanForm /></ProtectedRoute>} />
+    <Route path="/medical-records" element={<ProtectedRoute><MedicalRecordList /></ProtectedRoute>} />
+    <Route path="/medical-records/new" element={<ProtectedRoute><MedicalRecordForm /></ProtectedRoute>} />
+    <Route path="/medical-records/:id" element={<ProtectedRoute><MedicalRecordDetail /></ProtectedRoute>} />
+    <Route path="/medical-records/:id/edit" element={<ProtectedRoute><MedicalRecordForm /></ProtectedRoute>} />
+    <Route path="/documents" element={<ProtectedRoute><ClinicalDocumentList /></ProtectedRoute>} />
+    <Route path="/demo" element={<ProtectedRoute><FormComponentsDemo /></ProtectedRoute>} />
   </Routes>
 );
 

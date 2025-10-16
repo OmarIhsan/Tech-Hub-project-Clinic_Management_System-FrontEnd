@@ -22,20 +22,18 @@ import {
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { Patient, Doctor } from '../../types';
 import { medicalRecordAPI, patientAPI, doctorAPI } from '../../services/api';
 import MButton from '../../components/MButton';
 import MOutlineButton from '../../components/MOutlineButton';
 
-const Grid: any = (props: any) => <Box {...props} />;
+const Grid = (props) => <Box {...props} />;
 
 const MedicalRecordForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [activeStep, setActiveStep] = useState(0);
   
-  // use any here for nested fields to avoid strict compatibility errors while editing form fields
-  const [medicalRecord, setMedicalRecord] = useState<any>({
+  const [medicalRecord, setMedicalRecord] = useState({
     patientId: '',
     doctorId: '',
     recordDate: new Date().toISOString().split('T')[0],
@@ -58,11 +56,11 @@ const MedicalRecordForm = () => {
     status: 'draft'
   });
   
-  const [patients, setPatients] = useState<Array<Patient>>([]);
-  const [doctors, setDoctors] = useState<Array<Doctor>>([]);
+  const [patients, setPatients] = useState([]);
+  const [doctors, setDoctors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string>('');
+  const [error, setError] = useState('');
 
   const formSteps = ['Basic Information', 'Diagnosis & Findings', 'Treatment Plan', 'Review'];
 
@@ -114,10 +112,9 @@ const MedicalRecordForm = () => {
       recordedDate: new Date().toISOString(),
       recordedBy: medicalRecord.doctorId || ''
     };
-    // cast to any to satisfy strict MedicalFinding union types in types.ts
     setMedicalRecord(prev => ({
       ...prev,
-      findings: [...(prev.findings || []), newFinding as any]
+      findings: [...(prev.findings || []), newFinding]
     }));
   };
 
@@ -132,7 +129,7 @@ const MedicalRecordForm = () => {
     setMedicalRecord(prev => ({
       ...prev,
       findings: (prev.findings || []).map(finding =>
-        finding.id === findingId ? ({ ...finding, [field]: value } as any) : finding
+        finding.id === findingId ? { ...finding, [field]: value } : finding
       )
     }));
   };
@@ -176,9 +173,9 @@ const MedicalRecordForm = () => {
       };
 
       if (id) {
-        await medicalRecordAPI.update(id, recordData as any);
+        await medicalRecordAPI.update(id, recordData);
       } else {
-        await medicalRecordAPI.create(recordData as any);
+        await medicalRecordAPI.create(recordData);
       }
       navigate('/medical-records');
     } catch (err) {

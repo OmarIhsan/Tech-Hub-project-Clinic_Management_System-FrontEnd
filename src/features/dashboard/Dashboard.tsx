@@ -1,12 +1,9 @@
-import React from 'react';
-import { Box, Container, Typography, Card, CardContent, CircularProgress, Grid as MuiGrid } from '@mui/material';
-// wrap MUI Grid in an any-cast to avoid mismatch with the project's installed MUI typings
-const Grid: any = MuiGrid as any;
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { Box, Container, Typography, Card, CardContent, CircularProgress } from '@mui/material';
 import { patientAPI, appointmentService, treatmentPlanService } from '../../services/api';
 import PatientChart from './PatientChart';
 
-const StatCard: React.FC<{ title: string; value: string | number | null }> = ({ title, value }) => (
+const StatCard = ({ title, value }) => (
   <Card variant="outlined">
     <CardContent>
       <Typography variant="subtitle2" color="textSecondary">{title}</Typography>
@@ -15,10 +12,10 @@ const StatCard: React.FC<{ title: string; value: string | number | null }> = ({ 
   </Card>
 );
 
-const Dashboard: React.FC = () => {
-  const [patientsCount, setPatientsCount] = useState<number | null>(null);
-  const [upcomingAppointments, setUpcomingAppointments] = useState<number | null>(null);
-  const [activePlans, setActivePlans] = useState<number | null>(null);
+const Dashboard = () => {
+  const [patientsCount, setPatientsCount] = useState(null);
+  const [upcomingAppointments, setUpcomingAppointments] = useState(null);
+  const [activePlans, setActivePlans] = useState(null);
 
   useEffect(() => {
     let mounted = true;
@@ -31,13 +28,13 @@ const Dashboard: React.FC = () => {
         const apptsRes = await appointmentService.getAll();
         if (mounted) {
           const now = new Date();
-          const upcoming = (apptsRes?.data || []).filter((a: any) => new Date(a.date) >= now).length;
+          const upcoming = (apptsRes?.data || []).filter((a) => new Date(a.date) >= now).length;
           setUpcomingAppointments(upcoming);
         }
 
         const plansRes = await treatmentPlanService.getAll();
         if (mounted) {
-          const active = (plansRes?.data || []).filter((p: any) => p.status === 'active').length;
+          const active = (plansRes?.data || []).filter((p) => p.status === 'active').length;
           setActivePlans(active);
         }
       } catch (err) {
@@ -59,17 +56,15 @@ const Dashboard: React.FC = () => {
       <Box sx={{ mt: 4, mb: 4 }}>
         <Typography variant="h4" gutterBottom>Dashboard</Typography>
 
-        <Grid container spacing={2}>
-          <Grid xs={12} sm={4}>
-            <StatCard title="Total Patients" value={patientsCount} />
-          </Grid>
-          <Grid xs={12} sm={4}>
-            <StatCard title="Upcoming Appointments" value={upcomingAppointments} />
-          </Grid>
-          <Grid xs={12} sm={4}>
-            <StatCard title="Active Treatment Plans" value={activePlans} />
-          </Grid>
-        </Grid>
+        <Box sx={{ 
+          display: 'grid', 
+          gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, 1fr)' }, 
+          gap: 2 
+        }}>
+          <StatCard title="Total Patients" value={patientsCount} />
+          <StatCard title="Upcoming Appointments" value={upcomingAppointments} />
+          <StatCard title="Active Treatment Plans" value={activePlans} />
+        </Box>
       </Box>
       <Box sx={{ mt: 3 }}>
         <Typography variant="h6" gutterBottom>Appointments (next 7 days)</Typography>
