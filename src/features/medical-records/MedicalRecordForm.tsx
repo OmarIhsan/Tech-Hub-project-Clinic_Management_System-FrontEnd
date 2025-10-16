@@ -22,13 +22,11 @@ import {
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { MedicalRecord, Patient, Doctor } from '../../types';
+import { Patient, Doctor } from '../../types';
 import { medicalRecordAPI, patientAPI, doctorAPI } from '../../services/api';
 import MButton from '../../components/MButton';
 import MOutlineButton from '../../components/MOutlineButton';
 
-// Lightweight local Grid shim to avoid MUI Grid typing overloads in this file.
-// It simply renders a Box but accepts any props to keep JSX usage unchanged.
 const Grid: any = (props: any) => <Box {...props} />;
 
 const MedicalRecordForm = () => {
