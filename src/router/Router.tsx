@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import { Routes, Route } from 'react-router';
+=======
+import { Routes, Route, Navigate } from 'react-router-dom';
+>>>>>>> 6f497a09cd892c5d6acbb8077daca9325321de45
 import Login from '../features/auth/Login';
 import Dashboard from '../features/dashboard/Dashboard';
 import PatientList from '../features/patients/PatientList';

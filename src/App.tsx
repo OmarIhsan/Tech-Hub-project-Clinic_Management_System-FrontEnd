@@ -1,7 +1,13 @@
 
+<<<<<<< HEAD
 import { BrowserRouter } from 'react-router';
 import { Box, AppBar, Toolbar, Typography } from '@mui/material';
 import { LocalHospital as ClinicIcon } from '@mui/icons-material';
+=======
+import { useState } from 'react'
+import { BrowserRouter } from 'react-router-dom';
+import './App.css'
+>>>>>>> 6f497a09cd892c5d6acbb8077daca9325321de45
 import AppRouter from './router/Router';
 import NavigationIcons from './components/NavigationIcons';
 

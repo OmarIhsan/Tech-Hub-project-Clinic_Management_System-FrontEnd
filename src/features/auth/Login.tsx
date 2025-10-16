@@ -8,7 +8,7 @@ import {
   Alert,
 } from '@mui/material';
 import { useAuthContext } from '../../context/useAuthContext';
-import { useNavigate } from 'react-router';
+import { useNavigate } from 'react-router-dom';
 import MButton from '../../components/MButton';
 
 const Login = () => {

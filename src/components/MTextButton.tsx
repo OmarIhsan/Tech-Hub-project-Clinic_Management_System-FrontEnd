@@ -1,5 +1,5 @@
 import { Button, ButtonProps } from '@mui/material';
-import { LinkProps } from 'react-router';
+import { LinkProps } from 'react-router-dom';
 
 type MTextButtonProps = ButtonProps & Partial<LinkProps>;
 

@@ -1,8 +1,12 @@
 import React, { useState, useEffect } from 'react';
+<<<<<<< HEAD
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { appointmentValidationSchema } from '../../validation/schemas';
 import { useNavigate, useParams } from 'react-router';
+=======
+import { useNavigate, useParams } from 'react-router-dom';
+>>>>>>> 6f497a09cd892c5d6acbb8077daca9325321de45
 import {
   Container,
   Paper,
