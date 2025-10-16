@@ -28,10 +28,10 @@ const PatientList = () => {
     queryFn: () => patientAPI.getAll()
   });
 
-  const deleteMutation = useMutation({
-    mutationFn: async (id) => {
-      await patientAPI.delete(id);
-      return id;
+  const deleteMutation = useMutation<string, unknown, string>({
+    mutationFn: async (id: string) => {
+      // use deleteAndReturnId provided by the mock service so mutationFn returns the id (matches expected type)
+      return await patientAPI.deleteAndReturnId(id);
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['patients'] })
   });

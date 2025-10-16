@@ -27,10 +27,9 @@ const DoctorList = () => {
     queryFn: () => doctorAPI.getAll(),
   });
 
-  const deleteMutation = useMutation({
-    mutationFn: async (id) => {
-      await doctorAPI.delete(id);
-      return id;
+  const deleteMutation = useMutation<string, unknown, string>({
+    mutationFn: async (id: string) => {
+      return await doctorAPI.deleteAndReturnId(id);
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['doctors'] }),
   });
