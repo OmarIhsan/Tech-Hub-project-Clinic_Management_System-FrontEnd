@@ -1,7 +1,14 @@
 import React from 'react';
-import { TextField } from '@mui/material';
+import { TextField, TextFieldProps } from '@mui/material';
 
-const FormInput = React.forwardRef(
+type AnyProps = { [k: string]: any };
+
+type FormInputProps = TextFieldProps & {
+  error?: boolean | string | null;
+  helperText?: React.ReactNode;
+};
+
+const FormInput = React.forwardRef<HTMLDivElement, FormInputProps>(
   ({ error, helperText, ...props }, ref) => {
     const hasError = Boolean(error);
     const errorText = typeof error === 'string' ? error : helperText;

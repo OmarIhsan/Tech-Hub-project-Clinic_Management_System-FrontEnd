@@ -74,95 +74,101 @@ const FormComponentsDemo = () => {
             Reusable Form Components
           </Typography>
           
-          <Grid container spacing={2}>
-            <Grid item xs={12}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <Box>
               <Typography variant="subtitle1" gutterBottom>
                 FormInput Component
               </Typography>
-            </Grid>
-            
-            <Grid item xs={12} md={6}>
-              <FormInput
-                label="Name"
-                value={formData.name}
-                onChange={handleInputChange('name')}
-                placeholder="Enter your name"
-                required
-              />
-            </Grid>
-            
-            <Grid item xs={12} md={6}>
-              <FormInput
-                label="Email"
-                type="email"
-                value={formData.email}
-                onChange={handleInputChange('email')}
-                placeholder="Enter your email"
-                helperText="We'll never share your email"
-              />
-            </Grid>
+            </Box>
 
-            <Grid item xs={12}>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+              <Box sx={{ flex: '1 1 300px' }}>
+                <FormInput
+                  label="Name"
+                  value={formData.name}
+                  onChange={handleInputChange('name')}
+                  placeholder="Enter your name"
+                  required
+                />
+              </Box>
+
+              <Box sx={{ flex: '1 1 300px' }}>
+                <FormInput
+                  label="Email"
+                  type="email"
+                  value={formData.email}
+                  onChange={handleInputChange('email')}
+                  placeholder="Enter your email"
+                  helperText="We'll never share your email"
+                />
+              </Box>
+            </Box>
+
+            <Box>
               <Divider sx={{ my: 2 }} />
               <Typography variant="subtitle1" gutterBottom>
                 SelectField Component
               </Typography>
-            </Grid>
-            
-            <Grid item xs={12} md={6}>
-              <SelectField
-                label="Category"
-                value={formData.category}
-                onChange={handleInputChange('category')}
-                options={categoryOptions}
-                placeholder="Choose a category"
-                required
-              />
-            </Grid>
-            
-            <Grid item xs={12} md={6}>
-              <SelectField
-                label="Priority"
-                value={formData.priority}
-                onChange={handleInputChange('priority')}
-                options={priorityOptions}
-                placeholder="Select priority level"
-              />
-            </Grid>
+            </Box>
 
-            <Grid item xs={12}>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+              <Box sx={{ flex: '1 1 300px' }}>
+                <SelectField
+                  label="Category"
+                  value={formData.category}
+                  onChange={handleInputChange('category')}
+                  options={categoryOptions}
+                  placeholder="Choose a category"
+                  required
+                />
+              </Box>
+
+              <Box sx={{ flex: '1 1 300px' }}>
+                <SelectField
+                  label="Priority"
+                  value={formData.priority}
+                  onChange={handleInputChange('priority')}
+                  options={priorityOptions}
+                  placeholder="Select priority level"
+                />
+              </Box>
+            </Box>
+
+            <Box>
               <Divider sx={{ my: 2 }} />
               <Typography variant="subtitle1" gutterBottom>
                 DatePicker Component
               </Typography>
-            </Grid>
-            
-            <Grid item xs={12} md={6}>
-              <DatePicker
-                label="Start Date"
-                value={formData.startDate}
-                onChange={handleInputChange('startDate')}
-                required
-              />
-            </Grid>
-            
-            <Grid item xs={12} md={6}>
-              <DatePicker
-                label="End Date"
-                value={formData.endDate}
-                onChange={handleInputChange('endDate')}
-                minDate={formData.startDate}
-              />
-            </Grid>
+            </Box>
 
-            <Grid item xs={12}>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+              <Box sx={{ flex: '1 1 300px' }}>
+                <DatePicker
+                  label="Start Date"
+                  value={formData.startDate}
+                  onChange={handleInputChange('startDate')}
+                  required
+                />
+              </Box>
+
+              <Box sx={{ flex: '1 1 300px' }}>
+                <DatePicker
+                  label="End Date"
+                  value={formData.endDate}
+                  onChange={handleInputChange('endDate')}
+                  minDate={formData.startDate}
+                />
+              </Box>
+            </Box>
+
+            <Box>
               <Divider sx={{ my: 2 }} />
               <Typography variant="subtitle1" gutterBottom>
                 FileUpload Component
               </Typography>
-            </Grid>
-            
-            <Grid item xs={12}>
+            </Box>
+
+            <Box>
               <FileUpload
                 onFilesChange={handleFilesChange}
                 acceptedTypes={['.pdf', '.jpg', '.jpeg', '.png', '.doc', '.docx']}
@@ -170,9 +176,9 @@ const FormComponentsDemo = () => {
                 maxFiles={3}
                 multiple={true}
               />
-            </Grid>
+            </Box>
 
-            <Grid item xs={12}>
+            <Box>
               <Box sx={{ mt: 3, display: 'flex', gap: 2 }}>
                 <Button 
                   variant="contained" 
@@ -188,8 +194,8 @@ const FormComponentsDemo = () => {
                   Reset
                 </Button>
               </Box>
-            </Grid>
-          </Grid>
+            </Box>
+          </Box>
         </CardContent>
       </Card>
 

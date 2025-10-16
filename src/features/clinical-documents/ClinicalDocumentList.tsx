@@ -47,8 +47,8 @@ const ClinicalDocumentList = () => {
     try {
       setLoading(true);
       setError('');
-      const documentsData = await clinicalDocumentService.getAll();
-      setDocuments(documentsData);
+  const documentsResponse = await clinicalDocumentService.getAll();
+  setDocuments(documentsResponse.data || []);
     } catch (err) {
       setError('Failed to load documents. Please try again.');
       console.error('Failed to fetch documents:', err);

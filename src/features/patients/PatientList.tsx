@@ -29,7 +29,10 @@ const PatientList = () => {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => patientAPI.delete(id),
+    mutationFn: async (id) => {
+      await patientAPI.delete(id);
+      return id;
+    },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['patients'] })
   });
 

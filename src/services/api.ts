@@ -249,6 +249,14 @@ export const patientAPI = {
     if (index === -1) throw new Error('Patient not found');
     mockPatients.splice(index, 1);
   },
+  // return id for consumers
+  deleteAndReturnId: async (id: string): Promise<string> => {
+    await delay(500);
+    const index = mockPatients.findIndex(p => p.id === id);
+    if (index === -1) throw new Error('Patient not found');
+    mockPatients.splice(index, 1);
+    return id;
+  },
 };
 
 export const doctorAPI = {
@@ -280,6 +288,13 @@ export const doctorAPI = {
     const index = mockDoctors.findIndex(d => d.id === id);
     if (index === -1) throw new Error('Doctor not found');
     mockDoctors.splice(index, 1);
+  },
+  deleteAndReturnId: async (id: string): Promise<string> => {
+    await delay(500);
+    const index = mockDoctors.findIndex(d => d.id === id);
+    if (index === -1) throw new Error('Doctor not found');
+    mockDoctors.splice(index, 1);
+    return id;
   },
 };
 

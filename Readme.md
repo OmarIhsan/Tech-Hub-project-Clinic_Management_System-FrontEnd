@@ -176,12 +176,13 @@ This split should help both developers work efficiently and avoid stepping on ea
 ### Omar Aziz: Dashboard & UI Components
 
 - [ ] **Dashboard module:**  
-  - [ ] `features/dashboard`: Total patients, upcoming appointments, active plans (not implemented)
-  - [ ] Use MUI `Card`, `Grid`, `Typography`
-  - [ ] (Optional) Add charts with `recharts`
+  - [ *] `features/dashboard`: Total patients, upcoming appointments, active plans (not implemented)
+  - [ *] Use MUI `Card`, `Grid`, `Typography`
+  - [* ] (Optional) Add charts with `recharts`
 - [ ] **Reusable UI components:**  
-  - [ ] `components/TableView`: Table with pagination (not implemented)
-  - [ ] `components/StatusBadge`: Appointment/treatment status (not implemented)
+  - [ ] `components/TableView`: Table with pagination (implemented at `src/components/TableView.tsx`)
+    - Usage: import { TableView } from 'src/components' — provides a simple client-side paginated table.
+  - [ *] `components/StatusBadge`: Appointment/treatment status (not implemented)
 - [ ] **Role-based access wrappers:**  
   - [ ] Implement wrappers if needed (not implemented)
 
