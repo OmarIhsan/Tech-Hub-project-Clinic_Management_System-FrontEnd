@@ -1,7 +1,6 @@
 import React from 'react';
 import { TextField, TextFieldProps } from '@mui/material';
 
-type AnyProps = { [k: string]: any };
 
 type FormInputProps = TextFieldProps & {
   error?: boolean | string | null;
