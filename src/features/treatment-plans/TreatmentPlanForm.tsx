@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import { treatmentPlanValidationSchema } from '../../validation/schemas';
 import { useNavigate, useParams } from 'react-router';
 import {
   Container,
@@ -21,18 +24,28 @@ const TreatmentPlanForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   
-  const [treatmentPlan, setTreatmentPlan] = useState({
-    patientId: '',
-    doctorId: '',
-    title: '',
-    description: '',
-    diagnosis: '',
-    startDate: '',
-    expectedEndDate: '',
-    status: 'draft',
-    priority: 'medium',
-    steps: [],
-    notes: '',
+  const {
+  // register,
+    handleSubmit,
+    formState: { errors },
+    setValue,
+    watch,
+    reset,
+  } = useForm({
+    resolver: yupResolver(treatmentPlanValidationSchema),
+    defaultValues: {
+      patientId: '',
+      doctorId: '',
+      title: '',
+      description: '',
+      diagnosis: '',
+      startDate: '',
+      expectedEndDate: '',
+      status: 'draft',
+      priority: 'medium',
+      steps: [],
+      notes: '',
+    },
   });
   
   const [patients, setPatients] = useState([]);
@@ -56,7 +69,7 @@ const TreatmentPlanForm = () => {
         if (id) {
           const treatmentPlanResponse = await treatmentPlanService.getById(id);
           const treatmentPlanData = treatmentPlanResponse.data;
-          setTreatmentPlan(treatmentPlanData);
+          reset(treatmentPlanData);
         }
       } catch (err) {
         setError('Failed to load data. Please try again.');
@@ -67,19 +80,17 @@ const TreatmentPlanForm = () => {
     };
 
     fetchData();
-  }, [id]);
+  }, [id, reset]);
 
-  const handleSubmit = async () => {
+  const onSubmit = async (data) => {
     setError('');
     setSaving(true);
-    
     try {
       const planData = {
-        ...treatmentPlan,
-        createdDate: treatmentPlan.createdDate || new Date().toISOString(),
+        ...data,
+        createdDate: data.createdDate || new Date().toISOString(),
         lastUpdated: new Date().toISOString(),
       };
-
       if (id) {
         await treatmentPlanService.update(id, planData);
       } else {
@@ -114,126 +125,133 @@ const TreatmentPlanForm = () => {
           <Typography variant="h4" align="center" gutterBottom>
             {id ? 'Edit Treatment Plan' : 'Create Treatment Plan'}
           </Typography>
-
           {error && (
             <Alert severity="error" sx={{ mb: 3 }}>
               {error}
             </Alert>
           )}
-
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-              <Box sx={{ flex: '1 1 300px' }}>
-                <FormControl fullWidth>
-                  <InputLabel>Patient *</InputLabel>
-                  <Select 
-                    name="patientId" 
-                    value={treatmentPlan.patientId || ''} 
-                    label="Patient *" 
-                    onChange={(e) => setTreatmentPlan(prev => ({ ...prev, patientId: e.target.value }))} 
-                    required
-                  >
-                    {patients.map((p) => (<MenuItem key={p.id} value={p.id}>{p.name}</MenuItem>))}
-                  </Select>
-                </FormControl>
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+                <Box sx={{ flex: '1 1 300px' }}>
+                  <FormControl fullWidth>
+                    <InputLabel>Patient *</InputLabel>
+                    <Select 
+                      name="patientId" 
+                      value={watch('patientId') || ''} 
+                      label="Patient *" 
+                      onChange={(e) => setValue('patientId', e.target.value)} 
+                      required
+                      error={!!errors.patientId}
+                    >
+                      {patients.map((p) => (<MenuItem key={p.id} value={p.id}>{p.name}</MenuItem>))}
+                    </Select>
+                    {errors.patientId && <Typography color="error" variant="caption">{errors.patientId.message}</Typography>}
+                  </FormControl>
+                </Box>
+                <Box sx={{ flex: '1 1 300px' }}>
+                  <FormControl fullWidth>
+                    <InputLabel>Doctor *</InputLabel>
+                    <Select 
+                      name="doctorId" 
+                      value={watch('doctorId') || ''} 
+                      label="Doctor *" 
+                      onChange={(e) => setValue('doctorId', e.target.value)} 
+                      required
+                      error={!!errors.doctorId}
+                    >
+                      {doctors.map((d) => (<MenuItem key={d.id} value={d.id}>{d.name} - {d.specialty}</MenuItem>))}
+                    </Select>
+                    {errors.doctorId && <Typography color="error" variant="caption">{errors.doctorId.message}</Typography>}
+                  </FormControl>
+                </Box>
               </Box>
-              <Box sx={{ flex: '1 1 300px' }}>
-                <FormControl fullWidth>
-                  <InputLabel>Doctor *</InputLabel>
-                  <Select 
-                    name="doctorId" 
-                    value={treatmentPlan.doctorId || ''} 
-                    label="Doctor *" 
-                    onChange={(e) => setTreatmentPlan(prev => ({ ...prev, doctorId: e.target.value }))} 
-                    required
-                  >
-                    {doctors.map((d) => (<MenuItem key={d.id} value={d.id}>{d.name} - {d.specialty}</MenuItem>))}
-                  </Select>
-                </FormControl>
+              <TextField
+                label="Treatment Plan Title *"
+                name="title"
+                value={watch('title') || ''}
+                onChange={(e) => setValue('title', e.target.value)}
+                fullWidth
+                required
+                error={!!errors.title}
+                helperText={errors.title?.message}
+              />
+              <TextField
+                label="Diagnosis *"
+                name="diagnosis"
+                value={watch('diagnosis') || ''}
+                onChange={(e) => setValue('diagnosis', e.target.value)}
+                fullWidth
+                required
+                multiline
+                rows={2}
+                error={!!errors.diagnosis}
+                helperText={errors.diagnosis?.message}
+              />
+              <TextField
+                label="Description"
+                name="description"
+                value={watch('description') || ''}
+                onChange={(e) => setValue('description', e.target.value)}
+                fullWidth
+                multiline
+                rows={3}
+                error={!!errors.description}
+                helperText={errors.description?.message}
+              />
+              <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+                <Box sx={{ flex: '1 1 200px' }}>
+                  <TextField label="Start Date" name="startDate" type="date" value={watch('startDate') || ''} onChange={(e) => setValue('startDate', e.target.value)} fullWidth InputLabelProps={{ shrink: true }} error={!!errors.startDate} helperText={errors.startDate?.message} />
+                </Box>
+                <Box sx={{ flex: '1 1 200px' }}>
+                  <TextField label="Expected End Date" name="expectedEndDate" type="date" value={watch('expectedEndDate') || ''} onChange={(e) => setValue('expectedEndDate', e.target.value)} fullWidth InputLabelProps={{ shrink: true }} error={!!errors.expectedEndDate} helperText={errors.expectedEndDate?.message} />
+                </Box>
+                <Box sx={{ flex: '1 1 200px' }}>
+                  <FormControl fullWidth>
+                    <InputLabel>Priority</InputLabel>
+                    <Select 
+                      name="priority" 
+                      value={watch('priority') || 'medium'} 
+                      label="Priority" 
+                      onChange={(e) => setValue('priority', e.target.value)}
+                      error={!!errors.priority}
+                    >
+                      <MenuItem value="low">Low</MenuItem>
+                      <MenuItem value="medium">Medium</MenuItem>
+                      <MenuItem value="high">High</MenuItem>
+                      <MenuItem value="urgent">Urgent</MenuItem>
+                    </Select>
+                    {errors.priority && <Typography color="error" variant="caption">{errors.priority.message}</Typography>}
+                  </FormControl>
+                </Box>
               </Box>
+              <TextField
+                label="Additional Notes"
+                name="notes"
+                value={watch('notes') || ''}
+                onChange={(e) => setValue('notes', e.target.value)}
+                fullWidth
+                multiline
+                rows={3}
+                error={!!errors.notes}
+                helperText={errors.notes?.message}
+              />
             </Box>
-
-            <TextField
-              label="Treatment Plan Title *"
-              name="title"
-              value={treatmentPlan.title || ''}
-              onChange={(e) => setTreatmentPlan(prev => ({ ...prev, title: e.target.value }))}
-              fullWidth
-              required
-            />
-
-            <TextField
-              label="Diagnosis *"
-              name="diagnosis"
-              value={treatmentPlan.diagnosis || ''}
-              onChange={(e) => setTreatmentPlan(prev => ({ ...prev, diagnosis: e.target.value }))}
-              fullWidth
-              required
-              multiline
-              rows={2}
-            />
-
-            <TextField
-              label="Description"
-              name="description"
-              value={treatmentPlan.description || ''}
-              onChange={(e) => setTreatmentPlan(prev => ({ ...prev, description: e.target.value }))}
-              fullWidth
-              multiline
-              rows={3}
-            />
-
-            <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-              <Box sx={{ flex: '1 1 200px' }}>
-                <TextField label="Start Date" name="startDate" type="date" value={treatmentPlan.startDate || ''} onChange={(e) => setTreatmentPlan(prev => ({ ...prev, startDate: e.target.value }))} fullWidth InputLabelProps={{ shrink: true }} />
-              </Box>
-              <Box sx={{ flex: '1 1 200px' }}>
-                <TextField label="Expected End Date" name="expectedEndDate" type="date" value={treatmentPlan.expectedEndDate || ''} onChange={(e) => setTreatmentPlan(prev => ({ ...prev, expectedEndDate: e.target.value }))} fullWidth InputLabelProps={{ shrink: true }} />
-              </Box>
-              <Box sx={{ flex: '1 1 200px' }}>
-                <FormControl fullWidth>
-                  <InputLabel>Priority</InputLabel>
-                  <Select 
-                    name="priority" 
-                    value={treatmentPlan.priority || 'medium'} 
-                    label="Priority" 
-                    onChange={(e) => setTreatmentPlan(prev => ({ ...prev, priority: e.target.value }))}
-                  >
-                    <MenuItem value="low">Low</MenuItem>
-                    <MenuItem value="medium">Medium</MenuItem>
-                    <MenuItem value="high">High</MenuItem>
-                    <MenuItem value="urgent">Urgent</MenuItem>
-                  </Select>
-                </FormControl>
-              </Box>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 3 }}>
+              <MOutlineButton
+                onClick={() => navigate('/treatment-plans')}
+              >
+                Cancel
+              </MOutlineButton>
+              <MButton
+                variant="contained"
+                type="submit"
+                disabled={saving}
+              >
+                {saving ? 'Saving...' : id ? 'Update Plan' : 'Create Plan'}
+              </MButton>
             </Box>
-
-            <TextField
-              label="Additional Notes"
-              name="notes"
-              value={treatmentPlan.notes || ''}
-              onChange={(e) => setTreatmentPlan(prev => ({ ...prev, notes: e.target.value }))}
-              fullWidth
-              multiline
-              rows={3}
-            />
-          </Box>
-
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 3 }}>
-            <MOutlineButton
-              onClick={() => navigate('/treatment-plans')}
-            >
-              Cancel
-            </MOutlineButton>
-            
-            <MButton
-              variant="contained"
-              onClick={handleSubmit}
-              disabled={saving || !treatmentPlan.patientId || !treatmentPlan.doctorId || !treatmentPlan.title || !treatmentPlan.diagnosis}
-            >
-              {saving ? 'Saving...' : id ? 'Update Plan' : 'Create Plan'}
-            </MButton>
-          </Box>
+          </form>
         </Paper>
       </Box>
     </Container>

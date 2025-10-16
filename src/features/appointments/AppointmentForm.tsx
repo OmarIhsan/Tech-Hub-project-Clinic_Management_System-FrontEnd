@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import { appointmentValidationSchema } from '../../validation/schemas';
 import { useNavigate, useParams } from 'react-router';
 import {
   Container,
@@ -13,7 +16,6 @@ import {
   InputLabel,
   CircularProgress,
 } from '@mui/material';
-import { Appointment } from '../../types';
 import { appointmentService, patientAPI, doctorAPI } from '../../services/api';
 import MButton from '../../components/MButton';
 
@@ -21,12 +23,20 @@ import MButton from '../../components/MButton';
 const AppointmentForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [appointment, setAppointment] = useState<Partial<Appointment>>({
-    patientId: '',
-    doctorId: '',
-    date: '',
-    status: 'scheduled',
-    notes: '',
+  const {
+    handleSubmit,
+    formState: { errors },
+    setValue,
+    watch,
+  } = useForm({
+    resolver: yupResolver(appointmentValidationSchema),
+    defaultValues: {
+      patientId: '',
+      doctorId: '',
+      date: '',
+      status: 'scheduled',
+      notes: '',
+    },
   });
   const [patients, setPatients] = useState([]);
   const [doctors, setDoctors] = useState([]);
@@ -49,7 +59,12 @@ const AppointmentForm = () => {
         if (id) {
           const appointmentResponse = await appointmentService.getById(id);
           const appointmentData = appointmentResponse.data;
-          setAppointment(appointmentData);
+          // Populate form with existing appointment data
+          setValue('patientId', appointmentData.patientId);
+          setValue('doctorId', appointmentData.doctorId);
+          setValue('date', appointmentData.date);
+          setValue('status', appointmentData.status);
+          setValue('notes', appointmentData.notes || '');
         }
       } catch (err) {
         setError('Failed to load data. Please try again.');
@@ -60,37 +75,20 @@ const AppointmentForm = () => {
     };
 
     fetchData();
-  }, [id]);
+  }, [id, setValue]);
 
-  const handleChange = (e) => {
-    const name = e.target.name;
-    setAppointment({ ...appointment, [name]: e.target.value });
-  };
   const handleSelectChange = (e) => {
-    setAppointment({ ...appointment, [e.target.name]: e.target.value });
+    setValue(e.target.name, e.target.value);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const onSubmit = async (data) => {
     setError('');
-    
-    if (!appointment.patientId || !appointment.doctorId || !appointment.date) {
-      setError('Please fill in all required fields');
-      return;
-    }
-    
     try {
       setSaving(true);
       if (id) {
-        await appointmentService.update(id, appointment);
+        await appointmentService.update(id, data);
       } else {
-        await appointmentService.create({
-          patientId: appointment.patientId,
-          doctorId: appointment.doctorId,
-          date: appointment.date,
-          status: appointment.status ?? 'scheduled',
-          notes: appointment.notes
-        });
+        await appointmentService.create(data);
       }
       navigate('/appointments');
     } catch (err) {
@@ -123,15 +121,16 @@ const AppointmentForm = () => {
               {error}
             </Alert>
           )}
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit(onSubmit)}>
             <FormControl fullWidth margin="normal">
               <InputLabel>Patient</InputLabel>
               <Select
                 name="patientId"
-                value={appointment.patientId}
+                value={watch('patientId')}
                 label="Patient"
                 onChange={handleSelectChange}
                 required
+                error={!!errors.patientId}
               >
                 {patients.map((p) => (
                   <MenuItem key={p.id} value={p.id}>
@@ -139,15 +138,17 @@ const AppointmentForm = () => {
                   </MenuItem>
                 ))}
               </Select>
+              {errors.patientId && <Typography color="error" variant="caption">{errors.patientId.message}</Typography>}
             </FormControl>
             <FormControl fullWidth margin="normal">
               <InputLabel>Doctor</InputLabel>
               <Select
                 name="doctorId"
-                value={appointment.doctorId}
+                value={watch('doctorId')}
                 label="Doctor"
                 onChange={handleSelectChange}
                 required
+                error={!!errors.doctorId}
               >
                 {doctors.map((d) => (
                   <MenuItem key={d.id} value={d.id}>
@@ -155,41 +156,48 @@ const AppointmentForm = () => {
                   </MenuItem>
                 ))}
               </Select>
+              {errors.doctorId && <Typography color="error" variant="caption">{errors.doctorId.message}</Typography>}
             </FormControl>
             <TextField
               label="Date & Time"
               name="date"
               type="datetime-local"
-              value={appointment.date}
-              onChange={handleChange}
+              value={watch('date')}
+              onChange={(e) => setValue('date', e.target.value)}
               fullWidth
               margin="normal"
               required
               InputLabelProps={{ shrink: true }}
+              error={!!errors.date}
+              helperText={errors.date?.message}
             />
             <FormControl fullWidth margin="normal">
               <InputLabel>Status</InputLabel>
               <Select
                 name="status"
-                value={appointment.status}
+                value={watch('status')}
                 label="Status"
                 onChange={handleSelectChange}
                 required
+                error={!!errors.status}
               >
                 <MenuItem value="scheduled">Scheduled</MenuItem>
                 <MenuItem value="completed">Completed</MenuItem>
                 <MenuItem value="cancelled">Cancelled</MenuItem>
               </Select>
+              {errors.status && <Typography color="error" variant="caption">{errors.status.message}</Typography>}
             </FormControl>
             <TextField
               label="Notes"
               name="notes"
-              value={appointment.notes}
-              onChange={handleChange}
+              value={watch('notes')}
+              onChange={(e) => setValue('notes', e.target.value)}
               fullWidth
               margin="normal"
               multiline
               rows={3}
+              error={!!errors.notes}
+              helperText={errors.notes?.message}
             />
             <MButton 
               type="submit" 

@@ -5,7 +5,6 @@ import {
   CardContent,
   Typography,
   Button,
-  Grid,
   Divider
 } from '@mui/material';
 import { FormInput, SelectField, DatePicker, FileUpload } from '../../components';
@@ -74,14 +73,12 @@ const FormComponentsDemo = () => {
             Reusable Form Components
           </Typography>
           
-          <Grid container spacing={2}>
-            <Grid item xs={12}>
-              <Typography variant="subtitle1" gutterBottom>
-                FormInput Component
-              </Typography>
-            </Grid>
+          <Box>
+            <Typography variant="subtitle1" gutterBottom>
+              FormInput Component
+            </Typography>
             
-            <Grid item xs={12} md={6}>
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2, mb: 2 }}>
               <FormInput
                 label="Name"
                 value={formData.name}
@@ -89,9 +86,7 @@ const FormComponentsDemo = () => {
                 placeholder="Enter your name"
                 required
               />
-            </Grid>
-            
-            <Grid item xs={12} md={6}>
+              
               <FormInput
                 label="Email"
                 type="email"
@@ -100,16 +95,14 @@ const FormComponentsDemo = () => {
                 placeholder="Enter your email"
                 helperText="We'll never share your email"
               />
-            </Grid>
+            </Box>
 
-            <Grid item xs={12}>
-              <Divider sx={{ my: 2 }} />
-              <Typography variant="subtitle1" gutterBottom>
-                SelectField Component
-              </Typography>
-            </Grid>
+            <Divider sx={{ my: 2 }} />
+            <Typography variant="subtitle1" gutterBottom>
+              SelectField Component
+            </Typography>
             
-            <Grid item xs={12} md={6}>
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2, mb: 2 }}>
               <SelectField
                 label="Category"
                 value={formData.category}
@@ -117,52 +110,55 @@ const FormComponentsDemo = () => {
                 options={categoryOptions}
                 placeholder="Choose a category"
                 required
+                error={false}
+                helperText=""
               />
-            </Grid>
-            
-            <Grid item xs={12} md={6}>
+              
               <SelectField
                 label="Priority"
                 value={formData.priority}
                 onChange={handleInputChange('priority')}
                 options={priorityOptions}
                 placeholder="Select priority level"
+                error={false}
+                helperText=""
               />
-            </Grid>
+            </Box>
 
-            <Grid item xs={12}>
-              <Divider sx={{ my: 2 }} />
-              <Typography variant="subtitle1" gutterBottom>
-                DatePicker Component
-              </Typography>
-            </Grid>
+            <Divider sx={{ my: 2 }} />
+            <Typography variant="subtitle1" gutterBottom>
+              DatePicker Component
+            </Typography>
             
-            <Grid item xs={12} md={6}>
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2, mb: 2 }}>
               <DatePicker
                 label="Start Date"
                 value={formData.startDate}
                 onChange={handleInputChange('startDate')}
                 required
+                error={false}
+                helperText=""
+                minDate=""
+                maxDate=""
               />
-            </Grid>
-            
-            <Grid item xs={12} md={6}>
+              
               <DatePicker
                 label="End Date"
                 value={formData.endDate}
                 onChange={handleInputChange('endDate')}
                 minDate={formData.startDate}
+                error={false}
+                helperText=""
+                maxDate=""
               />
-            </Grid>
+            </Box>
 
-            <Grid item xs={12}>
-              <Divider sx={{ my: 2 }} />
-              <Typography variant="subtitle1" gutterBottom>
-                FileUpload Component
-              </Typography>
-            </Grid>
+            <Divider sx={{ my: 2 }} />
+            <Typography variant="subtitle1" gutterBottom>
+              FileUpload Component
+            </Typography>
             
-            <Grid item xs={12}>
+            <Box sx={{ mb: 2 }}>
               <FileUpload
                 onFilesChange={handleFilesChange}
                 acceptedTypes={['.pdf', '.jpg', '.jpeg', '.png', '.doc', '.docx']}
@@ -170,26 +166,24 @@ const FormComponentsDemo = () => {
                 maxFiles={3}
                 multiple={true}
               />
-            </Grid>
+            </Box>
 
-            <Grid item xs={12}>
-              <Box sx={{ mt: 3, display: 'flex', gap: 2 }}>
-                <Button 
-                  variant="contained" 
-                  onClick={handleSubmit}
-                  disabled={!formData.name || !formData.category}
-                >
-                  Submit Form
-                </Button>
-                <Button 
-                  variant="outlined" 
-                  onClick={handleReset}
-                >
-                  Reset
-                </Button>
-              </Box>
-            </Grid>
-          </Grid>
+            <Box sx={{ mt: 3, display: 'flex', gap: 2 }}>
+              <Button 
+                variant="contained" 
+                onClick={handleSubmit}
+                disabled={!formData.name || !formData.category}
+              >
+                Submit Form
+              </Button>
+              <Button 
+                variant="outlined" 
+                onClick={handleReset}
+              >
+                Reset
+              </Button>
+            </Box>
+          </Box>
         </CardContent>
       </Card>
 

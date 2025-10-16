@@ -67,6 +67,7 @@ const DocumentUploadDialog = ({ open, onClose, onSuccess, patientId = null }) =>
       const uploadPromises = formData.files.map(async (file) => {
         const documentData = {
           patientId: formData.patientId,
+          title: file.name, // Added required title property
           documentType: formData.documentType,
           description: formData.description,
           filename: file.name,
@@ -150,6 +151,8 @@ const DocumentUploadDialog = ({ open, onClose, onSuccess, patientId = null }) =>
             required
             disabled={loading}
             placeholder="Select document type"
+            error={!!error && !formData.documentType}
+            helperText={!!error && !formData.documentType ? error : ''}
           />
 
           <FormInput
