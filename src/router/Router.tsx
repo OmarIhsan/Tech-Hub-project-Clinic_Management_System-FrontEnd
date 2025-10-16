@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from 'react-router';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import Login from '../features/auth/Login';
 import PatientList from '../features/patients/PatientList';
 import PatientForm from '../features/patients/PatientForm';

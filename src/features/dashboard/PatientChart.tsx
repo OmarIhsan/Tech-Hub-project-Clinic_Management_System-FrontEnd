@@ -1,6 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Typography, Alert } from '@mui/material';
 import { appointmentService } from '../../services/appointmentService';
+import {
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+} from 'recharts';
 
 const PatientChart: React.FC = () => {
   const [data, setData] = useState<Array<{ date: string; count: number }>>([]);
@@ -38,17 +48,26 @@ const PatientChart: React.FC = () => {
     return () => { mounted = false; };
   }, []);
 
-  // recharts is optional in this repo. Instead of importing it and breaking the dev server when
-  // the package is not installed, show an informational placeholder with instructions.
-  return (
-    <Box sx={{ py: 2 }}>
-      <Alert severity="info">Charts are optional. To enable charts, install <Typography component="span" sx={{ fontFamily: 'monospace' }}>recharts</Typography> and restart the dev server: <br /> <Typography component="span" sx={{ fontFamily: 'monospace' }}>npm install recharts</Typography></Alert>
-      <Box sx={{ mt: 2 }}>
-        <Typography variant="body2" color="textSecondary">Sample data for next 7 days:</Typography>
-        {data.map(d => (
-          <Typography key={d.date} variant="body2">{d.date}: {d.count}</Typography>
-        ))}
+  if (!data || data.length === 0) {
+    return (
+      <Box sx={{ py: 2 }}>
+        <Alert severity="info">No appointment data available for the next 7 days.</Alert>
       </Box>
+    );
+  }
+
+  return (
+    <Box sx={{ width: '100%', height: 300 }}>
+      <ResponsiveContainer>
+        <LineChart data={data} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="date" tickFormatter={(d) => (d as string).slice(5)} />
+          <YAxis allowDecimals={false} />
+          <Tooltip />
+          <Legend />
+          <Line type="monotone" dataKey="count" stroke="#1976d2" activeDot={{ r: 6 }} />
+        </LineChart>
+      </ResponsiveContainer>
     </Box>
   );
 };

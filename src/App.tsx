@@ -1,6 +1,6 @@
 
 import { useState } from 'react'
-import { BrowserRouter } from 'react-router';
+import { BrowserRouter } from 'react-router-dom';
 import './App.css'
 import AppRouter from './router/Router';
 import MButton from './components/MButton';

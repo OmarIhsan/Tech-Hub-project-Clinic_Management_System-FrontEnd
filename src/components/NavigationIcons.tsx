@@ -5,7 +5,7 @@ import LocalHospitalIcon from '@mui/icons-material/LocalHospital';
 import EventNoteIcon from '@mui/icons-material/EventNote';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import DescriptionIcon from '@mui/icons-material/Description';
-import { useNavigate, useLocation } from 'react-router';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const getTabValue = (pathname) => {
   if (pathname.includes('/patients')) return 1;
