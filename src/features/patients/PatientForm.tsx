@@ -71,19 +71,33 @@ const PatientForm = () => {
     try {
       setSubmitting(true);
       validation.patientValidation.validateCreate(patient);
+      const patientData = {
+        full_name: patient.full_name,
+        gender: patient.gender,
+        phone: patient.phone,
+        email: patient.email,
+        date_of_birth: patient.date_of_birth,
+        address: patient.address,
+        ...(patient.blood_group && { blood_group: patient.blood_group }),
+      };
 
       if (id) {
-        await patientAPI.update(Number(id), patient);
+        await patientAPI.update(Number(id), patientData);
       } else {
-        await patientAPI.create(patient);
+        await patientAPI.create(patientData);
       }
       navigate('/patients');
     } catch (err: unknown) {
       if (err instanceof ValidationError) {
         setError(err.message);
+      } else if (err && typeof err === 'object' && 'response' in err) {
+        const axiosError = err as { response?: { data?: { message?: string; error?: string } } };
+        const backendMessage = axiosError.response?.data?.message || axiosError.response?.data?.error;
+        console.error('Failed to save patient:', err);
+        setError(backendMessage || 'Failed to save patient. Please check the form data.');
       } else if (err instanceof Error) {
         console.error('Failed to save patient:', err);
-        setError('Failed to save patient');
+        setError(err.message || 'Failed to save patient');
       } else {
         console.error('Failed to save patient:', err);
         setError('Failed to save patient');
@@ -168,14 +182,6 @@ const PatientForm = () => {
               margin="normal"
               required
               InputLabelProps={{ shrink: true }}
-            />
-            <TextField
-              label="Blood Group"
-              name="blood_group"
-              value={patient.blood_group}
-              onChange={handleChange}
-              fullWidth
-              margin="normal"
             />
             <TextField
               label="Address"

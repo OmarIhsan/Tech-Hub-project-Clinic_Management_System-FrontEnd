@@ -1,15 +1,18 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import {
-  Container,
-  Paper,
+  Box,
+  Card,
+  CardContent,
+  Typography,
+  Button,
   Table,
   TableHead,
   TableRow,
   TableCell,
   TableBody,
-  Typography,
-  Box,
+  TableContainer,
+  Paper,
   Select,
   MenuItem,
   FormControl,
@@ -17,35 +20,41 @@ import {
   CircularProgress,
   Alert,
   Chip,
-  LinearProgress,
+  IconButton,
+  Tabs,
+  Tab,
 } from '@mui/material';
-import { treatmentPlanService, patientAPI, doctorAPI } from '../../services/api';
-import MOutlineButton from '../../components/MOutlineButton';
-import FloatingAddButton from '../../components/FloatingAddButton';
+import {
+  Add as AddIcon,
+  Visibility as ViewIcon,
+  Edit as EditIcon,
+  Assignment as AssignmentIcon,
+  CloudUpload as UploadIcon,
+  Description as DocumentIcon,
+} from '@mui/icons-material';
+import { treatmentPlanService, clinicalDocumentService } from '../../services/api';
+import { ClinicalDocument } from '../../types';
+import DocumentUploadDialog from '../clinical-documents/DocumentUploadDialog';
 
 const TreatmentPlanList = () => {
   const navigate = useNavigate();
   const [treatmentPlans, setTreatmentPlans] = useState([]);
-  const [patients, setPatients] = useState([]);
-  const [doctors, setDoctors] = useState([]);
   const [statusFilter, setStatusFilter] = useState('');
-  const [priorityFilter, setPriorityFilter] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [tabValue, setTabValue] = useState(0);
+  const [documents, setDocuments] = useState<ClinicalDocument[]>([]);
+  const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
+  const [documentsLoading, setDocumentsLoading] = useState(false);
+  const [documentsPermissionDenied, setDocumentsPermissionDenied] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
         setError('');
-        const [treatmentPlansResponse, patientsData, doctorsData] = await Promise.all([
-          treatmentPlanService.getAll(),
-          patientAPI.getAll(),
-          doctorAPI.getAll(),
-        ]);
-        setTreatmentPlans(treatmentPlansResponse.data);
-        setPatients(patientsData);
-        setDoctors(doctorsData);
+        const treatmentPlansResponse = await treatmentPlanService.getAll();
+        setTreatmentPlans(treatmentPlansResponse.data || []);
       } catch (err) {
         setError('Failed to load treatment plans. Please try again.');
         console.error('Failed to fetch data:', err);
@@ -57,191 +66,290 @@ const TreatmentPlanList = () => {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    if (tabValue === 1) {
+      fetchDocuments();
+    }
+  }, [tabValue]);
+
+  const fetchDocuments = async () => {
+    try {
+      setDocumentsLoading(true);
+      setDocumentsPermissionDenied(false);
+      const response = await clinicalDocumentService.getAll();
+      setDocuments(response.data || []);
+    } catch (err: unknown) {
+      console.error('Failed to load documents:', err);
+      if (err && typeof err === 'object' && 'response' in err) {
+        const axiosError = err as { response?: { status?: number } };
+        if (axiosError?.response?.status === 403) {
+          console.warn('User does not have permission to access clinical documents');
+          setDocumentsPermissionDenied(true);
+          setDocuments([]);
+        }
+      }
+    } finally {
+      setDocumentsLoading(false);
+    }
+  };
+
   const filteredTreatmentPlans = treatmentPlans.filter((plan) => {
-    return (
-      (!statusFilter || plan.status === statusFilter) &&
-      (!priorityFilter || plan.priority === priorityFilter)
-    );
+    return !statusFilter || plan.status === statusFilter;
   });
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'active': return 'success';
-      case 'completed': return 'primary';
-      case 'draft': return 'default';
+      case 'ongoing': return 'primary';
+      case 'completed': return 'success';
       case 'cancelled': return 'error';
-      case 'on-hold': return 'warning';
       default: return 'default';
     }
-  };
-
-  const getPriorityColor = (priority) => {
-    switch (priority) {
-      case 'urgent': return 'error';
-      case 'high': return 'warning';
-      case 'medium': return 'info';
-      case 'low': return 'default';
-      default: return 'default';
-    }
-  };
-
-  const calculateProgress = (steps) => {
-    if (steps.length === 0) return 0;
-    const completedSteps = steps.filter(step => step.status === 'completed').length;
-    return (completedSteps / steps.length) * 100;
   };
 
   if (loading) {
     return (
-      <Container maxWidth="lg">
-        <Box sx={{ mt: 8, mb: 4, display: 'flex', justifyContent: 'center' }}>
-          <CircularProgress />
-        </Box>
-      </Container>
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+        <CircularProgress />
+      </Box>
     );
   }
 
   if (error) {
     return (
-      <Container maxWidth="lg">
-        <Box sx={{ mt: 8, mb: 4 }}>
-          <Alert severity="error">{error}</Alert>
-        </Box>
-      </Container>
+      <Box sx={{ p: 3 }}>
+        <Alert severity="error">{error}</Alert>
+      </Box>
     );
   }
 
   return (
-    <Container maxWidth="lg">
-      <Box sx={{ mt: 8, mb: 4 }}>
-        <Paper sx={{ p: 4 }}>
-          <Typography variant="h4" align="center" gutterBottom>
-            Treatment Plans
-          </Typography>
-          
-          <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
-            <FormControl sx={{ minWidth: 150 }}>
-              <InputLabel>Status</InputLabel>
-              <Select
-                value={statusFilter}
-                label="Status"
-                onChange={(e) => setStatusFilter(e.target.value)}
-              >
-                <MenuItem value="">All</MenuItem>
-                <MenuItem value="draft">Draft</MenuItem>
-                <MenuItem value="active">Active</MenuItem>
-                <MenuItem value="completed">Completed</MenuItem>
-                <MenuItem value="cancelled">Cancelled</MenuItem>
-                <MenuItem value="on-hold">On Hold</MenuItem>
-              </Select>
-            </FormControl>
-            
-            <FormControl sx={{ minWidth: 150 }}>
-              <InputLabel>Priority</InputLabel>
-              <Select
-                value={priorityFilter}
-                label="Priority"
-                onChange={(e) => setPriorityFilter(e.target.value)}
-              >
-                <MenuItem value="">All</MenuItem>
-                <MenuItem value="urgent">Urgent</MenuItem>
-                <MenuItem value="high">High</MenuItem>
-                <MenuItem value="medium">Medium</MenuItem>
-                <MenuItem value="low">Low</MenuItem>
-              </Select>
-            </FormControl>
-          </Box>
-
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Patient</TableCell>
-                <TableCell>Doctor</TableCell>
-                <TableCell>Title</TableCell>
-                <TableCell>Status</TableCell>
-                <TableCell>Priority</TableCell>
-                <TableCell>Progress</TableCell>
-                <TableCell>Start Date</TableCell>
-                <TableCell>Actions</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {filteredTreatmentPlans.map((plan) => (
-                <TableRow key={plan.id}>
-                  <TableCell>
-                    {patients.find((p) => p.id === plan.patientId)?.name || plan.patientId}
-                  </TableCell>
-                  <TableCell>
-                    {doctors.find((d) => d.id === plan.doctorId)?.name || plan.doctorId}
-                  </TableCell>
-                  <TableCell>
-                    <Typography variant="subtitle2" fontWeight="bold">
-                      {plan.title}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {plan.diagnosis}
-                    </Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Chip
-                      label={plan.status.replace('-', ' ').toUpperCase()}
-                      color={getStatusColor(plan.status)}
-                      size="small"
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <Chip
-                      label={plan.priority.toUpperCase()}
-                      color={getPriorityColor(plan.priority)}
-                      size="small"
-                      variant="outlined"
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <Box sx={{ width: 100 }}>
-                      <LinearProgress
-                        variant="determinate"
-                        value={calculateProgress(plan.steps)}
-                        sx={{ mb: 0.5 }}
-                      />
-                      <Typography variant="caption" color="text.secondary">
-                        {Math.round(calculateProgress(plan.steps))}% ({plan.steps.filter(s => s.status === 'completed').length}/{plan.steps.length})
-                      </Typography>
-                    </Box>
-                  </TableCell>
-                  <TableCell>
-                    {new Date(plan.startDate).toLocaleDateString()}
-                  </TableCell>
-                  <TableCell>
-                    <Box sx={{ display: 'flex', gap: 1 }}>
-                      <MOutlineButton
-                        component={Link}
-                        to={`/treatment-plans/${plan.id}`}
-                        size="small"
-                      >
-                        View
-                      </MOutlineButton>
-                      <MOutlineButton
-                        component={Link}
-                        to={`/treatment-plans/${plan.id}/edit`}
-                        size="small"
-                      >
-                        Edit
-                      </MOutlineButton>
-                    </Box>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </Paper>
+    <Box>
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+        <Typography variant="h4" component="h1">
+          Treatment Plans Management
+        </Typography>
+        <Box display="flex" gap={2}>
+          <Button
+            variant="outlined"
+            startIcon={<UploadIcon />}
+            onClick={() => setUploadDialogOpen(true)}
+          >
+            Upload Document
+          </Button>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={() => navigate('/treatment-plans/new')}
+          >
+            New Treatment Plan
+          </Button>
+        </Box>
       </Box>
-      
-      <FloatingAddButton
-        onClick={() => navigate('/treatment-plans/new')}
-        ariaLabel="Create new treatment plan"
+
+      <Card>
+        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+          <Tabs value={tabValue} onChange={(e, newValue) => setTabValue(newValue)}>
+            <Tab label="Treatment Plans List" />
+            <Tab label="Treatment Documents" />
+          </Tabs>
+        </Box>
+
+        <CardContent>
+          {tabValue === 0 && (
+            <>
+              <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
+                <FormControl sx={{ minWidth: 200 }}>
+                  <InputLabel>Filter by Status</InputLabel>
+                  <Select
+                    value={statusFilter}
+                    label="Filter by Status"
+                    onChange={(e) => setStatusFilter(e.target.value)}
+                  >
+                    <MenuItem value="">All Status</MenuItem>
+                    <MenuItem value="ongoing">Ongoing</MenuItem>
+                    <MenuItem value="completed">Completed</MenuItem>
+                    <MenuItem value="cancelled">Cancelled</MenuItem>
+                  </Select>
+                </FormControl>
+              </Box>
+
+              <TableContainer component={Paper}>
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Patient</TableCell>
+                      <TableCell>Doctor</TableCell>
+                      <TableCell>Treatment Description</TableCell>
+                      <TableCell>Start Date</TableCell>
+                      <TableCell>End Date</TableCell>
+                      <TableCell>Status</TableCell>
+                      <TableCell align="center">Actions</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {filteredTreatmentPlans.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={7} align="center">
+                          <Box sx={{ py: 4 }}>
+                            <AssignmentIcon sx={{ fontSize: 48, color: 'action.disabled', mb: 1 }} />
+                            <Typography variant="body1" color="textSecondary" gutterBottom>
+                              No treatment plans found
+                            </Typography>
+                            <Button
+                              variant="contained"
+                              startIcon={<AddIcon />}
+                              onClick={() => navigate('/treatment-plans/new')}
+                              sx={{ mt: 2 }}
+                            >
+                              Create First Treatment Plan
+                            </Button>
+                          </Box>
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      filteredTreatmentPlans.map((plan) => (
+                        <TableRow key={plan.plan_id} hover>
+                          <TableCell>
+                            <Typography variant="body2" fontWeight={500}>
+                              {plan.patient?.full_name || `Patient #${plan.patient?.patient_id}`}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="body2">
+                              {plan.doctor?.full_name || `Doctor #${plan.doctor?.doctor_id}`}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="body2" noWrap sx={{ maxWidth: 300 }}>
+                              {plan.treatment_description}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            {new Date(plan.start_date).toLocaleDateString()}
+                          </TableCell>
+                          <TableCell>
+                            {plan.end_date ? new Date(plan.end_date).toLocaleDateString() : '-'}
+                          </TableCell>
+                          <TableCell>
+                            <Chip
+                              label={plan.status.toUpperCase()}
+                              color={getStatusColor(plan.status)}
+                              size="small"
+                            />
+                          </TableCell>
+                          <TableCell align="center">
+                            <IconButton
+                              size="small"
+                              color="info"
+                              onClick={() => navigate(`/treatment-plans/${plan.plan_id}`)}
+                              title="View"
+                            >
+                              <ViewIcon />
+                            </IconButton>
+                            <IconButton
+                              size="small"
+                              color="primary"
+                              onClick={() => navigate(`/treatment-plans/${plan.plan_id}/edit`)}
+                              title="Edit"
+                            >
+                              <EditIcon />
+                            </IconButton>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </>
+          )}
+
+          {tabValue === 1 && (
+            <>
+              {documentsPermissionDenied && (
+                <Alert severity="warning" sx={{ mb: 2 }}>
+                  <Typography variant="body2">
+                    <strong>Access Restricted:</strong> Your current role does not have permission to view clinical documents.
+                    This feature is currently available only for Owner and Staff roles. Please contact your administrator
+                    if you need access to this functionality.
+                  </Typography>
+                </Alert>
+              )}
+              <TableContainer component={Paper}>
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Document Name</TableCell>
+                      <TableCell>Type</TableCell>
+                      <TableCell>Patient</TableCell>
+                      <TableCell>Upload Date</TableCell>
+                      <TableCell align="center">Actions</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                  {documentsLoading ? (
+                    <TableRow>
+                      <TableCell colSpan={5} align="center">
+                        <CircularProgress size={30} sx={{ my: 2 }} />
+                      </TableCell>
+                    </TableRow>
+                  ) : documents.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={5} align="center">
+                        <Box sx={{ py: 4 }}>
+                          <DocumentIcon sx={{ fontSize: 48, color: 'action.disabled', mb: 1 }} />
+                          <Typography variant="body1" color="textSecondary" gutterBottom>
+                            No documents found
+                          </Typography>
+                          <Button
+                            variant="contained"
+                            startIcon={<UploadIcon />}
+                            onClick={() => setUploadDialogOpen(true)}
+                            sx={{ mt: 2 }}
+                          >
+                            Upload First Document
+                          </Button>
+                        </Box>
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    documents.map((doc) => (
+                      <TableRow key={doc.document_id} hover>
+                        <TableCell>
+                          <Box display="flex" alignItems="center">
+                            <DocumentIcon sx={{ mr: 1, color: 'action.active' }} />
+                            {doc.file_path?.split('/').pop() || 'Document'}
+                          </Box>
+                        </TableCell>
+                        <TableCell>
+                          <Chip label={doc.document_type || 'N/A'} size="small" color="primary" />
+                        </TableCell>
+                        <TableCell>{doc.patient?.full_name || 'N/A'}</TableCell>
+                        <TableCell>
+                          {doc.upload_date ? new Date(doc.upload_date).toLocaleDateString() : '-'}
+                        </TableCell>
+                        <TableCell align="center">
+                          <IconButton size="small" color="primary" title="View">
+                            <DocumentIcon />
+                          </IconButton>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </TableContainer>
+            </>
+          )}
+        </CardContent>
+      </Card>
+
+      <DocumentUploadDialog
+        open={uploadDialogOpen}
+        onClose={() => setUploadDialogOpen(false)}
+        onSuccess={fetchDocuments}
       />
-    </Container>
+    </Box>
   );
 };
 

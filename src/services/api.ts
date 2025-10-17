@@ -20,7 +20,7 @@ interface RegisterData {
   full_name: string;
   password: string;
   phone: string;
-  role?: 'owner' | 'doctor' | 'staff' | 'customer';
+  role?: 'owner' | 'doctor' | 'staff';
 }
 
 interface AuthResponse {
@@ -31,19 +31,21 @@ interface AuthResponse {
 export const authAPI = {
   login: async (credentials: LoginCredentials): Promise<AuthResponse> => {
     const response = await api.post('/auth/login', credentials);
-    if (response.data.access_token) {
-      localStorage.setItem('accessToken', response.data.access_token);
-      localStorage.setItem('user', JSON.stringify(response.data.user));
+    const authData = response.data.data || response.data;
+    if (authData.access_token) {
+      localStorage.setItem('accessToken', authData.access_token);
+      localStorage.setItem('user', JSON.stringify(authData.user));
     }
-    return response.data;
+    return authData;
   },
   register: async (userData: RegisterData): Promise<AuthResponse> => {
     const response = await api.post('/auth/register', userData);
-    if (response.data.access_token) {
-      localStorage.setItem('accessToken', response.data.access_token);
-      localStorage.setItem('user', JSON.stringify(response.data.user));
+    const authData = response.data.data || response.data;
+    if (authData.access_token) {
+      localStorage.setItem('accessToken', authData.access_token);
+      localStorage.setItem('user', JSON.stringify(authData.user));
     }
-    return response.data;
+    return authData;
   },
   logout: () => {
     localStorage.removeItem('accessToken');
@@ -62,19 +64,19 @@ export const authAPI = {
 export const patientAPI = {
   getAll: async (params?: { offset?: number; limit?: number }): Promise<Patient[]> => {
     const response = await api.get('/patients', { params });
-    return response.data;
+    return response.data.data || response.data;
   },
   getById: async (id: number): Promise<Patient> => {
     const response = await api.get(`/patients/${id}`);
-    return response.data;
+    return response.data.data || response.data;
   },
   create: async (patient: Omit<Patient, 'patient_id' | 'createdAt' | 'updatedAt'>): Promise<Patient> => {
     const response = await api.post('/patients', patient);
-    return response.data;
+    return response.data.data || response.data;
   },
   update: async (id: number, patient: Partial<Omit<Patient, 'patient_id' | 'createdAt' | 'updatedAt'>>): Promise<Patient> => {
     const response = await api.put(`/patients/${id}`, patient);
-    return response.data;
+    return response.data.data || response.data;
   },
   delete: async (id: number): Promise<void> => {
     await api.delete(`/patients/${id}`);
@@ -112,7 +114,7 @@ export const medicalRecordAPI = {
     const response = await api.get(`/medical-records/${id}`);
     return response.data;
   },
-  create: async (record: { patientId: number; doctorId: number; diagnosis: string; prescription?: string; visit_date: string }): Promise<MedicalRecord> => {
+  create: async (record: { patient_id: number; doctor_id: number; diagnosis: string; prescription?: string; visit_date: string }): Promise<MedicalRecord> => {
     const response = await api.post('/medical-records', record);
     return response.data;
   },

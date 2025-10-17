@@ -186,6 +186,104 @@ const RoleDashboard: React.FC = () => {
           </>
         );
 
+      case StaffRole.DOCTOR:
+        return (
+          <>
+            <Box sx={{ mb: 3 }}>
+              <Typography variant="h4" gutterBottom fontWeight={600}>
+                Doctor Dashboard
+              </Typography>
+              <Typography variant="body1" color="textSecondary">
+                Welcome back, Dr. {user.name || user.email}
+              </Typography>
+            </Box>
+
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }, gap: 3, mb: 4 }}>
+              <StatCard
+                title="Total Patients"
+                value={stats.patients}
+                icon={<PersonIcon />}
+                color="primary"
+                onClick={() => navigate('/patients')}
+              />
+              <StatCard
+                title="My Appointments"
+                value={stats.appointments}
+                icon={<EventIcon />}
+                color="info"
+                onClick={() => navigate('/appointments')}
+              />
+              <StatCard
+                title="Active Treatments"
+                value={stats.treatments}
+                icon={<AssignmentIcon />}
+                color="success"
+                onClick={() => navigate('/treatment-plans')}
+              />
+            </Box>
+
+            <Box sx={{ mt: 4 }}>
+              <Typography variant="h6" gutterBottom>
+                Quick Actions
+              </Typography>
+              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }, gap: 2 }}>
+                <MButton 
+                  fullWidth 
+                  variant="contained" 
+                  startIcon={<PersonIcon />}
+                  onClick={() => navigate('/patients/new')}
+                >
+                  Add New Patient
+                </MButton>
+                <MButton 
+                  fullWidth 
+                  variant="contained" 
+                  startIcon={<EventIcon />}
+                  onClick={() => navigate('/appointments/new')}
+                >
+                  New Appointment
+                </MButton>
+                <MButton 
+                  fullWidth 
+                  variant="contained" 
+                  startIcon={<AssignmentIcon />}
+                  onClick={() => navigate('/treatment-plans/new')}
+                >
+                  New Treatment Plan
+                </MButton>
+                <MButton 
+                  fullWidth 
+                  variant="outlined" 
+                  onClick={() => navigate('/patients')}
+                >
+                  View All Patients
+                </MButton>
+                <MButton 
+                  fullWidth 
+                  variant="outlined" 
+                  onClick={() => navigate('/appointments')}
+                >
+                  View Appointments
+                </MButton>
+                <MButton 
+                  fullWidth 
+                  variant="outlined" 
+                  onClick={() => navigate('/medical-records/new')}
+                >
+                  New Medical Record
+                </MButton>
+              </Box>
+            </Box>
+
+            <Paper elevation={1} sx={{ p: 2, mt: 4, bgcolor: 'success.lighter' }}>
+              <Typography variant="body2" color="textSecondary">
+                <strong>Doctor Access:</strong> You can add new patients, schedule appointments, 
+                create treatment plans, manage medical records, and view all patient information.
+              </Typography>
+            </Paper>
+          </>
+        );
+
       case StaffRole.STAFF:
         return (
           <>

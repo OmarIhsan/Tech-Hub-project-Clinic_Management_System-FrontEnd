@@ -471,16 +471,34 @@ export default {
         throw new ValidationError('Invalid patient data');
       }
       const p = data as Record<string, unknown>;
-      if (!p.name || typeof p.name !== 'string' || p.name.trim().length < 2) {
-        throw new ValidationError('Name is required and must be at least 2 characters', 'name');
+            if (!p.full_name || typeof p.full_name !== 'string' || p.full_name.trim().length < 2) {
+        throw new ValidationError('Name is required and must be at least 2 characters', 'full_name');
       }
-      if (!p.age || typeof p.age !== 'string' || p.age.trim().length === 0) {
-        throw new ValidationError('Age is required', 'age');
+      if (!p.gender || typeof p.gender !== 'string') {
+        throw new ValidationError('Gender is required', 'gender');
       }
-      if (!p.contact || typeof p.contact !== 'string' || p.contact.trim().length === 0) {
-        throw new ValidationError('Contact is required', 'contact');
+            if (!p.phone || typeof p.phone !== 'string' || p.phone.trim().length === 0) {
+        throw new ValidationError('Phone is required', 'phone');
       }
-      return { name: p.name, age: p.age, contact: p.contact };
+            if (!p.email || typeof p.email !== 'string' || p.email.trim().length === 0) {
+        throw new ValidationError('Email is required', 'email');
+      }
+            if (!validationUtils.isValidEmail(p.email as string)) {
+        throw new ValidationError('Email format is invalid', 'email');
+      }
+            if (!p.date_of_birth || typeof p.date_of_birth !== 'string') {
+        throw new ValidationError('Date of birth is required', 'date_of_birth');
+      }
+      
+      return {
+        full_name: p.full_name,
+        gender: p.gender,
+        phone: p.phone,
+        email: p.email,
+        date_of_birth: p.date_of_birth,
+        blood_group: p.blood_group,
+        address: p.address
+      };
     },
     validateUpdate: (data: unknown) => {
       if (!data || typeof data !== 'object') {
@@ -488,24 +506,53 @@ export default {
       }
       const p = data as Record<string, unknown>;
       const out: Record<string, unknown> = {};
-      if (p.name !== undefined) {
-        if (typeof p.name !== 'string' || p.name.trim().length < 2) {
-          throw new ValidationError('Name must be at least 2 characters', 'name');
+      
+      if (p.full_name !== undefined) {
+        if (typeof p.full_name !== 'string' || p.full_name.trim().length < 2) {
+          throw new ValidationError('Name must be at least 2 characters', 'full_name');
         }
-        out.name = p.name;
+        out.full_name = p.full_name;
       }
-      if (p.age !== undefined) {
-        if (typeof p.age !== 'string' || p.age.trim().length === 0) {
-          throw new ValidationError('Age must be provided', 'age');
+      
+      if (p.gender !== undefined) {
+        if (typeof p.gender !== 'string') {
+          throw new ValidationError('Gender must be provided', 'gender');
         }
-        out.age = p.age;
+        out.gender = p.gender;
       }
-      if (p.contact !== undefined) {
-        if (typeof p.contact !== 'string' || p.contact.trim().length === 0) {
-          throw new ValidationError('Contact must be provided', 'contact');
+      
+      if (p.phone !== undefined) {
+        if (typeof p.phone !== 'string' || p.phone.trim().length === 0) {
+          throw new ValidationError('Phone must be provided', 'phone');
         }
-        out.contact = p.contact;
+        out.phone = p.phone;
       }
+      
+      if (p.email !== undefined) {
+        if (typeof p.email !== 'string' || p.email.trim().length === 0) {
+          throw new ValidationError('Email must be provided', 'email');
+        }
+        if (!validationUtils.isValidEmail(p.email as string)) {
+          throw new ValidationError('Email format is invalid', 'email');
+        }
+        out.email = p.email;
+      }
+      
+      if (p.date_of_birth !== undefined) {
+        if (typeof p.date_of_birth !== 'string') {
+          throw new ValidationError('Date of birth must be provided', 'date_of_birth');
+        }
+        out.date_of_birth = p.date_of_birth;
+      }
+      
+      if (p.blood_group !== undefined) {
+        out.blood_group = p.blood_group;
+      }
+      
+      if (p.address !== undefined) {
+        out.address = p.address;
+      }
+      
       return out;
     }
   },

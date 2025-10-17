@@ -22,8 +22,8 @@ const MedicalRecordForm = () => {
   const navigate = useNavigate();
   
   const [formData, setFormData] = useState({
-    patientId: 0,
-    doctorId: 0,
+    patient_id: 0,
+    doctor_id: 0,
     diagnosis: '',
     prescription: '',
     visit_date: new Date().toISOString().split('T')[0],
@@ -50,8 +50,8 @@ const MedicalRecordForm = () => {
         if (id) {
           const recordData = await medicalRecordAPI.getById(Number(id));
           setFormData({
-            patientId: recordData.patient.patient_id,
-            doctorId: recordData.doctor.doctor_id,
+            patient_id: recordData.patient.patient_id,
+            doctor_id: recordData.doctor.doctor_id,
             diagnosis: recordData.diagnosis,
             prescription: recordData.prescription || '',
             visit_date: recordData.visit_date,
@@ -123,9 +123,9 @@ const MedicalRecordForm = () => {
             <FormControl fullWidth margin="normal" required>
               <InputLabel>Patient</InputLabel>
               <Select
-                value={formData.patientId}
+                value={formData.patient_id}
                 label="Patient"
-                onChange={(e) => handleChange('patientId', e.target.value)}
+                onChange={(e) => handleChange('patient_id', e.target.value)}
                 disabled={!!id}
               >
                 {patients.map((patient) => (
@@ -139,9 +139,9 @@ const MedicalRecordForm = () => {
             <FormControl fullWidth margin="normal" required>
               <InputLabel>Doctor</InputLabel>
               <Select
-                value={formData.doctorId}
+                value={formData.doctor_id}
                 label="Doctor"
-                onChange={(e) => handleChange('doctorId', e.target.value)}
+                onChange={(e) => handleChange('doctor_id', e.target.value)}
                 disabled={!!id}
               >
                 {doctors.map((doctor) => (
