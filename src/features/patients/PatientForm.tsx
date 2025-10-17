@@ -8,6 +8,7 @@ import {
   Box,
   Alert,
   CircularProgress,
+  MenuItem,
 } from '@mui/material';
 import MButton from '../../components/MButton';
 import { patientAPI } from '../../services/api';
@@ -17,10 +18,14 @@ import validation, { ValidationError } from '../../services/validation';
 const PatientForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [patient, setPatient] = useState<Omit<Patient, 'id'>>({
-    name: '',
-    age: '',
-    contact: '',
+  const [patient, setPatient] = useState<Omit<Patient, 'patient_id'>>({
+    full_name: '',
+    gender: 'Male',
+    phone: '',
+    email: '',
+    date_of_birth: '',
+    blood_group: '',
+    address: '',
   });
   const [error, setError] = useState<string>('');
   const [submitting, setSubmitting] = useState(false);
@@ -32,12 +37,16 @@ const PatientForm = () => {
       
       try {
         setLoading(true);
-        const loadedPatient = await patientAPI.getById(id);
+        const loadedPatient = await patientAPI.getById(Number(id));
         if (loadedPatient) {
           setPatient({ 
-            name: loadedPatient.name, 
-            age: loadedPatient.age, 
-            contact: loadedPatient.contact 
+            full_name: loadedPatient.full_name,
+            gender: loadedPatient.gender,
+            phone: loadedPatient.phone,
+            email: loadedPatient.email,
+            date_of_birth: loadedPatient.date_of_birth,
+            blood_group: loadedPatient.blood_group || '',
+            address: loadedPatient.address || '',
           });
         }
       } catch (err) {
@@ -64,7 +73,7 @@ const PatientForm = () => {
       validation.patientValidation.validateCreate(patient);
 
       if (id) {
-        await patientAPI.update(id, patient);
+        await patientAPI.update(Number(id), patient);
       } else {
         await patientAPI.create(patient);
       }
@@ -108,31 +117,75 @@ const PatientForm = () => {
           )}
           <form onSubmit={handleSubmit}>
             <TextField
-              label="Name"
-              name="name"
-              value={patient.name}
+              label="Full Name"
+              name="full_name"
+              value={patient.full_name}
               onChange={handleChange}
               fullWidth
               margin="normal"
               required
             />
             <TextField
-              label="Age"
-              name="age"
-              value={patient.age}
+              label="Gender"
+              name="gender"
+              value={patient.gender}
+              onChange={handleChange}
+              select
+              fullWidth
+              margin="normal"
+              required
+            >
+              <MenuItem value="Male">Male</MenuItem>
+              <MenuItem value="Female">Female</MenuItem>
+              <MenuItem value="Other">Other</MenuItem>
+            </TextField>
+            <TextField
+              label="Phone"
+              name="phone"
+              value={patient.phone}
               onChange={handleChange}
               fullWidth
               margin="normal"
               required
             />
             <TextField
-              label="Contact"
-              name="contact"
-              value={patient.contact}
+              label="Email"
+              name="email"
+              type="email"
+              value={patient.email}
               onChange={handleChange}
               fullWidth
               margin="normal"
               required
+            />
+            <TextField
+              label="Date of Birth"
+              name="date_of_birth"
+              type="date"
+              value={patient.date_of_birth}
+              onChange={handleChange}
+              fullWidth
+              margin="normal"
+              required
+              InputLabelProps={{ shrink: true }}
+            />
+            <TextField
+              label="Blood Group"
+              name="blood_group"
+              value={patient.blood_group}
+              onChange={handleChange}
+              fullWidth
+              margin="normal"
+            />
+            <TextField
+              label="Address"
+              name="address"
+              value={patient.address}
+              onChange={handleChange}
+              fullWidth
+              margin="normal"
+              multiline
+              rows={3}
             />
             <MButton
               type="submit"

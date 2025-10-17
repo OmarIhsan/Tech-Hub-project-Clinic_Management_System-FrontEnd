@@ -1,11 +1,10 @@
 import * as yup from 'yup';
 
 export const appointmentValidationSchema = yup.object().shape({
-  patientId: yup.string().required('Patient is required'),
-  doctorId: yup.string().required('Doctor is required'),
-  date: yup.string().required('Date & Time is required'),
-  status: yup.string().oneOf(['scheduled', 'completed', 'cancelled']).required('Status is required'),
-  notes: yup.string(),
+  patient_id: yup.number().required('Patient is required').min(1, 'Patient is required'),
+  doctor_id: yup.number().required('Doctor is required').min(1, 'Doctor is required'),
+  appointment_time: yup.string().required('Date & Time is required'),
+  status: yup.string().oneOf(['scheduled', 'completed', 'cancelled', 'no_show']).required('Status is required'),
 });
 
 export const treatmentPlanValidationSchema = yup.object().shape({

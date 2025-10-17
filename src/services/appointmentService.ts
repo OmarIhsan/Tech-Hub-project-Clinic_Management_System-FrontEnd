@@ -1,35 +1,25 @@
-
 import api from '../config/axios';
 import { Appointment } from '../types';
 
 interface CreateAppointmentData {
-  patientId: string;
-  doctorId: string;
-  appointmentDate: string;
-  reason?: string;
-  status?: 'scheduled' | 'completed' | 'cancelled';
-  notes?: string;
+  patient_id: number;
+  doctor_id: number;
+  appointment_time: string;
+  status?: 'scheduled' | 'completed' | 'cancelled' | 'no_show';
 }
 
 interface UpdateAppointmentData {
-  appointmentDate?: string;
-  reason?: string;
-  status?: 'scheduled' | 'completed' | 'cancelled';
-  notes?: string;
+  appointment_time?: string;
+  status?: 'scheduled' | 'completed' | 'cancelled' | 'no_show';
 }
 
 export const appointmentService = {
   getAll: async (params?: { 
     offset?: number; 
     limit?: number; 
-    dateFrom?: string; 
-    dateTo?: string; 
-    status?: string; 
-    doctorId?: string; 
-    patientId?: string;
   }): Promise<{ data: Appointment[] }> => {
     try {
-      const response = await api.get('/appointments', { params });
+      const response = await api.get('/appointment', { params });
       return { data: response.data };
     } catch (error) {
       console.error('Error fetching appointments:', error);
@@ -37,9 +27,9 @@ export const appointmentService = {
     }
   },
 
-  getById: async (id: string): Promise<{ data: Appointment }> => {
+  getById: async (id: number): Promise<{ data: Appointment }> => {
     try {
-      const response = await api.get(`/appointments/${id}`);
+      const response = await api.get(`/appointment/${id}`);
       return { data: response.data };
     } catch (error) {
       console.error('Error fetching appointment:', error);
@@ -47,39 +37,9 @@ export const appointmentService = {
     }
   },
 
-  getByPatientId: async (patientId: string): Promise<{ data: Appointment[] }> => {
-    try {
-      const response = await api.get('/appointments', { params: { patientId } });
-      return { data: response.data };
-    } catch (error) {
-      console.error('Error fetching patient appointments:', error);
-      throw new Error('Failed to fetch patient appointments');
-    }
-  },
-
-  getByDoctorId: async (doctorId: string): Promise<{ data: Appointment[] }> => {
-    try {
-      const response = await api.get('/appointments', { params: { doctorId } });
-      return { data: response.data };
-    } catch (error) {
-      console.error('Error fetching doctor appointments:', error);
-      throw new Error('Failed to fetch doctor appointments');
-    }
-  },
-
-  getByStatus: async (status: 'scheduled' | 'completed' | 'cancelled'): Promise<{ data: Appointment[] }> => {
-    try {
-      const response = await api.get('/appointments', { params: { status } });
-      return { data: response.data };
-    } catch (error) {
-      console.error('Error fetching appointments by status:', error);
-      throw new Error('Failed to fetch appointments by status');
-    }
-  },
-
   create: async (appointmentData: CreateAppointmentData): Promise<{ data: Appointment }> => {
     try {
-      const response = await api.post('/appointments', appointmentData);
+      const response = await api.post('/appointment', appointmentData);
       return { data: response.data };
     } catch (error) {
       console.error('Error creating appointment:', error);
@@ -87,9 +47,9 @@ export const appointmentService = {
     }
   },
 
-  update: async (id: string, appointmentData: UpdateAppointmentData): Promise<{ data: Appointment }> => {
+  update: async (id: number, appointmentData: UpdateAppointmentData): Promise<{ data: Appointment }> => {
     try {
-      const response = await api.put(`/appointments/${id}`, appointmentData);
+      const response = await api.put(`/appointment/${id}`, appointmentData);
       return { data: response.data };
     } catch (error) {
       console.error('Error updating appointment:', error);
@@ -97,11 +57,10 @@ export const appointmentService = {
     }
   },
 
-  cancel: async (id: string, reason?: string): Promise<{ data: Appointment }> => {
+  cancel: async (id: number): Promise<{ data: Appointment }> => {
     try {
-      const response = await api.put(`/appointments/${id}`, {
-        status: 'cancelled',
-        notes: reason ? `Cancelled: ${reason}` : 'Appointment cancelled'
+      const response = await api.put(`/appointment/${id}`, {
+        status: 'cancelled'
       });
       return { data: response.data };
     } catch (error) {
@@ -110,11 +69,10 @@ export const appointmentService = {
     }
   },
 
-  complete: async (id: string, notes?: string): Promise<{ data: Appointment }> => {
+  complete: async (id: number): Promise<{ data: Appointment }> => {
     try {
-      const response = await api.put(`/appointments/${id}`, {
-        status: 'completed',
-        ...(notes && { notes })
+      const response = await api.put(`/appointment/${id}`, {
+        status: 'completed'
       });
       return { data: response.data };
     } catch (error) {
@@ -123,42 +81,14 @@ export const appointmentService = {
     }
   },
 
-  delete: async (id: string): Promise<void> => {
+  delete: async (id: number): Promise<void> => {
     try {
-      await api.delete(`/appointments/${id}`);
+      await api.delete(`/appointment/${id}`);
     } catch (error) {
       console.error('Error deleting appointment:', error);
       throw error;
     }
   },
-
-  getByDateRange: async (startDate: string, endDate: string): Promise<{ data: Appointment[] }> => {
-    try {
-      const response = await api.get('/appointments', { 
-        params: { 
-          dateFrom: startDate, 
-          dateTo: endDate 
-        } 
-      });
-      return { data: response.data };
-    } catch (error) {
-      console.error('Error fetching appointments by date range:', error);
-      throw new Error('Failed to fetch appointments for date range');
-    }
-  },
-
-  reschedule: async (id: string, newDate: string, reason?: string): Promise<{ data: Appointment }> => {
-    try {
-      const response = await api.put(`/appointments/${id}`, {
-        appointmentDate: newDate,
-        notes: reason ? `Rescheduled - ${reason}` : 'Appointment rescheduled'
-      });
-      return { data: response.data };
-    } catch (error) {
-      console.error('Error rescheduling appointment:', error);
-      throw error;
-    }
-  }
 };
 
 export default appointmentService;

@@ -20,7 +20,7 @@ import { Patient } from '../../types';
 
 const PatientList = () => {
   const navigate = useNavigate();
-  const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [actionLoading, setActionLoading] = useState<number | null>(null);
   const [patients, setPatients] = useState<Patient[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
@@ -43,15 +43,14 @@ const PatientList = () => {
     fetchPatients();
   }, []);
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: number) => {
     const ok = window.confirm('Are you sure you want to delete this patient?');
     if (!ok) return;
 
     try {
       setActionLoading(id);
       await patientAPI.delete(id);
-      // Remove patient from local state
-      setPatients(patients.filter(p => p.id !== id));
+      setPatients(patients.filter(p => p.patient_id !== id));
     } catch (err) {
       console.error('Failed to delete patient:', err);
     } finally {
@@ -90,21 +89,25 @@ const PatientList = () => {
             <TableHead>
               <TableRow>
                 <TableCell>Name</TableCell>
-                <TableCell>Age</TableCell>
-                <TableCell>Contact</TableCell>
+                <TableCell>Gender</TableCell>
+                <TableCell>Phone</TableCell>
+                <TableCell>Email</TableCell>
+                <TableCell>Date of Birth</TableCell>
                 <TableCell>Actions</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {patients.map((patient) => (
-                <TableRow key={patient.id}>
-                  <TableCell>{patient.name}</TableCell>
-                  <TableCell>{patient.age}</TableCell>
-                  <TableCell>{patient.contact}</TableCell>
+                <TableRow key={patient.patient_id}>
+                  <TableCell>{patient.full_name}</TableCell>
+                  <TableCell>{patient.gender}</TableCell>
+                  <TableCell>{patient.phone}</TableCell>
+                  <TableCell>{patient.email}</TableCell>
+                  <TableCell>{patient.date_of_birth}</TableCell>
                   <TableCell>
                     <MOutlineButton
                       component={Link}
-                      to={`/patients/${patient.id}/edit`}
+                      to={`/patients/${patient.patient_id}/edit`}
                       size="small"
                       sx={{ mr: 1 }}
                     >
@@ -113,10 +116,10 @@ const PatientList = () => {
                     <MOutlineButton
                       color="error"
                       size="small"
-                      onClick={() => handleDelete(patient.id)}
-                      disabled={actionLoading === patient.id}
+                      onClick={() => handleDelete(patient.patient_id)}
+                      disabled={actionLoading === patient.patient_id}
                     >
-                      {actionLoading === patient.id ? 'Deleting...' : 'Delete'}
+                      {actionLoading === patient.patient_id ? 'Deleting...' : 'Delete'}
                     </MOutlineButton>
                   </TableCell>
                 </TableRow>

@@ -18,7 +18,7 @@ import {
 } from '@mui/material';
 import { appointmentService, patientAPI, doctorAPI } from '../../services/api';
 import MButton from '../../components/MButton';
-import { Patient } from '../../types';
+import { Patient, Doctor } from '../../types';
 
 
 const AppointmentForm = () => {
@@ -32,15 +32,14 @@ const AppointmentForm = () => {
   } = useForm({
     resolver: yupResolver(appointmentValidationSchema),
     defaultValues: {
-      patientId: '',
-      doctorId: '',
-      date: '',
-      status: 'scheduled' as 'scheduled' | 'completed' | 'cancelled',
-      notes: '',
+      patient_id: 0,
+      doctor_id: 0,
+      appointment_time: '',
+      status: 'scheduled' as 'scheduled' | 'completed' | 'cancelled' | 'no_show',
     },
   });
   const [patients, setPatients] = useState<Patient[]>([]);
-  const [doctors, setDoctors] = useState([]);
+  const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string>('');
@@ -58,14 +57,12 @@ const AppointmentForm = () => {
         setDoctors(doctorsData);
         
         if (id) {
-          const appointmentResponse = await appointmentService.getById(id);
+          const appointmentResponse = await appointmentService.getById(Number(id));
           const appointmentData = appointmentResponse.data;
-          // Populate form with existing appointment data
-          setValue('patientId', appointmentData.patientId);
-          setValue('doctorId', appointmentData.doctorId);
-          setValue('date', appointmentData.date);
+          setValue('patient_id', appointmentData.patient_id);
+          setValue('doctor_id', appointmentData.doctor_id);
+          setValue('appointment_time', appointmentData.appointment_time);
           setValue('status', appointmentData.status);
-          setValue('notes', appointmentData.notes || '');
         }
       } catch (err) {
         setError('Failed to load data. Please try again.');
@@ -87,7 +84,7 @@ const AppointmentForm = () => {
     try {
       setSaving(true);
       if (id) {
-        await appointmentService.update(id, data);
+        await appointmentService.update(Number(id), data);
       } else {
         await appointmentService.create(data);
       }
@@ -126,51 +123,51 @@ const AppointmentForm = () => {
             <FormControl fullWidth margin="normal">
               <InputLabel>Patient</InputLabel>
               <Select
-                name="patientId"
-                value={watch('patientId')}
+                name="patient_id"
+                value={watch('patient_id')}
                 label="Patient"
                 onChange={handleSelectChange}
                 required
-                error={!!errors.patientId}
+                error={!!errors.patient_id}
               >
                 {patients.map((p) => (
-                  <MenuItem key={p.id} value={p.id}>
-                    {p.name}
+                  <MenuItem key={p.patient_id} value={p.patient_id}>
+                    {p.full_name}
                   </MenuItem>
                 ))}
               </Select>
-              {errors.patientId && <Typography color="error" variant="caption">{errors.patientId.message}</Typography>}
+              {errors.patient_id && <Typography color="error" variant="caption">{errors.patient_id.message}</Typography>}
             </FormControl>
             <FormControl fullWidth margin="normal">
               <InputLabel>Doctor</InputLabel>
               <Select
-                name="doctorId"
-                value={watch('doctorId')}
+                name="doctor_id"
+                value={watch('doctor_id')}
                 label="Doctor"
                 onChange={handleSelectChange}
                 required
-                error={!!errors.doctorId}
+                error={!!errors.doctor_id}
               >
                 {doctors.map((d) => (
-                  <MenuItem key={d.id} value={d.id}>
-                    {d.name}
+                  <MenuItem key={d.doctor_id} value={d.doctor_id}>
+                    {d.full_name}
                   </MenuItem>
                 ))}
               </Select>
-              {errors.doctorId && <Typography color="error" variant="caption">{errors.doctorId.message}</Typography>}
+              {errors.doctor_id && <Typography color="error" variant="caption">{errors.doctor_id.message}</Typography>}
             </FormControl>
             <TextField
               label="Date & Time"
-              name="date"
+              name="appointment_time"
               type="datetime-local"
-              value={watch('date')}
-              onChange={(e) => setValue('date', e.target.value)}
+              value={watch('appointment_time')}
+              onChange={(e) => setValue('appointment_time', e.target.value)}
               fullWidth
               margin="normal"
               required
               InputLabelProps={{ shrink: true }}
-              error={!!errors.date}
-              helperText={errors.date?.message}
+              error={!!errors.appointment_time}
+              helperText={errors.appointment_time?.message}
             />
             <FormControl fullWidth margin="normal">
               <InputLabel>Status</InputLabel>
@@ -185,21 +182,10 @@ const AppointmentForm = () => {
                 <MenuItem value="scheduled">Scheduled</MenuItem>
                 <MenuItem value="completed">Completed</MenuItem>
                 <MenuItem value="cancelled">Cancelled</MenuItem>
+                <MenuItem value="no_show">No Show</MenuItem>
               </Select>
               {errors.status && <Typography color="error" variant="caption">{errors.status.message}</Typography>}
             </FormControl>
-            <TextField
-              label="Notes"
-              name="notes"
-              value={watch('notes')}
-              onChange={(e) => setValue('notes', e.target.value)}
-              fullWidth
-              margin="normal"
-              multiline
-              rows={3}
-              error={!!errors.notes}
-              helperText={errors.notes?.message}
-            />
             <MButton 
               type="submit" 
               variant="contained" 

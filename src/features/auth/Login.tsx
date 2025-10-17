@@ -34,7 +34,7 @@ const Login = () => {
     const result = await login(email, password);
 
     if (result && result.success) {
-      navigate('/products');
+      navigate('/');
     } else {
       setError(result?.error || 'Login failed');
     }

@@ -1,42 +1,23 @@
 import api from '../config/axios';
-import { TreatmentPlan, TreatmentStep } from '../types';
+import { TreatmentPlan } from '../types';
 
 interface CreateTreatmentPlanData {
-  patientId: string;
-  doctorId: string;
-  title: string;
-  description: string;
-  diagnosis: string;
-  startDate: string;
-  expectedEndDate: string;
-    status: 'draft' | 'active' | 'completed' | 'cancelled' | 'on-hold';
-    priority: 'low' | 'medium' | 'high' | 'urgent';
-  steps: Omit<TreatmentStep, 'id'>[];
-  notes?: string;
+  patientId: number;
+  doctorId: number;
+  treatment_description: string;
+  start_date: string;
+  end_date?: string;
+  status: 'ongoing' | 'completed' | 'cancelled';
 }
 
 interface UpdateTreatmentPlanData {
-  title?: string;
-  description?: string;
-  diagnosis?: string;
-  expectedEndDate?: string;
-    status?: 'draft' | 'active' | 'completed' | 'cancelled' | 'on-hold';
-    priority?: 'low' | 'medium' | 'high' | 'urgent';
-  notes?: string;
+  treatment_description?: string;
+  end_date?: string;
+  status?: 'ongoing' | 'completed' | 'cancelled';
 }
-
-interface CreateTreatmentStepData {
-  title: string;
-  description: string;
-  dueDate: string;
-  status: 'pending' | 'in-progress' | 'completed' | 'cancelled';
-  assignedDoctorId: string;
-  notes?: string;
-}
-
 
 export const treatmentPlanService = {
-  getAll: async (params?: { patientId?: string; status?: string; offset?: number; limit?: number }): Promise<{ data: TreatmentPlan[] }> => {
+  getAll: async (params?: { offset?: number; limit?: number }): Promise<{ data: TreatmentPlan[] }> => {
     try {
       const response = await api.get('/treatment-plans', { params });
       return { data: response.data };
@@ -46,53 +27,13 @@ export const treatmentPlanService = {
     }
   },
 
-  getById: async (id: string): Promise<{ data: TreatmentPlan }> => {
+  getById: async (id: number): Promise<{ data: TreatmentPlan }> => {
     try {
       const response = await api.get(`/treatment-plans/${id}`);
       return { data: response.data };
     } catch (error) {
       console.error('Error fetching treatment plan:', error);
       throw error;
-    }
-  },
-
-  getByPatientId: async (patientId: string): Promise<{ data: TreatmentPlan[] }> => {
-    try {
-      const response = await api.get('/treatment-plans', { params: { patientId } });
-      return { data: response.data };
-    } catch (error) {
-      console.error('Error fetching patient treatment plans:', error);
-      throw new Error('Failed to fetch patient treatment plans');
-    }
-  },
-
-  getByDoctorId: async (doctorId: string): Promise<{ data: TreatmentPlan[] }> => {
-    try {
-      const response = await api.get('/treatment-plans', { params: { doctorId } });
-      return { data: response.data };
-    } catch (error) {
-      console.error('Error fetching doctor treatment plans:', error);
-      throw new Error('Failed to fetch doctor treatment plans');
-    }
-  },
-
-  getByStatus: async (status: 'active' | 'completed' | 'cancelled' | 'on-hold'): Promise<{ data: TreatmentPlan[] }> => {
-    try {
-      const response = await api.get('/treatment-plans', { params: { status } });
-      return { data: response.data };
-    } catch (error) {
-      console.error('Error fetching treatment plans by status:', error);
-      throw new Error('Failed to fetch treatment plans by status');
-    }
-  },
-
-  getByPriority: async (priority: 'low' | 'medium' | 'high'): Promise<{ data: TreatmentPlan[] }> => {
-    try {
-      const response = await api.get('/treatment-plans', { params: { priority } });
-      return { data: response.data };
-    } catch (error) {
-      console.error('Error fetching treatment plans by priority:', error);
-      throw new Error('Failed to fetch treatment plans by priority');
     }
   },
 
@@ -106,7 +47,7 @@ export const treatmentPlanService = {
     }
   },
 
-  update: async (id: string, planData: UpdateTreatmentPlanData): Promise<{ data: TreatmentPlan }> => {
+  update: async (id: number, planData: UpdateTreatmentPlanData): Promise<{ data: TreatmentPlan }> => {
     try {
       const response = await api.put(`/treatment-plans/${id}`, planData);
       return { data: response.data };
@@ -116,7 +57,7 @@ export const treatmentPlanService = {
     }
   },
 
-  delete: async (id: string): Promise<void> => {
+  delete: async (id: number): Promise<void> => {
     try {
       await api.delete(`/treatment-plans/${id}`);
     } catch (error) {
@@ -125,50 +66,10 @@ export const treatmentPlanService = {
     }
   },
 
-  addStep: async (planId: string, stepData: CreateTreatmentStepData): Promise<{ data: TreatmentStep }> => {
-    try {
-      const response = await api.post(`/treatment-plans/${planId}/steps`, stepData);
-      return { data: response.data };
-    } catch (error) {
-      console.error('Error adding treatment step:', error);
-      throw error;
-    }
-  },
-
-  updateStep: async (planId: string, stepId: string, stepData: Partial<TreatmentStep>): Promise<{ data: TreatmentStep }> => {
-    try {
-      const response = await api.put(`/treatment-plans/${planId}/steps/${stepId}`, stepData);
-      return { data: response.data };
-    } catch (error) {
-      console.error('Error updating treatment step:', error);
-      throw error;
-    }
-  },
-
-  updateStepStatus: async (planId: string, stepId: string, status: 'pending' | 'in-progress' | 'completed' | 'cancelled'): Promise<{ data: TreatmentStep }> => {
-    try {
-      const response = await api.put(`/treatment-plans/${planId}/steps/${stepId}`, { status });
-      return { data: response.data };
-    } catch (error) {
-      console.error('Error updating step status:', error);
-      throw error;
-    }
-  },
-
-  deleteStep: async (planId: string, stepId: string): Promise<void> => {
-    try {
-      await api.delete(`/treatment-plans/${planId}/steps/${stepId}`);
-    } catch (error) {
-      console.error('Error deleting treatment step:', error);
-      throw error;
-    }
-  },
-
-  complete: async (id: string, notes?: string): Promise<{ data: TreatmentPlan }> => {
+  complete: async (id: number): Promise<{ data: TreatmentPlan }> => {
     try {
       const response = await api.put(`/treatment-plans/${id}`, {
-        status: 'completed',
-        ...(notes && { notes })
+        status: 'completed'
       });
       return { data: response.data };
     } catch (error) {
@@ -177,11 +78,10 @@ export const treatmentPlanService = {
     }
   },
 
-  cancel: async (id: string, reason?: string): Promise<{ data: TreatmentPlan }> => {
+  cancel: async (id: number): Promise<{ data: TreatmentPlan }> => {
     try {
       const response = await api.put(`/treatment-plans/${id}`, {
-        status: 'cancelled',
-        notes: reason ? `Cancelled: ${reason}` : 'Treatment plan cancelled'
+        status: 'cancelled'
       });
       return { data: response.data };
     } catch (error) {
@@ -189,19 +89,6 @@ export const treatmentPlanService = {
       throw error;
     }
   },
-
-  getProgress: async (id: string): Promise<{ data: { completed: number; total: number; percentage: number } }> => {
-    try {
-      const plan = await api.get(`/treatment-plans/${id}`);
-      const total = plan.data.steps?.length || 0;
-      const completed = plan.data.steps?.filter((s: TreatmentStep) => s.status === 'completed').length || 0;
-      const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
-      return { data: { completed, total, percentage } };
-    } catch (error) {
-      console.error('Error fetching treatment plan progress:', error);
-      throw error;
-    }
-  }
 };
 
 export default treatmentPlanService;

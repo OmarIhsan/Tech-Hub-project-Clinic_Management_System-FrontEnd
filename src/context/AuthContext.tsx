@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
+import { authAPI } from '../services/api';
+import { Staff, StaffRole } from '../types';
 
 export type AuthResult = {
   success: boolean;
@@ -7,10 +9,10 @@ export type AuthResult = {
 };
 
 export interface User {
-  id: string;
+  staff_id: number;
   email: string;
   name: string;
-  role: string;
+  role: StaffRole;
 }
 
 export interface AuthContextType {
@@ -19,8 +21,9 @@ export interface AuthContextType {
   register: (
     email: string,
     password: string,
-    firstName: string,
-    lastName: string
+    full_name: string,
+    phone: string,
+    role?: StaffRole
   ) => Promise<AuthResult>;
   logout: () => void;
   isAuthenticated: boolean;
@@ -35,16 +38,27 @@ interface AuthProviderProps {
 const AuthContext = React.createContext<AuthContextType | undefined>(undefined);
 export { AuthContext as LocalAuthContext };
 
-
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('accessToken');
     const userData = localStorage.getItem('user');
     if (token && userData) {
-      setUser(JSON.parse(userData));
+      try {
+        const parsedUser: Staff = JSON.parse(userData);
+        setUser({
+          staff_id: parsedUser.staff_id,
+          email: parsedUser.email,
+          name: parsedUser.full_name,
+          role: parsedUser.role,
+        });
+      } catch (error) {
+        console.error('Error parsing user data:', error);
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('user');
+      }
     }
     setLoading(false);
   }, []);
@@ -52,27 +66,23 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const login = async (email: string, password: string): Promise<AuthResult> => {
     try {
       setLoading(true);
-      await new Promise(resolve => setTimeout(resolve, 1000));
 
-      if (!email || !password) {
-        return { success: false, error: 'Missing credentials' };
-      }
-
-      const mockUser: User = {
-        id: '1',
-        email,
-        name: 'Test User',
-        role: email === 'admin@example.com' ? 'admin' : 'user',
+      const response = await authAPI.login({ email, password });
+      
+      const userObj: User = {
+        staff_id: response.user.staff_id,
+        email: response.user.email,
+        name: response.user.full_name,
+        role: response.user.role,
       };
 
-      localStorage.setItem('token', 'mock-token');
-      localStorage.setItem('user', JSON.stringify(mockUser));
-      setUser(mockUser);
-
+      setUser(userObj);
       return { success: true };
     } catch (error: unknown) {
       console.error('Login error:', error);
-      return { success: false, error: 'Login failed' };
+      const axiosError = error as { response?: { data?: { message?: string } } };
+      const errorMessage = axiosError?.response?.data?.message || 'Login failed. Please check your credentials.';
+      return { success: false, error: errorMessage };
     } finally {
       setLoading(false);
     }
@@ -81,45 +91,47 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const register = async (
     email: string,
     password: string,
-    firstName: string,
-    lastName: string
+    full_name: string,
+    phone: string,
+    role: StaffRole = StaffRole.STAFF
   ): Promise<AuthResult> => {
     try {
       setLoading(true);
-      await new Promise(resolve => setTimeout(resolve, 1000));
 
-      if (!email || !password || !firstName || !lastName) {
-        return { success: false, error: 'Missing registration fields' };
-      }
-
-      const mockUser: User = {
-        id: '1',
+      const response = await authAPI.register({
         email,
-        name: `${firstName} ${lastName}`,
-        role: 'user',
+        password,
+        full_name,
+        phone,
+        role,
+      });
+
+      const userObj: User = {
+        staff_id: response.user.staff_id,
+        email: response.user.email,
+        name: response.user.full_name,
+        role: response.user.role,
       };
 
-      localStorage.setItem('token', 'mock-token');
-      localStorage.setItem('user', JSON.stringify(mockUser));
-      setUser(mockUser);
-
+      setUser(userObj);
       return { success: true };
     } catch (error: unknown) {
       console.error('Registration error:', error);
-      return { success: false, error: 'Registration failed' };
+      const axiosError = error as { response?: { data?: { message?: string } } };
+      const errorMessage = axiosError?.response?.data?.message || 'Registration failed. Please try again.';
+      return { success: false, error: errorMessage };
     } finally {
       setLoading(false);
     }
   };
 
   const logout = (): void => {
+    authAPI.logout();
     setUser(null);
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
   };
 
   const isAdmin = (): boolean => {
-    return user?.role === 'admin';
+    return user?.role === StaffRole.OWNER;
   };
 
   const value: AuthContextType = {
@@ -131,5 +143,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     loading,
     isAdmin,
   };
+
   return React.createElement(AuthContext.Provider, { value }, children);
 };

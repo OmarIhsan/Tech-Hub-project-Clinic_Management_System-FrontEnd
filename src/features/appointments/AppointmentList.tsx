@@ -17,7 +17,7 @@ import {
   CircularProgress,
   Alert,
 } from '@mui/material';
-import { appointmentService, doctorAPI, patientAPI } from '../../services/api';
+import { appointmentService, doctorAPI } from '../../services/api';
 import MOutlineButton from '../../components/MOutlineButton';
 import FloatingAddButton from '../../components/FloatingAddButton';
 
@@ -26,7 +26,6 @@ const AppointmentList = () => {
   const navigate = useNavigate();
   const [appointments, setAppointments] = useState([]);
   const [doctors, setDoctors] = useState([]);
-  const [patients, setPatients] = useState([]);
   const [doctorFilter, setDoctorFilter] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<string>('');
   const [loading, setLoading] = useState(true);
@@ -37,14 +36,12 @@ const AppointmentList = () => {
       try {
         setLoading(true);
         setError('');
-        const [appointmentsResponse, doctorsData, patientsData] = await Promise.all([
+        const [appointmentsResponse, doctorsData] = await Promise.all([
           appointmentService.getAll(),
           doctorAPI.getAll(),
-          patientAPI.getAll(),
         ]);
         setAppointments(appointmentsResponse.data || []);
         setDoctors(doctorsData || []);
-        setPatients(patientsData || []);
       } catch (err) {
         setError('Failed to load data. Please try again.');
         console.error('Failed to fetch data:', err);
@@ -58,7 +55,7 @@ const AppointmentList = () => {
 
   const filteredAppointments = appointments.filter((appt) => {
     return (
-      (!doctorFilter || appt.doctorId === doctorFilter) &&
+      (!doctorFilter || appt.doctor_id === Number(doctorFilter)) &&
       (!statusFilter || appt.status === statusFilter)
     );
   });
@@ -100,8 +97,8 @@ const AppointmentList = () => {
               >
                 <MenuItem value="">All</MenuItem>
                 {doctors.map((doc) => (
-                  <MenuItem key={doc.id} value={doc.id}>
-                    {doc.name}
+                  <MenuItem key={doc.doctor_id} value={doc.doctor_id}>
+                    {doc.full_name}
                   </MenuItem>
                 ))}
               </Select>
@@ -135,12 +132,12 @@ const AppointmentList = () => {
               {filteredAppointments.map((appt) => (
                 <TableRow key={appt.id}>
                   <TableCell>
-                    {patients.find((p) => p.id === appt.patientId)?.name || appt.patientId}
+                    {appt.patient?.full_name || `Patient #${appt.patient_id}`}
                   </TableCell>
                   <TableCell>
-                    {doctors.find((d) => d.id === appt.doctorId)?.name || appt.doctorId}
+                    {appt.doctor?.full_name || `Doctor #${appt.doctor_id}`}
                   </TableCell>
-                  <TableCell>{new Date(appt.date).toLocaleString()}</TableCell>
+                  <TableCell>{new Date(appt.appointment_time).toLocaleString()}</TableCell>
                   <TableCell>
                     <Box
                       sx={{

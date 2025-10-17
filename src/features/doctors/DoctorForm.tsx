@@ -10,17 +10,18 @@ import {
   CircularProgress,
 } from '@mui/material';
 import MButton from '../../components/MButton';
-import { Doctor } from '../../types';
 import { doctorAPI } from '../../services/api';
 import validation, { ValidationError } from '../../services/validation';
 
 const DoctorForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [doctor, setDoctor] = useState<Omit<Doctor, 'id'>>({
-    name: '',
-    specialty: '',
-    contact: '',
+  const [doctor, setDoctor] = useState({
+    full_name: '',
+    gender: '',
+    phone: '',
+    email: '',
+    hire_date: new Date().toISOString().split('T')[0],
   });
   const [error, setError] = useState<string>('');
   const [submitting, setSubmitting] = useState(false);
@@ -32,12 +33,14 @@ const DoctorForm = () => {
       
       try {
         setLoading(true);
-        const loadedDoctor = await doctorAPI.getById(id);
+        const loadedDoctor = await doctorAPI.getById(Number(id));
         if (loadedDoctor) {
           setDoctor({ 
-            name: loadedDoctor.name, 
-            specialty: loadedDoctor.specialty, 
-            contact: loadedDoctor.contact 
+            full_name: loadedDoctor.full_name, 
+            gender: loadedDoctor.gender, 
+            phone: loadedDoctor.phone,
+            email: loadedDoctor.email,
+            hire_date: loadedDoctor.hire_date,
           });
         }
       } catch (err) {
@@ -63,7 +66,7 @@ const DoctorForm = () => {
       setSubmitting(true);
       validation.doctorValidation.validateCreate(doctor);
       if (id) {
-        await doctorAPI.update(id, doctor);
+        await doctorAPI.update(Number(id), doctor);
       } else {
         await doctorAPI.create(doctor);
       }
@@ -104,31 +107,59 @@ const DoctorForm = () => {
           )}
           <form onSubmit={handleSubmit}>
             <TextField
-              label="Name"
-              name="name"
-              value={doctor.name}
+              label="Full Name"
+              name="full_name"
+              value={doctor.full_name}
               onChange={handleChange}
               fullWidth
               margin="normal"
               required
             />
             <TextField
-              label="Specialty"
-              name="specialty"
-              value={doctor.specialty}
+              label="Gender"
+              name="gender"
+              value={doctor.gender}
+              onChange={handleChange}
+              fullWidth
+              margin="normal"
+              required
+              select
+              SelectProps={{ native: true }}
+            >
+              <option value="">Select Gender</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="Other">Other</option>
+            </TextField>
+            <TextField
+              label="Phone"
+              name="phone"
+              value={doctor.phone}
               onChange={handleChange}
               fullWidth
               margin="normal"
               required
             />
             <TextField
-              label="Contact"
-              name="contact"
-              value={doctor.contact}
+              label="Email"
+              name="email"
+              type="email"
+              value={doctor.email}
               onChange={handleChange}
               fullWidth
               margin="normal"
               required
+            />
+            <TextField
+              label="Hire Date"
+              name="hire_date"
+              type="date"
+              value={doctor.hire_date}
+              onChange={handleChange}
+              fullWidth
+              margin="normal"
+              required
+              InputLabelProps={{ shrink: true }}
             />
             <MButton
               type="submit"

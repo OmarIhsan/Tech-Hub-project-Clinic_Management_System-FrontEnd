@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Alert } from '@mui/material';
 import { appointmentService } from '../../services/appointmentService';
+import { Appointment } from '../../types';
 import {
   ResponsiveContainer,
   LineChart,
@@ -11,10 +12,6 @@ import {
   Tooltip,
   Legend,
 } from 'recharts';
-
-interface Appointment {
-  date: string;
-}
 
 const PatientChart: React.FC = () => {
   const [data, setData] = useState<Array<{ date: string; count: number }>>([]);
@@ -34,7 +31,7 @@ const PatientChart: React.FC = () => {
           days[key] = 0;
         }
         appts.forEach((a: Appointment) => {
-          const aDate = new Date(a.date);
+          const aDate = new Date(a.appointment_time || '');
           const key = aDate.toISOString().slice(0, 10);
           if (days[key] !== undefined) {
             days[key]++;

@@ -28,13 +28,13 @@ const Dashboard = () => {
         const apptsRes = await appointmentService.getAll();
         if (mounted) {
           const now = new Date();
-          const upcoming = (apptsRes?.data || []).filter((a) => new Date(a.date) >= now).length;
+          const upcoming = (apptsRes?.data || []).filter((a) => new Date(a.appointment_time) >= now).length;
           setUpcomingAppointments(upcoming);
         }
 
         const plansRes = await treatmentPlanService.getAll();
         if (mounted) {
-          const active = (plansRes?.data || []).filter((p) => p.status === 'active').length;
+          const active = (plansRes?.data || []).filter((p) => p.status === 'ongoing').length;
           setActivePlans(active);
         }
       } catch (err) {

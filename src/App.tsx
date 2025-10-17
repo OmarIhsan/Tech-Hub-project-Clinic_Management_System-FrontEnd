@@ -1,14 +1,39 @@
 
 import { BrowserRouter } from 'react-router';
-import { Box, AppBar, Toolbar, Typography } from '@mui/material';
+import { Box, AppBar, Toolbar, Typography, IconButton, ThemeProvider } from '@mui/material';
 import { LocalHospital as ClinicIcon } from '@mui/icons-material';
+import Brightness4Icon from '@mui/icons-material/Brightness4';
+import Brightness7Icon from '@mui/icons-material/Brightness7';
+import LogoutIcon from '@mui/icons-material/Logout';
+import { useState, useMemo } from 'react';
+import { lightTheme, darkTheme } from './components/theme';
 import './App.css'
 import AppRouter from './router/Router';
 import NavigationIcons from './components/NavigationIcons';
+import { useAuthContext } from './context/useAuthContext';
+import { useNavigate } from 'react-router-dom';
 
-function App() {
+function AppContent() {
+  const { logout, isAuthenticated } = useAuthContext();
+  const navigate = useNavigate();
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  const theme = useMemo(
+    () => (isDarkMode ? darkTheme : lightTheme),
+    [isDarkMode]
+  );
+
+  const handleThemeToggle = () => {
+    setIsDarkMode(!isDarkMode);
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+
   return (
-    <BrowserRouter>
+    <ThemeProvider theme={theme}>
       <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
         <AppBar position="static" elevation={2}>
           <Toolbar>
@@ -24,6 +49,27 @@ function App() {
             >
               Clinic Management System
             </Typography>
+            
+            {isAuthenticated && (
+              <>
+                <IconButton 
+                  color="inherit" 
+                  onClick={handleThemeToggle}
+                  sx={{ mr: 1 }}
+                  title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+                >
+                  {isDarkMode ? <Brightness7Icon /> : <Brightness4Icon />}
+                </IconButton>
+                
+                <IconButton 
+                  color="inherit" 
+                  onClick={handleLogout}
+                  title="Logout"
+                >
+                  <LogoutIcon />
+                </IconButton>
+              </>
+            )}
           </Toolbar>
         </AppBar>
 
@@ -32,7 +78,7 @@ function App() {
           sx={{ 
             flexGrow: 1,
             pb: 8,
-            backgroundColor: '#f5f5f5',
+            backgroundColor: theme.palette.background.default,
             minHeight: 'calc(100vh - 64px)'
           }}
         >
@@ -41,6 +87,14 @@ function App() {
 
         <NavigationIcons />
       </Box>
+    </ThemeProvider>
+  );
+}
+
+function App() {
+  return (
+    <BrowserRouter>
+      <AppContent />
     </BrowserRouter>
   );
 }
