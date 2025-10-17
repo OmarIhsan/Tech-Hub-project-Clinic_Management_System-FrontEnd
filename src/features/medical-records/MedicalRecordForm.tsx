@@ -25,6 +25,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { medicalRecordAPI, patientAPI, doctorAPI } from '../../services/api';
 import MButton from '../../components/MButton';
 import MOutlineButton from '../../components/MOutlineButton';
+import { MedicalRecord, MedicalFinding } from '../../types';
 
 const Grid = (props) => <Box {...props} />;
 
@@ -33,15 +34,15 @@ const MedicalRecordForm = () => {
   const navigate = useNavigate();
   const [activeStep, setActiveStep] = useState(0);
   
-  const [medicalRecord, setMedicalRecord] = useState({
+  const [medicalRecord, setMedicalRecord] = useState<Omit<MedicalRecord, 'id'>>({
     patientId: '',
     doctorId: '',
     recordDate: new Date().toISOString().split('T')[0],
     diagnosis: {
       primary: '',
       secondary: [],
-      severity: 'mild',
-      confidence: 'suspected'
+      severity: 'mild' as const,
+      confidence: 'suspected' as const
     },
     findings: [],
     treatment: {
@@ -53,7 +54,10 @@ const MedicalRecordForm = () => {
     followUp: {
       required: false
     },
-    status: 'draft'
+    status: 'draft' as const,
+    createdDate: new Date().toISOString(),
+    lastUpdated: new Date().toISOString(),
+    notes: ''
   });
   
   const [patients, setPatients] = useState([]);
@@ -78,7 +82,10 @@ const MedicalRecordForm = () => {
         
         if (id) {
           const recordData = await medicalRecordAPI.getById(id);
-          setMedicalRecord(recordData);
+          // Extract only the properties we need (without id)
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const { id: _recordId, ...recordWithoutId } = recordData;
+          setMedicalRecord(recordWithoutId);
         }
       } catch (err) {
         setError('Failed to load data. Please try again.');
@@ -104,9 +111,9 @@ const MedicalRecordForm = () => {
   };
 
   const addFinding = () => {
-    const newFinding = {
+    const newFinding: MedicalFinding = {
       id: Date.now().toString(),
-      type: 'symptom',
+      type: 'symptom' as const,
       title: '',
       description: '',
       recordedDate: new Date().toISOString(),
@@ -114,18 +121,18 @@ const MedicalRecordForm = () => {
     };
     setMedicalRecord(prev => ({
       ...prev,
-      findings: [...(prev.findings || []), newFinding]
+      findings: [...prev.findings, newFinding]
     }));
   };
 
-  const removeFinding = (findingId) => {
+  const removeFinding = (findingId: string) => {
     setMedicalRecord(prev => ({
       ...prev,
-      findings: (prev.findings || []).filter(f => f.id !== findingId)
+      findings: prev.findings.filter(f => f.id !== findingId)
     }));
   };
 
-  const updateFinding = (findingId, field, value) => {
+  const updateFinding = (findingId: string, field: string, value: string) => {
     setMedicalRecord(prev => ({
       ...prev,
       findings: (prev.findings || []).map(finding =>
@@ -264,10 +271,13 @@ const MedicalRecordForm = () => {
             <Grid item xs={12} md={8}>
               <TextField
                 label="Primary Diagnosis *"
-                value={medicalRecord.diagnosis?.primary || ''}
+                value={medicalRecord.diagnosis.primary}
                 onChange={(e) => setMedicalRecord(prev => ({
             ...prev,
-            diagnosis: { ...(prev.diagnosis || {}), primary: e.target.value }
+            diagnosis: { 
+              ...prev.diagnosis, 
+              primary: e.target.value 
+            }
                 }))}
                 fullWidth
               />
@@ -275,10 +285,13 @@ const MedicalRecordForm = () => {
             <Grid item xs={12} md={4}>
               <TextField
                 label="ICD-10 Code"
-                value={medicalRecord.diagnosis?.icd10Code || ''}
+                value={medicalRecord.diagnosis.icd10Code || ''}
                 onChange={(e) => setMedicalRecord(prev => ({
             ...prev,
-            diagnosis: { ...(prev.diagnosis || {}), icd10Code: e.target.value }
+            diagnosis: { 
+              ...prev.diagnosis, 
+              icd10Code: e.target.value 
+            }
                 }))}
                 fullWidth
               />
@@ -290,11 +303,14 @@ const MedicalRecordForm = () => {
               <FormControl fullWidth>
                 <InputLabel>Severity</InputLabel>
                 <Select
-            value={medicalRecord.diagnosis?.severity || 'mild'}
+            value={medicalRecord.diagnosis.severity}
             onChange={(e) => 
               setMedicalRecord(prev => ({
                 ...prev,
-                diagnosis: { ...(prev.diagnosis || {}), severity: e.target.value }
+                diagnosis: { 
+                  ...prev.diagnosis, 
+                  severity: e.target.value as 'mild' | 'moderate' | 'severe' | 'critical'
+                }
               }))
             }
                 >
@@ -309,11 +325,14 @@ const MedicalRecordForm = () => {
               <FormControl fullWidth>
                 <InputLabel>Confidence</InputLabel>
                 <Select
-            value={medicalRecord.diagnosis?.confidence || 'suspected'}
+            value={medicalRecord.diagnosis.confidence}
             onChange={(e) => 
               setMedicalRecord(prev => ({
                 ...prev,
-                diagnosis: { ...(prev.diagnosis || {}), confidence: e.target.value }
+                diagnosis: { 
+                  ...prev.diagnosis, 
+                  confidence: e.target.value as 'suspected' | 'probable' | 'confirmed'
+                }
               }))
             }
                 >

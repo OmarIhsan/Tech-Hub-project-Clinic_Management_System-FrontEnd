@@ -1,3 +1,11 @@
+// Staff Role Enum - Based on USER_ROLES_AND_PERMISSIONS.md
+export enum StaffRole {
+  SUPER_ADMIN = 'super_admin',
+  ADMIN = 'admin',
+  STAFF = 'staff',
+  CUSTOMER = 'customer',
+}
+
 export interface Patient {
   id: string;
   name: string;

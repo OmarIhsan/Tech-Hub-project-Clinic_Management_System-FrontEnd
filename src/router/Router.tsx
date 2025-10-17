@@ -1,6 +1,6 @@
 import { Routes, Route } from 'react-router';
 import Login from '../features/auth/Login';
-import Dashboard from '../features/dashboard/Dashboard';
+import RoleDashboard from '../features/dashboard/RoleDashboard';
 import PatientList from '../features/patients/PatientList';
 import PatientForm from '../features/patients/PatientForm';
 import DoctorList from '../features/doctors/DoctorList';
@@ -20,7 +20,7 @@ import RoleRoute from '../components/RoleRoute';
 
 const AppRouter = () => (
   <Routes>
-    <Route path="/" element={<Dashboard />} />
+    <Route path="/" element={<RoleDashboard />} />
     <Route path="/login" element={<Login />} />
     <Route path="/patients" element={<ProtectedRoute><PatientList /></ProtectedRoute>} />
     <Route path="/patients/new" element={<PatientForm />} />

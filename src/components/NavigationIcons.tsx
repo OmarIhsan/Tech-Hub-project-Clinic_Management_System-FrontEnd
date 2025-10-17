@@ -5,7 +5,9 @@ import LocalHospitalIcon from '@mui/icons-material/LocalHospital';
 import EventNoteIcon from '@mui/icons-material/EventNote';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import DescriptionIcon from '@mui/icons-material/Description';
+import LogoutIcon from '@mui/icons-material/Logout';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuthContext } from '../context/useAuthContext';
 
 const getTabValue = (pathname) => {
   if (pathname.includes('/patients')) return 1;
@@ -18,6 +20,7 @@ const getTabValue = (pathname) => {
 const NavigationIcons = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { logout } = useAuthContext();
   const [value, setValue] = React.useState(getTabValue(location.pathname));
 
   const handleChange = (event, newValue) => {
@@ -38,6 +41,11 @@ const NavigationIcons = () => {
       case 4:
         navigate('/documents');
         break;
+      case 5:
+        // Logout
+        logout();
+        navigate('/login');
+        break;
       default:
         break;
     }
@@ -51,6 +59,7 @@ const NavigationIcons = () => {
         <BottomNavigationAction label="Doctors" icon={<LocalHospitalIcon />} />
         <BottomNavigationAction label="Treatment Plans" icon={<AssignmentIcon />} />
         <BottomNavigationAction label="Documents" icon={<DescriptionIcon />} />
+        <BottomNavigationAction label="Logout" icon={<LogoutIcon />} />
       </BottomNavigation>
     </Paper>
   );

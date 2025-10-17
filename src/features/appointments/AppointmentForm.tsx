@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { appointmentValidationSchema } from '../../validation/schemas';
-import { useNavigate, useParams } from 'react-router';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   Container,
@@ -19,6 +18,7 @@ import {
 } from '@mui/material';
 import { appointmentService, patientAPI, doctorAPI } from '../../services/api';
 import MButton from '../../components/MButton';
+import { Patient } from '../../types';
 
 
 const AppointmentForm = () => {
@@ -35,11 +35,11 @@ const AppointmentForm = () => {
       patientId: '',
       doctorId: '',
       date: '',
-      status: 'scheduled',
+      status: 'scheduled' as 'scheduled' | 'completed' | 'cancelled',
       notes: '',
     },
   });
-  const [patients, setPatients] = useState([]);
+  const [patients, setPatients] = useState<Patient[]>([]);
   const [doctors, setDoctors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
