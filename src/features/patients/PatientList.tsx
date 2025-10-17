@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Container,
@@ -16,26 +16,31 @@ import {
 import { patientAPI } from '../../services/api';
 import MOutlineButton from '../../components/MOutlineButton';
 import FloatingAddButton from '../../components/FloatingAddButton';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 const PatientList = () => {
   const navigate = useNavigate();
   const [actionLoading, setActionLoading] = useState(null);
-  const queryClient = useQueryClient();
+  const [patients, setPatients] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isError, setIsError] = useState(false);
 
-  const { data: patients = [], isLoading, isError } = useQuery({
-    queryKey: ['patients'],
-    queryFn: () => patientAPI.getAll()
-  });
+  useEffect(() => {
+    loadPatients();
+  }, []);
 
-  const deleteMutation = useMutation({
-    mutationFn: async (id) => {
-      // call the delete() (returns void) then return the id so callers receive the id string
-      await patientAPI.delete(id);
-      return id;
-    },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['patients'] })
-  });
+  const loadPatients = async () => {
+    try {
+      setIsLoading(true);
+      setIsError(false);
+      const data = await patientAPI.getAll();
+      setPatients(data);
+    } catch (err) {
+      console.error('Failed to load patients:', err);
+      setIsError(true);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleDelete = async (id) => {
     const ok = window.confirm('Are you sure you want to delete this patient?');
@@ -43,7 +48,8 @@ const PatientList = () => {
 
     try {
       setActionLoading(id);
-      await deleteMutation.mutateAsync(id);
+      await patientAPI.delete(id);
+      await loadPatients();
     } catch (err) {
       console.error('Failed to delete patient:', err);
     } finally {

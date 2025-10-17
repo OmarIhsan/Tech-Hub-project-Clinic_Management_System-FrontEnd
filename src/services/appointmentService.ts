@@ -5,14 +5,14 @@ import { Appointment } from '../types';
 interface CreateAppointmentData {
   patientId: string;
   doctorId: string;
-  appointmentDate: string;
+  datetime: string;  // Changed from appointmentDate to match API
   reason?: string;
   status?: 'scheduled' | 'completed' | 'cancelled';
   notes?: string;
 }
 
 interface UpdateAppointmentData {
-  appointmentDate?: string;
+  datetime?: string;  // Changed from appointmentDate to match API
   reason?: string;
   status?: 'scheduled' | 'completed' | 'cancelled';
   notes?: string;
@@ -150,7 +150,7 @@ export const appointmentService = {
   reschedule: async (id: string, newDate: string, reason?: string): Promise<{ data: Appointment }> => {
     try {
       const response = await api.put(`/appointments/${id}`, {
-        appointmentDate: newDate,
+        datetime: newDate,  // Changed from appointmentDate
         notes: reason ? `Rescheduled - ${reason}` : 'Appointment rescheduled'
       });
       return { data: response.data };

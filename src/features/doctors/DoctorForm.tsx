@@ -12,7 +12,6 @@ import {
 import MButton from '../../components/MButton';
 import { Doctor } from '../../types';
 import { doctorAPI } from '../../services/api';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import validation, { ValidationError } from '../../services/validation';
 
 const DoctorForm = () => {
@@ -25,33 +24,27 @@ const DoctorForm = () => {
   });
   const [error, setError] = useState<string>('');
   const [submitting, setSubmitting] = useState(false);
-
-  const queryClient = useQueryClient();
-
-  const { data: loadedDoctor, isLoading: isFetching } = useQuery<Doctor | null>({
-    queryKey: ['doctor', id],
-    queryFn: async () => {
-      if (!id) return null;
-      return await doctorAPI.getById(id);
-    },
-    enabled: !!id,
-  });
+  const [isFetching, setIsFetching] = useState(false);
 
   useEffect(() => {
-    if (loadedDoctor) {
-      setDoctor({ name: loadedDoctor.name, specialty: loadedDoctor.specialty, contact: loadedDoctor.contact });
+    const loadDoctor = async () => {
+      try {
+        setIsFetching(true);
+        const loadedDoctor = await doctorAPI.getById(id!);
+        if (loadedDoctor) {
+          setDoctor({ name: loadedDoctor.name, specialty: loadedDoctor.specialty, contact: loadedDoctor.contact });
+        }
+      } catch (err) {
+        console.error('Failed to load doctor:', err);
+      } finally {
+        setIsFetching(false);
+      }
+    };
+
+    if (id) {
+      loadDoctor();
     }
-  }, [loadedDoctor]);
-
-  const createMutation = useMutation<Doctor, Error, Omit<Doctor, 'id'>>({
-    mutationFn: (d: Omit<Doctor, 'id'>) => doctorAPI.create(d),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['doctors'] }),
-  });
-
-  const updateMutation = useMutation<Doctor, Error, { id: string; d: Partial<Doctor> }>({
-    mutationFn: ({ id: pid, d }: { id: string; d: Partial<Doctor> }) => doctorAPI.update(pid, d),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['doctors'] }),
-  });
+  }, [id]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setDoctor({ ...doctor, [e.target.name]: e.target.value });
@@ -65,12 +58,12 @@ const DoctorForm = () => {
       setSubmitting(true);
       validation.doctorValidation.validateCreate(doctor);
       if (id) {
-        await updateMutation.mutateAsync({ id, d: doctor });
+        await doctorAPI.update(id, doctor);
       } else {
-        await createMutation.mutateAsync(doctor);
+        await doctorAPI.create(doctor);
       }
       navigate('/doctors');
-    } catch (err: any) {
+    } catch (err: unknown) {
       if (err instanceof ValidationError) {
         setError(err.message);
       } else {

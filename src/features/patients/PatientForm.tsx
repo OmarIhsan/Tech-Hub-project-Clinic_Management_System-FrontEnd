@@ -11,53 +11,47 @@ import {
 } from '@mui/material';
 import MButton from '../../components/MButton';
 import { patientAPI } from '../../services/api';
-import { Patient } from '../../types';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import validation, { ValidationError } from '../../services/validation';
 
 const PatientForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [patient, setPatient] = useState<Omit<Patient, 'id'>>({
+  const [patient, setPatient] = useState({
     name: '',
     age: '',
     contact: '',
   });
-  const [error, setError] = useState<string>('');
+  const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
-
-  const queryClient = useQueryClient();
-
-  const { data: loadedPatient, isLoading: isFetching } = useQuery<Patient | null>({
-    queryKey: ['patient', id],
-    queryFn: async () => {
-      if (!id) return null;
-      return await patientAPI.getById(id);
-    },
-    enabled: !!id,
-  });
+  const [isFetching, setIsFetching] = useState(false);
 
   useEffect(() => {
-    if (loadedPatient) {
-      setPatient({ name: loadedPatient.name, age: loadedPatient.age, contact: loadedPatient.contact });
+    const loadPatient = async () => {
+      if (!id) return;
+      
+      try {
+        setIsFetching(true);
+        const loadedPatient = await patientAPI.getById(id);
+        if (loadedPatient) {
+          setPatient({ name: loadedPatient.name, age: loadedPatient.age, contact: loadedPatient.contact });
+        }
+      } catch (err) {
+        console.error('Failed to load patient:', err);
+      } finally {
+        setIsFetching(false);
+      }
+    };
+
+    if (id) {
+      loadPatient();
     }
-  }, [loadedPatient]);
+  }, [id]);
 
-  const createMutation = useMutation<Patient, Error, Omit<Patient, 'id'>>({
-    mutationFn: (p: Omit<Patient, 'id'>) => patientAPI.create(p),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['patients'] }),
-  });
-
-  const updateMutation = useMutation<Patient, Error, { id: string; p: Partial<Patient> }>({
-    mutationFn: ({ id: pid, p }: { id: string; p: Partial<Patient> }) => patientAPI.update(pid, p),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['patients'] }),
-  });
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e) => {
     setPatient({ ...patient, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
@@ -66,12 +60,12 @@ const PatientForm = () => {
       validation.patientValidation.validateCreate(patient);
 
       if (id) {
-        await updateMutation.mutateAsync({ id, p: patient });
+        await patientAPI.update(id, patient);
       } else {
-        await createMutation.mutateAsync(patient);
+        await patientAPI.create(patient);
       }
       navigate('/patients');
-    } catch (err: unknown) {
+    } catch (err) {
       if (err instanceof ValidationError) {
         setError(err.message);
       } else if (err instanceof Error) {

@@ -4,7 +4,7 @@ import { Staff } from '../types';
 interface CreateStaffData {
   name: string;
   email: string;
-  phone: string;
+  contact: string;  // Changed from phone to match API
   role: string;
   hireDate: string;
 }
@@ -12,7 +12,7 @@ interface CreateStaffData {
 interface UpdateStaffData {
   name?: string;
   email?: string;
-  phone?: string;
+  contact?: string;  // Changed from phone to match API
   role?: string;
   hireDate?: string;
 }

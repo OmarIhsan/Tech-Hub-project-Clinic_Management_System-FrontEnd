@@ -7,7 +7,7 @@ interface CreateProcedureData {
   duration?: number;
   cost?: number;
   scheduledAt?: string;
-  treatmentPlanId?: number;
+  relatedTreatmentPlanId?: number;  // Changed from treatmentPlanId to match API
 }
 
 interface UpdateProcedureData {
@@ -16,7 +16,7 @@ interface UpdateProcedureData {
   duration?: number;
   cost?: number;
   scheduledAt?: string;
-  treatmentPlanId?: number;
+  relatedTreatmentPlanId?: number;  // Changed from treatmentPlanId to match API
 }
 
 export const procedureService = {

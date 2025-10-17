@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { appointmentValidationSchema } from '../../validation/schemas';
-import { useNavigate, useParams } from 'react-router';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   Container,
