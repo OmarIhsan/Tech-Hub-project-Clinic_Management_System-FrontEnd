@@ -54,10 +54,12 @@ const TreatmentPlanList = () => {
         setLoading(true);
         setError('');
         const treatmentPlansResponse = await treatmentPlanService.getAll();
-        setTreatmentPlans(treatmentPlansResponse.data || []);
+        const plansData = treatmentPlansResponse.data || [];
+        setTreatmentPlans(Array.isArray(plansData) ? plansData : []);
       } catch (err) {
         setError('Failed to load treatment plans. Please try again.');
         console.error('Failed to fetch data:', err);
+        setTreatmentPlans([]);
       } finally {
         setLoading(false);
       }
@@ -150,7 +152,6 @@ const TreatmentPlanList = () => {
         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
           <Tabs value={tabValue} onChange={(e, newValue) => setTabValue(newValue)}>
             <Tab label="Treatment Plans List" />
-            <Tab label="Treatment Documents" />
           </Tabs>
         </Box>
 

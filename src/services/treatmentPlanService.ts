@@ -21,7 +21,9 @@ export const treatmentPlanService = {
   getAll: async (params?: { offset?: number; limit?: number }): Promise<{ data: TreatmentPlan[] }> => {
     try {
       const response = await api.get('/treatment-plans', { params });
-      return { data: response.data };
+      // Handle both direct array and wrapped response
+      const data = response.data.data || response.data;
+      return { data: Array.isArray(data) ? data : [] };
     } catch (error) {
       console.error('Error fetching treatment plans:', error);
       throw new Error('Failed to fetch treatment plans');
@@ -31,7 +33,8 @@ export const treatmentPlanService = {
   getById: async (id: number): Promise<{ data: TreatmentPlan }> => {
     try {
       const response = await api.get(`/treatment-plans/${id}`);
-      return { data: response.data };
+      // Handle both direct object and wrapped response
+      return { data: response.data.data || response.data };
     } catch (error) {
       console.error('Error fetching treatment plan:', error);
       throw error;
@@ -41,7 +44,8 @@ export const treatmentPlanService = {
   create: async (planData: CreateTreatmentPlanData): Promise<{ data: TreatmentPlan }> => {
     try {
       const response = await api.post('/treatment-plans', planData);
-      return { data: response.data };
+      // Handle both direct object and wrapped response
+      return { data: response.data.data || response.data };
     } catch (error) {
       console.error('Error creating treatment plan:', error);
       throw new Error('Failed to create treatment plan');
@@ -51,7 +55,8 @@ export const treatmentPlanService = {
   update: async (id: number, planData: UpdateTreatmentPlanData): Promise<{ data: TreatmentPlan }> => {
     try {
       const response = await api.put(`/treatment-plans/${id}`, planData);
-      return { data: response.data };
+      // Handle both direct object and wrapped response
+      return { data: response.data.data || response.data };
     } catch (error) {
       console.error('Error updating treatment plan:', error);
       throw error;
@@ -72,7 +77,8 @@ export const treatmentPlanService = {
       const response = await api.put(`/treatment-plans/${id}`, {
         status: 'completed'
       });
-      return { data: response.data };
+      // Handle both direct object and wrapped response
+      return { data: response.data.data || response.data };
     } catch (error) {
       console.error('Error completing treatment plan:', error);
       throw error;
@@ -84,7 +90,8 @@ export const treatmentPlanService = {
       const response = await api.put(`/treatment-plans/${id}`, {
         status: 'cancelled'
       });
-      return { data: response.data };
+      // Handle both direct object and wrapped response
+      return { data: response.data.data || response.data };
     } catch (error) {
       console.error('Error cancelling treatment plan:', error);
       throw error;

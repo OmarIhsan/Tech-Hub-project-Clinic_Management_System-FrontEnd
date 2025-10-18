@@ -212,6 +212,14 @@ const PatientList = () => {
                           <Chip label={patient.blood_group || 'N/A'} size="small" variant="outlined" />
                         </TableCell>
                         <TableCell align="center">
+                          <Button
+                            size="small"
+                            variant="contained"
+                            onClick={() => navigate(`/patients/${patient.patient_id}`)}
+                            sx={{ mr: 1 }}
+                          >
+                            View
+                          </Button>
                           <IconButton
                             size="small"
                             color="primary"

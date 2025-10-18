@@ -59,11 +59,15 @@ const AppointmentList = () => {
           appointmentService.getAll(),
           doctorAPI.getAll(),
         ]);
-        setAppointments(appointmentsResponse.data || []);
-        setDoctors(doctorsData || []);
+        // Ensure appointments is always an array
+        const appointmentsData = appointmentsResponse.data || [];
+        setAppointments(Array.isArray(appointmentsData) ? appointmentsData : []);
+        setDoctors(Array.isArray(doctorsData) ? doctorsData : []);
       } catch (err) {
         setError('Failed to load data. Please try again.');
         console.error('Failed to fetch data:', err);
+        setAppointments([]);
+        setDoctors([]);
       } finally {
         setLoading(false);
       }

@@ -20,7 +20,9 @@ export const appointmentService = {
   }): Promise<{ data: Appointment[] }> => {
     try {
       const response = await api.get('/appointment', { params });
-      return { data: response.data };
+      // Handle both direct array and wrapped response
+      const data = response.data.data || response.data;
+      return { data: Array.isArray(data) ? data : [] };
     } catch (error) {
       console.error('Error fetching appointments:', error);
       throw new Error('Failed to fetch appointments');
@@ -30,7 +32,8 @@ export const appointmentService = {
   getById: async (id: number): Promise<{ data: Appointment }> => {
     try {
       const response = await api.get(`/appointment/${id}`);
-      return { data: response.data };
+      // Handle both direct object and wrapped response
+      return { data: response.data.data || response.data };
     } catch (error) {
       console.error('Error fetching appointment:', error);
       throw error;
@@ -40,7 +43,8 @@ export const appointmentService = {
   create: async (appointmentData: CreateAppointmentData): Promise<{ data: Appointment }> => {
     try {
       const response = await api.post('/appointment', appointmentData);
-      return { data: response.data };
+      // Handle both direct object and wrapped response
+      return { data: response.data.data || response.data };
     } catch (error) {
       console.error('Error creating appointment:', error);
       throw new Error('Failed to create appointment');
@@ -50,7 +54,8 @@ export const appointmentService = {
   update: async (id: number, appointmentData: UpdateAppointmentData): Promise<{ data: Appointment }> => {
     try {
       const response = await api.put(`/appointment/${id}`, appointmentData);
-      return { data: response.data };
+      // Handle both direct object and wrapped response
+      return { data: response.data.data || response.data };
     } catch (error) {
       console.error('Error updating appointment:', error);
       throw error;
@@ -62,7 +67,8 @@ export const appointmentService = {
       const response = await api.put(`/appointment/${id}`, {
         status: 'cancelled'
       });
-      return { data: response.data };
+      // Handle both direct object and wrapped response
+      return { data: response.data.data || response.data };
     } catch (error) {
       console.error('Error cancelling appointment:', error);
       throw error;
@@ -74,7 +80,8 @@ export const appointmentService = {
       const response = await api.put(`/appointment/${id}`, {
         status: 'completed'
       });
-      return { data: response.data };
+      // Handle both direct object and wrapped response
+      return { data: response.data.data || response.data };
     } catch (error) {
       console.error('Error completing appointment:', error);
       throw error;

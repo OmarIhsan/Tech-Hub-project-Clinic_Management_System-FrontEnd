@@ -4,3 +4,5 @@ export { default as DatePicker } from './DatePicker';
 export { default as FileUpload } from './FileUpload';
 export { default as TableView } from './TableView';
 export { default as StatusBadge } from './StatusBadge';
+export { default as AppointmentCalendar } from './AppointmentCalendar';
+export { default as StatsChart } from './StatsChart';
