@@ -14,36 +14,19 @@ import {
   Cell,
 } from 'recharts';
 
-interface Patient {
-  patient_id: number;
-  full_name: string;
-  gender: string;
-  date_of_birth: string;
-  phone: string;
-  email: string;
-  address: string;
-  created_at: string;
-  updated_at: string;
+interface ChartDatum {
+  name: string;
+  value: number;
 }
 
 interface StatsChartProps {
   title: string;
   type: 'bar' | 'pie';
-  data: Patient[]; // <-- Accepts the API response array
+  data: ChartDatum[] | unknown[]; // Accept simple chart-friendly objects or unknown arrays
   colors?: string[];
 }
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
-
-// Helper to transform patient data for chart
-const transformPatientData = (patients: Patient[]) => {
-  // Example: show patient count by gender
-  const genderCount: { [key: string]: number } = {};
-  patients.forEach(p => {
-    genderCount[p.gender] = (genderCount[p.gender] || 0) + 1;
-  });
-  return Object.entries(genderCount).map(([name, value]) => ({ name, value }));
-};
 
 export const StatsChart: React.FC<StatsChartProps> = ({ 
   title, 
@@ -51,8 +34,16 @@ export const StatsChart: React.FC<StatsChartProps> = ({
   data,
   colors = COLORS 
 }) => {
-  // Transform the API response for charting
-  const chartData = transformPatientData(data);
+  // If data already matches {name,value} shape use it, otherwise try to map
+  const isChartDatum = (v: unknown): v is ChartDatum => {
+    if (!v || typeof v !== 'object') return false;
+    const obj = v as Record<string, unknown>;
+    return typeof obj.name === 'string' && typeof obj.value === 'number';
+  };
+
+  const chartData: ChartDatum[] = Array.isArray(data) && data.length > 0 && isChartDatum(data[0])
+    ? (data as ChartDatum[])
+    : [];
 
   return (
     <Paper elevation={2} sx={{ p: 3 }}>

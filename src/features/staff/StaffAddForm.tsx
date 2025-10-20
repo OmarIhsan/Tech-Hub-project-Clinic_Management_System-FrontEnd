@@ -52,14 +52,16 @@ const StaffAddForm: React.FC = () => {
       };
 
       await staffAPI.create(payload);
-      navigate('/staff/update'); // adjust route if your app uses another destination
+      // After creating a staff member, redirect to the staff list
+      navigate('/staff');
     } catch (err: unknown) {
-      const message =
-        (err as any)?.response?.data?.message ||
-        (err as any)?.response?.data ||
-        (err as any)?.message ||
-        'Failed to create staff member';
-      setError(String(message));
+      const e = err as unknown;
+      const respData = (e as { response?: { data?: unknown } })?.response?.data as
+        | { message?: string }
+        | string
+        | undefined;
+      const message = typeof respData === 'string' ? respData : respData?.message;
+      setError(message || (e as { message?: string })?.message || 'Failed to create staff member');
     } finally {
       setSaving(false);
     }

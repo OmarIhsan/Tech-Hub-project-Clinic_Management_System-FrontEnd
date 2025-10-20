@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import {
   Container,
   Paper,
@@ -13,29 +13,36 @@ import {
   InputLabel,
   CircularProgress,
 } from '@mui/material';
-import { treatmentPlanService, patientAPI, doctorAPI } from '../../services/api';
-import { TreatmentPlan } from '../../types';
+import { treatmentPlanService, patientAPI, doctorAPI, appointmentService } from '../../services/api';
+import { TreatmentPlan, Appointment } from '../../types';
 import MButton from '../../components/MButton';
 import MOutlineButton from '../../components/MOutlineButton';
 
 const TreatmentPlanForm = () => {
   const { id } = useParams();
+  const location = useLocation();
   const navigate = useNavigate();
   
-  const [treatmentPlan, setTreatmentPlan] = useState<Partial<TreatmentPlan>>({
-    patient_id: '',
-    doctor_id: '',
+  type FormState = Partial<TreatmentPlan> & { appointment_id?: number };
+
+  const [treatmentPlan, setTreatmentPlan] = useState<FormState>({
+    patient_id: undefined,
+    doctor_id: undefined,
+    appointment_id: undefined,
     treatment_description: '',
     diagnosis: '',
     start_date: '',
     expected_end_date: '',
-    status: 'ongoing', // must be 'ongoing' | 'completed' | 'cancelled'
+    status: 'active', // allowed: draft | active | ongoing | completed | cancelled
     priority: 'medium',
     notes: '',
   });
   
   const [patients, setPatients] = useState([]);
   const [doctors, setDoctors] = useState([]);
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [apptLoading, setApptLoading] = useState(false);
+  const [apptError, setApptError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -51,9 +58,23 @@ const TreatmentPlanForm = () => {
         ]);
         setPatients(patientsData);
         setDoctors(doctorsData);
-        
+        // Prefill from query params if creating a new plan
+        if (!id) {
+          const params = new URLSearchParams(location.search);
+          const qPatient = params.get('patient_id');
+          const qDoctor = params.get('doctor_id');
+          const qAppointment = params.get('appointment_id');
+          setTreatmentPlan(prev => ({
+            ...prev,
+            patient_id: qPatient ? Number(qPatient) : prev.patient_id,
+            doctor_id: qDoctor ? Number(qDoctor) : prev.doctor_id,
+            // store appointment_id in a temp field on state for inclusion in payload
+            ...(qAppointment ? { appointment_id: Number(qAppointment) } : {}),
+          }));
+        }
         if (id) {
-          const treatmentPlanResponse = await treatmentPlanService.getById(id);
+          const numericId = Number(id);
+          const treatmentPlanResponse = await treatmentPlanService.getById(numericId);
           const treatmentPlanData = treatmentPlanResponse.data;
           setTreatmentPlan(treatmentPlanData as Partial<TreatmentPlan>);
         }
@@ -66,31 +87,91 @@ const TreatmentPlanForm = () => {
     };
 
     fetchData();
-  }, [id]);
+  }, [id, location.search]);
+
+  // When both patient and doctor are selected, fetch appointments for them
+  useEffect(() => {
+    const fetchAppointments = async () => {
+      setAppointments([]);
+      setApptError(null);
+      // clear any previously selected appointment when patient/doctor changes
+      setTreatmentPlan(prev => ({ ...prev, appointment_id: undefined }));
+
+      const pid = treatmentPlan.patient_id;
+      const did = treatmentPlan.doctor_id;
+      if (!pid || !did) return;
+
+      try {
+        setApptLoading(true);
+        // request appointments filtered by patient and doctor
+  const params = { patient_id: Number(pid), doctor_id: Number(did), limit: 50 } as unknown as Record<string, unknown>;
+  const resp = await appointmentService.getAll(params as unknown as { offset?: number; limit?: number });
+        const list = resp.data || [];
+        setAppointments(list as Appointment[]);
+        if (!list || (Array.isArray(list) && list.length === 0)) {
+          setApptError('No appointments found for selected patient & doctor');
+        }
+      } catch (err: unknown) {
+        console.error('Failed to fetch appointments:', err);
+        const axiosErr = err as { response?: { data?: { message?: unknown } }; message?: unknown };
+        const msg = (axiosErr.response?.data && typeof axiosErr.response.data === 'object' && 'message' in axiosErr.response.data)
+          ? String((axiosErr.response.data as { message?: unknown }).message)
+          : (axiosErr.message ? String(axiosErr.message) : 'Failed to fetch appointments');
+        setApptError(msg);
+      } finally {
+        setApptLoading(false);
+      }
+    };
+
+    fetchAppointments();
+  }, [treatmentPlan.patient_id, treatmentPlan.doctor_id]);
 
   const handleSubmit = async () => {
     setError('');
     setSaving(true);
     
     try {
-      const planData = {
-        ...treatmentPlan,
-        createdDate: (treatmentPlan as any).createdDate || new Date().toISOString(),
-        lastUpdated: new Date().toISOString(),
-      } as any;
+      // Build backend expected payload
+    type ApiPayload = {
+      patient_id: number;
+      doctor_id: number;
+      appointment_id?: number;
+      diagnosis_summary: string;
+      prescription?: string;
+      plan_details?: string;
+      status?: 'draft' | 'active' | 'ongoing' | 'completed' | 'cancelled';
+    };
+
+    const payload: ApiPayload = {
+      patient_id: Number(treatmentPlan.patient_id),
+      doctor_id: Number(treatmentPlan.doctor_id),
+      diagnosis_summary: treatmentPlan.diagnosis || '',
+      prescription: (treatmentPlan && typeof (treatmentPlan as Record<string, unknown>).prescription === 'string') ? (treatmentPlan as Record<string, string>).prescription : undefined,
+      plan_details: treatmentPlan.treatment_description || '',
+      status: (treatmentPlan.status as ApiPayload['status']) || 'active',
+    };
 
       if (id) {
-        await treatmentPlanService.update(id, planData as any);
+        console.log('Updating treatment plan payload:', payload);
+        await treatmentPlanService.update(Number(id), payload);
       } else {
-        await treatmentPlanService.create({
-          ...(planData as any),
-          steps: (planData as any).steps || []
-        } as any);
+        // include appointment_id if present in state
+        const apptId = (treatmentPlan as { [k: string]: unknown })['appointment_id'] as number | undefined;
+        if (apptId) payload.appointment_id = apptId;
+        console.log('Creating treatment plan payload:', payload);
+        await treatmentPlanService.create(payload);
       }
       navigate('/treatment-plans');
     } catch (err) {
-      setError('Failed to save treatment plan');
+      // Try to read a detailed message from axios response
       console.error('Failed to save treatment plan:', err);
+      const e = err as unknown;
+      const resp = (e as { response?: { data?: unknown } })?.response?.data as unknown;
+      const serverMessage =
+        (resp && typeof resp === 'object' && (resp as { message?: unknown })['message'] ? String((resp as { message?: unknown })['message']) : undefined) ||
+        (typeof resp === 'string' ? resp : undefined) ||
+        ((e as { message?: unknown })?.message as string | undefined);
+      setError(serverMessage || 'Failed to save treatment plan');
     } finally {
       setSaving(false);
     }
@@ -150,6 +231,29 @@ const TreatmentPlanForm = () => {
                   </Select>
                 </FormControl>
               </Box>
+                <Box sx={{ flex: '1 1 200px' }}>
+                  <FormControl fullWidth>
+                    <InputLabel>Appointment *</InputLabel>
+                    <Select
+                      name="appointment_id"
+                      value={treatmentPlan.appointment_id ?? ''}
+                      label="Appointment *"
+                      onChange={(e) => setTreatmentPlan(prev => ({ ...prev, appointment_id: Number(e.target.value) }))}
+                      required
+                    >
+                      {/* If appointments are available, show them; otherwise allow entering numeric id fallback */}
+                      {appointments && appointments.length > 0 ? (
+                        appointments.map((a) => (
+                          <MenuItem key={a.id} value={a.id}>
+                            {`#${a.id} — ${new Date(a.appointment_time).toLocaleString()}`}
+                          </MenuItem>
+                        ))
+                      ) : (
+                        <MenuItem value="" disabled>No appointments available</MenuItem>
+                      )}
+                    </Select>
+                  </FormControl>
+                </Box>
             </Box>
 
             <TextField
@@ -194,12 +298,13 @@ const TreatmentPlanForm = () => {
                   <InputLabel>Status</InputLabel>
                   <Select
                     name="status"
-                    value={treatmentPlan.status || 'ongoing'}
+                    value={treatmentPlan.status || 'active'}
                     label="Status"
-                    onChange={(e) => setTreatmentPlan(prev => ({ ...prev, status: e.target.value as 'ongoing' | 'completed' | 'cancelled' }))}
+                    onChange={(e) => setTreatmentPlan(prev => ({ ...prev, status: e.target.value as 'draft' | 'active' | 'completed' | 'cancelled' }))}
                     required
                   >
-                    <MenuItem value="ongoing">Ongoing</MenuItem>
+                    <MenuItem value="draft">Draft</MenuItem>
+                    <MenuItem value="active">Active</MenuItem>
                     <MenuItem value="completed">Completed</MenuItem>
                     <MenuItem value="cancelled">Cancelled</MenuItem>
                   </Select>
@@ -244,7 +349,16 @@ const TreatmentPlanForm = () => {
             <MButton
               variant="contained"
               onClick={handleSubmit}
-              disabled={saving || !treatmentPlan.patient_id || !treatmentPlan.doctor_id || !treatmentPlan.treatment_description || !treatmentPlan.diagnosis}
+              disabled={
+                saving ||
+                !treatmentPlan.patient_id ||
+                !treatmentPlan.doctor_id ||
+                treatmentPlan.appointment_id === undefined ||
+                !Number.isInteger(treatmentPlan.appointment_id as number) ||
+                !treatmentPlan.treatment_description ||
+                !treatmentPlan.diagnosis ||
+                !['draft', 'active', 'completed', 'cancelled'].includes(String(treatmentPlan.status))
+              }
             >
               {saving ? 'Saving...' : id ? 'Update Plan' : 'Create Plan'}
             </MButton>

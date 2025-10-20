@@ -17,7 +17,7 @@ export const appointmentService = {
   getAll: async (params?: { 
     offset?: number; 
     limit?: number; 
-  }): Promise<{ data: Appointment[] }> => {
+  }): Promise<{ data: Appointment[]; count?: number }> => {
     try {
   const response = await api.get('/appointment', { params });
   const resp = response.data as unknown;
@@ -40,7 +40,22 @@ export const appointmentService = {
           } else data = obj.data ?? resp;
         } else data = resp;
       }
-      return { data: Array.isArray(data) ? (data as Appointment[]) : [] };
+      // attempt to extract count if present in known envelope shapes
+      let count: number | undefined;
+      if (resp && typeof resp === 'object') {
+        const obj = resp as Record<string, unknown>;
+        if (typeof obj.count === 'number') count = obj.count as number;
+        if (obj.data && typeof obj.data === 'object') {
+          const d1 = obj.data as Record<string, unknown>;
+          if (typeof d1.count === 'number') count = d1.count as number;
+          if (d1.data && typeof d1.data === 'object') {
+            const d2 = d1.data as Record<string, unknown>;
+            if (typeof d2.count === 'number') count = d2.count as number;
+          }
+        }
+      }
+
+      return { data: Array.isArray(data) ? (data as Appointment[]) : [], count };
     } catch (error) {
       console.error('Error fetching appointments:', error);
       throw new Error('Failed to fetch appointments');

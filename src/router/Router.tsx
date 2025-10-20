@@ -9,6 +9,7 @@ import DoctorForm from '../features/doctors/DoctorForm';
 import AppointmentList from '../features/appointments/AppointmentList';
 import AppointmentForm from '../features/appointments/AppointmentForm';
 import AppointmentCalendarView from '../features/appointments/AppointmentCalendarView';
+import AppointmentSearch from '../features/appointments/AppointmentSearch';
 import TreatmentPlanList from '../features/treatment-plans/TreatmentPlanList';
 import TreatmentPlanDetail from '../features/treatment-plans/TreatmentPlanDetail';
 import TreatmentPlanForm from '../features/treatment-plans/TreatmentPlanForm';
@@ -21,6 +22,7 @@ import ProcedureForm from '../features/procedures/ProcedureForm';
 import PatientImageGallery from '../features/patient-images/PatientImageGallery';
 import { FinanceDashboard, ExpenseList, ExpenseForm, IncomeList, IncomeForm } from '../features/finance';
 import { StaffAddWorkflow, StaffUpdateWorkflow } from '../features/staff';
+import StaffList from '../features/staff/StaffList';
 import FormComponentsDemo from '../features/demo/FormComponentsDemo';
 import ProtectedRoute from '../components/ProtectedRoute';
 
@@ -36,6 +38,7 @@ const AppRouter = () => (
     <Route path="/doctors/new" element={<ProtectedRoute><DoctorForm /></ProtectedRoute>} />
     <Route path="/doctors/:id/edit" element={<ProtectedRoute><DoctorForm /></ProtectedRoute>} />
     <Route path="/appointments" element={<ProtectedRoute><AppointmentList /></ProtectedRoute>} />
+  <Route path="/appointments/search" element={<ProtectedRoute><AppointmentSearch /></ProtectedRoute>} />
     <Route path="/appointments/calendar" element={<ProtectedRoute><AppointmentCalendarView /></ProtectedRoute>} />
     <Route path="/appointments/new" element={<ProtectedRoute><AppointmentForm /></ProtectedRoute>} />
     <Route path="/appointments/:id/edit" element={<ProtectedRoute><AppointmentForm /></ProtectedRoute>} />
@@ -52,6 +55,7 @@ const AppRouter = () => (
     <Route path="/procedures/:id/edit" element={<ProtectedRoute><ProcedureForm /></ProtectedRoute>} />
     <Route path="/patient-images" element={<ProtectedRoute><PatientImageGallery /></ProtectedRoute>} />
     <Route path="/documents" element={<ProtectedRoute><ClinicalDocumentList /></ProtectedRoute>} />
+  <Route path="/staff" element={<ProtectedRoute><StaffList /></ProtectedRoute>} />
     <Route path="/finance" element={<ProtectedRoute><FinanceDashboard /></ProtectedRoute>} />
     <Route path="/finance/expenses" element={<ProtectedRoute><ExpenseList /></ProtectedRoute>} />
     <Route path="/finance/expenses/new" element={<ProtectedRoute><ExpenseForm /></ProtectedRoute>} />

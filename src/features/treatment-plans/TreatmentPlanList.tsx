@@ -108,6 +108,17 @@ const TreatmentPlanList = () => {
     }
   };
 
+  const fmtDate = (d: unknown) => {
+    if (!d) return '-';
+    try {
+      const date = new Date(String(d));
+      if (isNaN(date.getTime())) return '-';
+      return date.toLocaleDateString();
+    } catch {
+      return '-';
+    }
+  };
+
   if (loading) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
@@ -212,12 +223,12 @@ const TreatmentPlanList = () => {
                         <TableRow key={plan.plan_id} hover>
                           <TableCell>
                             <Typography variant="body2" fontWeight={500}>
-                              {plan.patient?.full_name || `Patient #${plan.patient?.patient_id}`}
+                              { (plan as any).patient?.full_name || `Patient #${(plan as any).patient_id ?? 'N/A'}` }
                             </Typography>
                           </TableCell>
                           <TableCell>
                             <Typography variant="body2">
-                              {plan.doctor?.full_name || `Doctor #${plan.doctor?.doctor_id}`}
+                              { (plan as any).doctor?.full_name || `Doctor #${(plan as any).doctor_id ?? 'N/A'}` }
                             </Typography>
                           </TableCell>
                           <TableCell>
@@ -226,15 +237,15 @@ const TreatmentPlanList = () => {
                             </Typography>
                           </TableCell>
                           <TableCell>
-                            {new Date(plan.start_date).toLocaleDateString()}
+                            {fmtDate((plan as any).start_date || (plan as any).createdAt)}
                           </TableCell>
                           <TableCell>
-                            {plan.end_date ? new Date(plan.end_date).toLocaleDateString() : '-'}
+                            {fmtDate((plan as any).end_date || (plan as any).expected_end_date)}
                           </TableCell>
                           <TableCell>
                             <Chip
-                              label={plan.status.toUpperCase()}
-                              color={getStatusColor(plan.status)}
+                              label={String((plan as any).status || '').toUpperCase()}
+                              color={getStatusColor((plan as any).status)}
                               size="small"
                             />
                           </TableCell>

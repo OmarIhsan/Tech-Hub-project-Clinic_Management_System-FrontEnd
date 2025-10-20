@@ -144,18 +144,23 @@ export interface Appointment {
 
 export interface TreatmentPlan {
   plan_id: number;
-  patient: {
-    patient_id: number;
-    full_name: string;
-  };
-  doctor: {
-    doctor_id: number;
-    full_name: string;
-  };
-  treatment_description: string;
-  start_date: string;
+  // Flattened fields to match backend payloads
+  patient_id: number;
+  doctor_id: number;
+  appointment_id?: number;
+  treatment_description?: string;
+  diagnosis?: string;
+  diagnosis_summary?: string;
+  prescription?: string;
+  plan_details?: string;
+  start_date?: string;
+  expected_end_date?: string;
   end_date?: string;
-  status: 'ongoing' | 'completed' | 'cancelled';
+  // Include all known status variants to remain compatible with older code and backend
+  status: 'draft' | 'active' | 'ongoing' | 'completed' | 'cancelled';
+  priority?: 'low' | 'medium' | 'high' | 'urgent';
+  notes?: string;
+  description?: string;
   createdAt?: string;
   updatedAt?: string;
 }

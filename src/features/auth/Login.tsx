@@ -13,24 +13,30 @@ import MButton from '../../components/MButton';
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  // Prefill owner credentials for faster testing in dev
+  const [email, setEmail] = useState('owner@cms.com');
+  const [password, setPassword] = useState('StrongPassword123!');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e?: React.FormEvent) => {
-    e?.preventDefault();
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    // Prevent native form submit (page reload) immediately
+    e.preventDefault();
     setError(null);
     setLoading(true);
     try {
       await authAPI.login({ email, password });
       navigate('/');
     } catch (err: unknown) {
-      const axiosErr = err as any;
-      if (axiosErr?.response?.status === 401) {
-        setError(axiosErr.response.data?.message || 'Invalid credentials');
+      const axiosErr = err as unknown;
+      // Narrow possible axios error shape safely
+  const status = (axiosErr as { response?: { status?: number; data?: unknown } })?.response?.status;
+      const message = (axiosErr as { message?: string })?.message;
+      if (status === 401) {
+  const respData = (axiosErr as { response?: { data?: unknown } })?.response?.data as { message?: string } | undefined;
+        setError(respData?.message || 'Invalid credentials');
       } else {
-        setError(axiosErr?.message || 'Login failed');
+        setError(message || 'Login failed');
       }
     } finally {
       setLoading(false);

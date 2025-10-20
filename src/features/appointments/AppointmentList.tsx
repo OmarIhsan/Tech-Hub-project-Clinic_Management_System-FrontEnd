@@ -164,7 +164,6 @@ const AppointmentList = () => {
         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
           <Tabs value={tabValue} onChange={(e, newValue) => setTabValue(newValue)}>
             <Tab label="Appointments List" />
-            <Tab label="Appointment Documents" />
           </Tabs>
         </Box>
 

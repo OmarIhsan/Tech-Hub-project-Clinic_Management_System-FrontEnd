@@ -9,10 +9,17 @@ import PersonIcon from '@mui/icons-material/Person';
 import EventIcon from '@mui/icons-material/Event';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+import GroupIcon from '@mui/icons-material/Group';
+import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
+import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
+import DescriptionIcon from '@mui/icons-material/Description';
+import ImageIcon from '@mui/icons-material/Image';
+import MedicalServicesIcon from '@mui/icons-material/MedicalServices';
+import NoteAddIcon from '@mui/icons-material/NoteAdd';
 import StatsChart from '../../components/StatsChart';
 import EmployeeAddDialog from '../employees/EmployeeAddDialog';
 import { patientAPI } from '../../services/patientService';
-import { doctorAPI } from '../../services/api';
+import { doctorAPI, appointmentService, treatmentPlanService } from '../../services/api';
 import staffAPI from '../../services/staffService';
 
 type StatCardProps = {
@@ -80,31 +87,52 @@ const RoleDashboard: React.FC = () => {
     useEffect(() => {
         const fetchCounts = async () => {
             try {
-                const [pRes, dRes, sRes] = await Promise.all([
+                const [pRes, dRes, sRes, apptRes, tpRes] = await Promise.all([
                     patientAPI.getAll(),
                     doctorAPI.getAll(),
                     staffAPI.getAll(),
+                    appointmentService.getAll(),
+                    treatmentPlanService.getAll(),
                 ]);
 
-                const getCount = (res: any): number => {
+                const getCount = (res: unknown): number => {
                     if (!res) return 0;
                     if (Array.isArray(res)) return res.length;
-                    if (Array.isArray(res.data)) return res.data.length;
-                    if (res.data && Array.isArray(res.data.data)) return res.data.data.length;
-                    if (res.data && typeof res.data.count === 'number') return res.data.count;
-                    if (typeof res.count === 'number') return res.count;
+                    const obj = res as { data?: unknown; count?: unknown };
+                    if (Array.isArray(obj.data)) return obj.data.length;
+                    const inner = obj.data as unknown;
+                    if (inner && typeof inner === 'object') {
+                        const innerObj = inner as { data?: unknown; count?: unknown };
+                        if (Array.isArray(innerObj.data)) return innerObj.data.length;
+                        if (typeof innerObj.count === 'number') return innerObj.count as number;
+                    }
+                    if (typeof obj.count === 'number') return obj.count as number;
                     return 0;
                 };
 
                 const patientsCount = getCount(pRes);
                 const doctorsCount = getCount(dRes);
                 const staffCount = getCount(sRes);
+                let appointmentsCount = getCount(apptRes);
+                if (apptRes && typeof apptRes === 'object') {
+                    const apptObj = apptRes as { count?: unknown };
+                    if (typeof apptObj.count === 'number') appointmentsCount = apptObj.count as number;
+                }
+
+                // treatment plans count
+                let treatmentsCount = getCount(tpRes);
+                if (tpRes && typeof tpRes === 'object') {
+                    const tpObj = tpRes as { count?: unknown };
+                    if (typeof tpObj.count === 'number') treatmentsCount = tpObj.count as number;
+                }
 
                 setStats(prev => ({
                     ...prev,
                     patients: patientsCount,
                     doctors: doctorsCount,
                     staff: staffCount,
+                    appointments: appointmentsCount,
+                    treatments: treatmentsCount,
                 }));
             } catch {
                 setStats(prev => ({ ...prev, patients: 0, doctors: 0 }));
@@ -228,33 +256,65 @@ const RoleDashboard: React.FC = () => {
                             <Typography variant="h6" gutterBottom>
                                 Quick Actions
                             </Typography>
-                            <Box
-                                sx={{
-                                    display: 'grid',
-                                    gridTemplateColumns: {
-                                        xs: '1fr',
-                                        sm: '1fr',
-                                        md: '1fr',
-                                    },
-                                    gap: 2,
-                                }}
-                            >
+
+                            {/* Row 1: Add Employee (full width) */}
+                            <Box sx={{ mb: 2 }}>
                                 <MButton
                                     fullWidth
                                     variant="contained"
                                     color="primary"
+                                    startIcon={<GroupIcon />}
                                     onClick={() => setEmployeeDialogOpen(true)}
                                 >
                                     Add Employee
                                 </MButton>
-                                <MButton
-                                    fullWidth
-                                    variant="outlined"
-                                    onClick={() => navigate('/finance/income')}
-                                >
-                                    View Income
+                            </Box>
+
+                            {/* Row 2: Doctors | Staff | Patients */}
+                            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, 1fr)' }, gap: 2, mb: 2 }}>
+                                <MButton fullWidth variant="outlined" startIcon={<PersonIcon />} onClick={() => navigate('/doctors')}>
+                                    View Doctors
+                                </MButton>
+                                <MButton fullWidth variant="outlined" startIcon={<GroupIcon />} onClick={() => navigate('/staff')}>
+                                    View Staff
+                                </MButton>
+                                <MButton fullWidth variant="outlined" startIcon={<PersonIcon />} onClick={() => navigate('/patients')}>
+                                    View Patients
                                 </MButton>
                             </Box>
+
+                            {/* Row 3: Income | Expenses */}
+                            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' }, gap: 2, mb: 2 }}>
+                                <MButton fullWidth variant="outlined" startIcon={<MonetizationOnIcon />} onClick={() => navigate('/finance/income')}>
+                                    View Income
+                                </MButton>
+                                <MButton fullWidth variant="outlined" startIcon={<ReceiptLongIcon />} onClick={() => navigate('/finance/expenses')}>
+                                    View Expenses
+                                </MButton>
+                            </Box>
+
+                            {/* Row 4: Rest of actions */}
+                            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, 1fr)' }, gap: 2 }}>
+                                <MButton fullWidth variant="contained" startIcon={<EventIcon />} onClick={() => navigate('/appointments/new')}>
+                                    New Appointment
+                                </MButton>
+                                <MButton fullWidth variant="contained" startIcon={<AssignmentIcon />} onClick={() => navigate('/treatment-plans/new')}>
+                                    New Treatment Plan
+                                </MButton>
+                                <MButton fullWidth variant="contained" startIcon={<NoteAddIcon />} onClick={() => navigate('/medical-records/new')}>
+                                    New Medical Record
+                                </MButton>
+                                <MButton fullWidth variant="outlined" startIcon={<DescriptionIcon />} onClick={() => navigate('/documents')}>
+                                    Documents
+                                </MButton>
+                                <MButton fullWidth variant="outlined" startIcon={<ImageIcon />} onClick={() => navigate('/patient-images')}>
+                                    Patient Images
+                                </MButton>
+                                <MButton fullWidth variant="outlined" startIcon={<MedicalServicesIcon />} onClick={() => navigate('/procedures')}>
+                                    Procedures
+                                </MButton>
+                            </Box>
+
                             <EmployeeAddDialog
                                 open={employeeDialogOpen}
                                 onClose={() => setEmployeeDialogOpen(false)}
@@ -270,7 +330,7 @@ const RoleDashboard: React.FC = () => {
                                 Doctor Dashboard
                             </Typography>
                             <Typography variant="body1" color="textSecondary">
-                                Welcome back, Dr. {user.full_name || user.email}
+                                Welcome back, Dr. {user.name || user.email}
                             </Typography>
                         </Box>
                         <Box
@@ -434,7 +494,7 @@ const RoleDashboard: React.FC = () => {
                                 Staff Dashboard
                             </Typography>
                             <Typography variant="body1" color="textSecondary">
-                                Welcome back, {Staff.full_name || user.email}
+                                Welcome back, {user.name || user.email}
                             </Typography>
                         </Box>
                         <Box
