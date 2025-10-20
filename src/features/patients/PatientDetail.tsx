@@ -69,23 +69,66 @@ const DoctorPatientDetail: React.FC = () => {
   const loadPatientData = async (patientId: number) => {
     try {
       setLoading(true);
-      const [
-        patientData,
-        appointmentsData,
-        treatmentPlansData,
-        documentsData,
-        imagesData,
-        medicalRecordsData,
-      ] = await Promise.all([
-        patientAPI.getById(patientId),
-        appointmentService.getAll().then(res => res.data?.filter((a: Appointment) => a.patient_id === patientId) || []),
-        treatmentPlanService.getAll().then(res => res.data?.filter((t: TreatmentPlan) => t.patient.patient_id === patientId) || []),
-        clinicalDocumentService.getAll().then(res => res.data?.filter((d: ClinicalDocument) => d.patient.patient_id === patientId) || []),
-        patientImageService.getAll().then(res => res.data?.filter((i: PatientImage) => i.patient.patient_id === patientId) || []),
-        medicalRecordAPI.getAll().then(res => res.filter((m: MedicalRecord) => m.patient.patient_id === patientId) || []),
-      ]);
 
-      setPatient(patientData);
+      // Run requests in parallel but use allSettled so one 403 doesn't block others
+      const results = await Promise.allSettled([
+        patientAPI.getById(patientId),
+        appointmentService.getAll(),
+        treatmentPlanService.getAll(),
+        clinicalDocumentService.getAll(),
+        patientImageService.getAll(),
+        medicalRecordAPI.getAll(),
+      ] as const);
+
+      // Helper to safely extract arrays from varied response shapes
+      const extractArray = (r: PromiseSettledResult<unknown>): unknown[] => {
+        if (r.status !== 'fulfilled') return [];
+        const v = r.value as unknown;
+        // r.value may be { data: [...] } or { data: { data: [...] } } or an array
+        if (Array.isArray(v)) return v;
+        if (v && typeof v === 'object') {
+          const obj = v as Record<string, unknown>;
+          if (Array.isArray(obj.data)) return obj.data as unknown[];
+          if (obj.data && typeof obj.data === 'object') {
+            const inner = obj.data as Record<string, unknown>;
+            if (Array.isArray(inner.data)) return inner.data as unknown[];
+          }
+        }
+        return [];
+      };
+
+      const patientResult = results[0];
+      const appointmentsResult = results[1];
+      const treatmentPlansResult = results[2];
+      const documentsResult = results[3];
+      const imagesResult = results[4];
+      const medicalRecordsResult = results[5];
+
+      // Normalize patient
+      const resolvePatient = (p: unknown): Patient | null => {
+        if (!p) return null;
+        // v can be direct patient, or { data: patient } or { patient: patient }
+        const v = p as Record<string, unknown>;
+        if ('patient' in v && v.patient && typeof v.patient === 'object') return v.patient as Patient;
+        if ('data' in v) {
+          const d = v.data as Record<string, unknown> | undefined;
+          if (d && 'patient' in d && d.patient && typeof d.patient === 'object') return d.patient as Patient;
+          // sometimes data is the patient itself
+          if (d && typeof d === 'object' && !Array.isArray(d) && Object.keys(d).length > 0) return d as unknown as Patient;
+        }
+        // fallback: assume p is the patient object
+        return v as unknown as Patient;
+      };
+
+      const normalizedPatient = resolvePatient(patientResult.status === 'fulfilled' ? patientResult.value : null);
+
+  const appointmentsData = (extractArray(appointmentsResult) as Appointment[]).filter((a) => a.patient_id === patientId);
+  const treatmentPlansData = (extractArray(treatmentPlansResult) as TreatmentPlan[]).filter((t) => t.patient && t.patient.patient_id === patientId);
+  const documentsData = (extractArray(documentsResult) as ClinicalDocument[]).filter((d) => d.patient && d.patient.patient_id === patientId);
+  const imagesData = (extractArray(imagesResult) as PatientImage[]).filter((i) => i.patient && i.patient.patient_id === patientId);
+  const medicalRecordsData = (extractArray(medicalRecordsResult) as MedicalRecord[]).filter((m) => m.patient && m.patient.patient_id === patientId);
+
+      setPatient(normalizedPatient);
       setAppointments(appointmentsData);
       setTreatmentPlans(treatmentPlansData);
       setDocuments(documentsData);

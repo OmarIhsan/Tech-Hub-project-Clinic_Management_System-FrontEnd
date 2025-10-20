@@ -26,9 +26,6 @@ const Login: React.FC = () => {
       await authAPI.login({ email, password });
       navigate('/');
     } catch (err: unknown) {
-      // show clear message for 401 and other errors
-      // Import AxiosError type from axios at the top if not already imported
-      // import { AxiosError } from 'axios';
       const axiosErr = err as any;
       if (axiosErr?.response?.status === 401) {
         setError(axiosErr.response.data?.message || 'Invalid credentials');
