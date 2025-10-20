@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import {
   Container,
   Paper,
@@ -7,39 +7,37 @@ import {
   Box,
   Alert,
 } from '@mui/material';
-import { useAuthContext } from '../../context/useAuthContext';
 import { useNavigate } from 'react-router-dom';
+import { authAPI } from '../../services/api';
 import MButton from '../../components/MButton';
 
-const Login = () => {
-  const [email, setEmail] = useState<string>('');
-  const [password, setPassword] = useState<string>('');
-  const [error, setError] = useState<string>('');
-  const [loading, setLoading] = useState<boolean>(false);
-  const { login } = useAuthContext();
+const Login: React.FC = () => {
   const navigate = useNavigate();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setError('');
+  const handleSubmit = async (e?: React.FormEvent) => {
+    e?.preventDefault();
+    setError(null);
     setLoading(true);
-
-    if (!email || !password) {
-      setError('Please fill in all fields');
-      setLoading(false);
-      return;
-    }
-
-    
-    const result = await login(email, password);
-
-    if (result && result.success) {
+    try {
+      await authAPI.login({ email, password });
       navigate('/');
-    } else {
-      setError(result?.error || 'Login failed');
+    } catch (err: unknown) {
+      // show clear message for 401 and other errors
+      // Import AxiosError type from axios at the top if not already imported
+      // import { AxiosError } from 'axios';
+      const axiosErr = err as any;
+      if (axiosErr?.response?.status === 401) {
+        setError(axiosErr.response.data?.message || 'Invalid credentials');
+      } else {
+        setError(axiosErr?.message || 'Login failed');
+      }
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   return (

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Tabs, Tab, Box } from '@mui/material';
 import DoctorForm from '../doctors/DoctorForm';
-import StaffAddWorkflow from '../staff/StaffAddWorkflow';
+import StaffAddWorkflow from '../staff/StaffAddForm';
 
 interface EmployeeAddDialogProps {
   open: boolean;

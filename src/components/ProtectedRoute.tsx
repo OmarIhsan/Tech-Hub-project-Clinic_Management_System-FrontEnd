@@ -1,21 +1,28 @@
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import { Box, CircularProgress, Typography } from '@mui/material';
-import { StaffRole } from '../types';
+import { Typography } from '@mui/material';
 import { useAuthContext } from '../context/useAuthContext';
 
-interface ProtectedRouteProps {
-  allowedRoles?: string[];
-  children: React.ReactNode;
-}
+type Props = { allowedRoles?: string[]; children: React.ReactNode };
 
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles = [], children }) => {
+const ProtectedRoute: React.FC<Props> = ({ allowedRoles = [], children }) => {
   const { user } = useAuthContext();
-  if (!user) return <Navigate to="/login" />;
+  const location = useLocation();
 
-  // If no allowedRoles provided => allow any authenticated user
-  if (allowedRoles.length && !allowedRoles.includes(String(user.role))) {
-    return <Typography>You do not have permission to view this page.</Typography>;
+  if (!user) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  const roleHolder = user as unknown as { role?: string | number };
+  const rawRole = roleHolder.role;
+  const role = typeof rawRole === 'string' ? rawRole : String(rawRole ?? '');
+
+  if (allowedRoles.length && !allowedRoles.includes(role)) {
+    return (
+      <Typography sx={{ mt: 4 }} align="center">
+        You do not have permission to view this page.
+      </Typography>
+    );
   }
 
   return <>{children}</>;

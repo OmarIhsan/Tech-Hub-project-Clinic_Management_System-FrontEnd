@@ -1,2 +1,2 @@
-export { default as StaffAddWorkflow } from './StaffAddWorkflow';
+export { default as StaffAddWorkflow } from './StaffAddForm';
 export { default as StaffUpdateWorkflow } from './StaffUpdateWorkflow';

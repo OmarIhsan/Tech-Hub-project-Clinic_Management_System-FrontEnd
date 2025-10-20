@@ -1,34 +1,31 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
+import { Box, Paper, TextField, Typography, CircularProgress, Alert } from '@mui/material';
 import { useNavigate, useParams } from 'react-router-dom';
-import {
-  Container,
-  Paper,
-  TextField,
-  Typography,
-  Box,
-  Alert,
-  CircularProgress,
-  MenuItem,
-} from '@mui/material';
 import MButton from '../../components/MButton';
-import { patientAPI } from '../../services/api';
-import { Patient } from '../../types';
-import validation, { ValidationError } from '../../services/validation';
+import { patientAPI } from '../../services/patientService';
 
-const PatientForm = () => {
-  const { id } = useParams();
+interface PatientPayload {
+  full_name: string;
+  gender?: string;
+  date_of_birth?: string; // YYYY-MM-DD
+  phone?: string;
+  email?: string;
+  address?: string;
+}
+
+const PatientForm: React.FC = () => {
   const navigate = useNavigate();
-  const [patient, setPatient] = useState<Omit<Patient, 'patient_id'>>({
+  const { id } = useParams(); // for edit support if needed
+  const [form, setForm] = useState<PatientPayload>({
     full_name: '',
-    gender: 'Male',
+    gender: '',
+    date_of_birth: '',
     phone: '',
     email: '',
-    date_of_birth: '',
-    blood_group: '',
     address: '',
   });
-  const [error, setError] = useState<string>('');
-  const [submitting, setSubmitting] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -39,14 +36,13 @@ const PatientForm = () => {
         setLoading(true);
         const loadedPatient = await patientAPI.getById(Number(id));
         if (loadedPatient) {
-          setPatient({ 
+          setForm({ 
             full_name: loadedPatient.full_name,
             gender: loadedPatient.gender,
             phone: loadedPatient.phone,
             email: loadedPatient.email,
             date_of_birth: loadedPatient.date_of_birth,
-            blood_group: loadedPatient.blood_group || '',
-            address: loadedPatient.address || '',
+            address: loadedPatient.address,
           });
         }
       } catch (err) {
@@ -61,151 +57,112 @@ const PatientForm = () => {
   }, [id]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setPatient({ ...patient, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setForm(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setError('');
+  const handleSubmit = async (e?: React.FormEvent) => {
+    e?.preventDefault();
+    setError(null);
 
+    if (!form.full_name) {
+      setError('Full name is required.');
+      return;
+    }
+
+    setSaving(true);
     try {
-      setSubmitting(true);
-      validation.patientValidation.validateCreate(patient);
-      const patientData = {
-        full_name: patient.full_name,
-        gender: patient.gender,
-        phone: patient.phone,
-        email: patient.email,
-        date_of_birth: patient.date_of_birth,
-        address: patient.address,
-        ...(patient.blood_group && { blood_group: patient.blood_group }),
-      };
-
       if (id) {
-        await patientAPI.update(Number(id), patientData);
+        await patientAPI.update(Number(id), form);
       } else {
-        await patientAPI.create(patientData);
+        await patientAPI.create(form);
       }
       navigate('/patients');
     } catch (err: unknown) {
-      if (err instanceof ValidationError) {
-        setError(err.message);
-      } else if (err && typeof err === 'object' && 'response' in err) {
-        const axiosError = err as { response?: { data?: { message?: string; error?: string } } };
-        const backendMessage = axiosError.response?.data?.message || axiosError.response?.data?.error;
-        console.error('Failed to save patient:', err);
-        setError(backendMessage || 'Failed to save patient. Please check the form data.');
-      } else if (err instanceof Error) {
-        console.error('Failed to save patient:', err);
-        setError(err.message || 'Failed to save patient');
-      } else {
-        console.error('Failed to save patient:', err);
-        setError('Failed to save patient');
-      }
+      const msg = (err as any)?.response?.data?.message || (err as any)?.message || 'Failed to save patient';
+      setError(String(msg));
     } finally {
-      setSubmitting(false);
+      setSaving(false);
     }
   };
 
-  if (loading || submitting) {
+  if (loading || saving) {
     return (
-      <Container maxWidth="sm">
-        <Box sx={{ mt: 8, mb: 4, display: 'flex', justifyContent: 'center' }}>
-          <CircularProgress />
-        </Box>
-      </Container>
+      <Box sx={{ mt: 8, mb: 4, display: 'flex', justifyContent: 'center' }}>
+        <CircularProgress />
+      </Box>
     );
   }
 
   return (
-    <Container maxWidth="sm">
-      <Box sx={{ mt: 8, mb: 4 }}>
-        <Paper elevation={3} sx={{ p: 4 }}>
-          <Typography variant="h5" align="center" gutterBottom>
-            {id ? 'Edit Patient' : 'New Patient'}
-          </Typography>
-          {error && (
-            <Alert severity="error" sx={{ mb: 2 }}>
-              {error}
-            </Alert>
-          )}
-          <form onSubmit={handleSubmit}>
-            <TextField
-              label="Full Name"
-              name="full_name"
-              value={patient.full_name}
-              onChange={handleChange}
-              fullWidth
-              margin="normal"
-              required
-            />
-            <TextField
-              label="Gender"
-              name="gender"
-              value={patient.gender}
-              onChange={handleChange}
-              select
-              fullWidth
-              margin="normal"
-              required
-            >
-              <MenuItem value="Male">Male</MenuItem>
-              <MenuItem value="Female">Female</MenuItem>
-              <MenuItem value="Other">Other</MenuItem>
-            </TextField>
-            <TextField
-              label="Phone"
-              name="phone"
-              value={patient.phone}
-              onChange={handleChange}
-              fullWidth
-              margin="normal"
-              required
-            />
-            <TextField
-              label="Email"
-              name="email"
-              type="email"
-              value={patient.email}
-              onChange={handleChange}
-              fullWidth
-              margin="normal"
-              required
-            />
-            <TextField
-              label="Date of Birth"
-              name="date_of_birth"
-              type="date"
-              value={patient.date_of_birth}
-              onChange={handleChange}
-              fullWidth
-              margin="normal"
-              required
-              InputLabelProps={{ shrink: true }}
-            />
-            <TextField
-              label="Address"
-              name="address"
-              value={patient.address}
-              onChange={handleChange}
-              fullWidth
-              margin="normal"
-              multiline
-              rows={3}
-            />
-            <MButton
-              type="submit"
-              variant="contained"
-              fullWidth
-              sx={{ mt: 3 }}
-              disabled={submitting}
-            >
-              {id ? 'Update Patient' : 'Create Patient'}
-            </MButton>
-          </form>
-        </Paper>
+    <Paper sx={{ p: 3, maxWidth: 720, mx: 'auto', mt: 4 }}>
+      <Typography variant="h5" gutterBottom>
+        {id ? 'Edit Patient' : 'Add Patient'}
+      </Typography>
+
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+      )}
+
+      <Box component="form" onSubmit={handleSubmit} sx={{ display: 'grid', gap: 2 }}>
+        <TextField
+          label="Full name"
+          name="full_name"
+          value={form.full_name}
+          onChange={handleChange}
+          required
+          fullWidth
+        />
+        <TextField
+          select={false}
+          label="Gender"
+          name="gender"
+          value={form.gender}
+          onChange={handleChange}
+          placeholder="Male / Female / Other"
+          fullWidth
+        />
+        <TextField
+          label="Date of birth"
+          name="date_of_birth"
+          value={form.date_of_birth}
+          onChange={handleChange}
+          type="date"
+          InputLabelProps={{ shrink: true }}
+          fullWidth
+        />
+        <TextField
+          label="Phone"
+          name="phone"
+          value={form.phone}
+          onChange={handleChange}
+          fullWidth
+        />
+        <TextField
+          label="Email"
+          name="email"
+          value={form.email}
+          onChange={handleChange}
+          type="email"
+          fullWidth
+        />
+        <TextField
+          label="Address"
+          name="address"
+          value={form.address}
+          onChange={handleChange}
+          multiline
+          rows={3}
+          fullWidth
+        />
+
+        <MButton type="submit" variant="contained" disabled={saving}>
+          {saving ? 'Saving...' : id ? 'Save Patient' : 'Create Patient'}
+        </MButton>
       </Box>
-    </Container>
+    </Paper>
   );
 };
 
