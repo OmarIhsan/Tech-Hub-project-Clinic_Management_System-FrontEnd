@@ -22,10 +22,10 @@ interface UpdateProcedureData {
 export const procedureService = {
   getAll: async (params?: { offset?: number; limit?: number }): Promise<{ data: Procedure[] }> => {
     try {
-      const response = await api.get('/procedures', { params });
-      // Handle both direct array and wrapped response
-      const data = response.data.data || response.data;
-      return { data: Array.isArray(data) ? data : [] };
+  const response = await api.get('/procedures', { params });
+  const resp = response.data;
+  const data = resp && typeof resp === 'object' && 'data' in resp ? resp.data : resp;
+  return { data: Array.isArray(data) ? (data as Procedure[]) : [] };
     } catch (error) {
       console.error('Error fetching procedures:', error);
       throw new Error('Failed to fetch procedures');
@@ -34,9 +34,10 @@ export const procedureService = {
 
   getById: async (id: string | number): Promise<{ data: Procedure }> => {
     try {
-      const response = await api.get(`/procedures/${id}`);
-      // Handle both direct object and wrapped response
-      return { data: response.data.data || response.data };
+  const response = await api.get(`/procedures/${id}`);
+  const resp = response.data;
+  const data = resp && typeof resp === 'object' && 'data' in resp ? resp.data : resp;
+  return { data: data as Procedure };
     } catch (error) {
       console.error('Error fetching procedure:', error);
       throw error;
@@ -45,9 +46,10 @@ export const procedureService = {
 
   create: async (procedureData: CreateProcedureData): Promise<{ data: Procedure }> => {
     try {
-      const response = await api.post('/procedures', procedureData);
-      // Handle both direct object and wrapped response
-      return { data: response.data.data || response.data };
+  const response = await api.post('/procedures', procedureData);
+  const resp = response.data;
+  const data = resp && typeof resp === 'object' && 'data' in resp ? resp.data : resp;
+  return { data: data as Procedure };
     } catch (error) {
       console.error('Error creating procedure:', error);
       throw new Error('Failed to create procedure');
@@ -56,9 +58,10 @@ export const procedureService = {
 
   update: async (id: string | number, procedureData: UpdateProcedureData): Promise<{ data: Procedure }> => {
     try {
-      const response = await api.put(`/procedures/${id}`, procedureData);
-      // Handle both direct object and wrapped response
-      return { data: response.data.data || response.data };
+  const response = await api.put(`/procedures/${id}`, procedureData);
+  const resp = response.data;
+  const data = resp && typeof resp === 'object' && 'data' in resp ? resp.data : resp;
+  return { data: data as Procedure };
     } catch (error) {
       console.error('Error updating procedure:', error);
       throw error;

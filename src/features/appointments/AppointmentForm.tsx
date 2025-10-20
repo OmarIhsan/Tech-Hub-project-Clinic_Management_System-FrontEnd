@@ -148,11 +148,15 @@ const AppointmentForm = () => {
                 required
                 error={!!errors.doctor_id}
               >
-                {doctors.map((d) => (
-                  <MenuItem key={d.doctor_id} value={d.doctor_id}>
-                    {d.full_name}
-                  </MenuItem>
-                ))}
+                {Array.isArray(doctors) && doctors.length > 0 ? (
+                  doctors.map((d) => (
+                    <MenuItem key={d.doctor_id} value={d.doctor_id}>
+                      {d.full_name}
+                    </MenuItem>
+                  ))
+                ) : (
+                  <MenuItem value="">No doctors available</MenuItem>
+                )}
               </Select>
               {errors.doctor_id && <Typography color="error" variant="caption">{errors.doctor_id.message}</Typography>}
             </FormControl>

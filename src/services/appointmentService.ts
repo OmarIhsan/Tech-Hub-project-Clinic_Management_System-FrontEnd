@@ -19,10 +19,28 @@ export const appointmentService = {
     limit?: number; 
   }): Promise<{ data: Appointment[] }> => {
     try {
-      const response = await api.get('/appointment', { params });
-      // Handle both direct array and wrapped response
-      const data = response.data.data || response.data;
-      return { data: Array.isArray(data) ? data : [] };
+  const response = await api.get('/appointment', { params });
+  const resp = response.data as unknown;
+      // Support shapes like:
+      // { data: [...] }
+      // { data: { data: [...], count } }
+      // { data: { data: { data: [...] } } }
+      let data: unknown = [];
+      if (Array.isArray(resp)) data = resp;
+      else if (resp && typeof resp === 'object') {
+        const obj = resp as Record<string, unknown>;
+        if (Array.isArray(obj.data)) data = obj.data;
+        else if (obj.data && typeof obj.data === 'object') {
+          const d1 = obj.data as Record<string, unknown>;
+          if (Array.isArray(d1.data)) data = d1.data;
+          else if (d1.data && typeof d1.data === 'object') {
+            const d2 = d1.data as Record<string, unknown>;
+            if (Array.isArray(d2.data)) data = d2.data;
+            else data = d1.data ?? obj.data;
+          } else data = obj.data ?? resp;
+        } else data = resp;
+      }
+      return { data: Array.isArray(data) ? (data as Appointment[]) : [] };
     } catch (error) {
       console.error('Error fetching appointments:', error);
       throw new Error('Failed to fetch appointments');
@@ -31,9 +49,10 @@ export const appointmentService = {
 
   getById: async (id: number): Promise<{ data: Appointment }> => {
     try {
-      const response = await api.get(`/appointment/${id}`);
-      // Handle both direct object and wrapped response
-      return { data: response.data.data || response.data };
+  const response = await api.get(`/appointment/${id}`);
+  const resp = response.data;
+  const data = resp && typeof resp === 'object' && 'data' in resp ? resp.data : resp;
+  return { data: data as Appointment };
     } catch (error) {
       console.error('Error fetching appointment:', error);
       throw error;
@@ -42,9 +61,10 @@ export const appointmentService = {
 
   create: async (appointmentData: CreateAppointmentData): Promise<{ data: Appointment }> => {
     try {
-      const response = await api.post('/appointment', appointmentData);
-      // Handle both direct object and wrapped response
-      return { data: response.data.data || response.data };
+  const response = await api.post('/appointment', appointmentData);
+  const resp = response.data;
+  const data = resp && typeof resp === 'object' && 'data' in resp ? resp.data : resp;
+  return { data: data as Appointment };
     } catch (error) {
       console.error('Error creating appointment:', error);
       throw new Error('Failed to create appointment');
@@ -53,9 +73,10 @@ export const appointmentService = {
 
   update: async (id: number, appointmentData: UpdateAppointmentData): Promise<{ data: Appointment }> => {
     try {
-      const response = await api.put(`/appointment/${id}`, appointmentData);
-      // Handle both direct object and wrapped response
-      return { data: response.data.data || response.data };
+  const response = await api.put(`/appointment/${id}`, appointmentData);
+  const resp = response.data;
+  const data = resp && typeof resp === 'object' && 'data' in resp ? resp.data : resp;
+  return { data: data as Appointment };
     } catch (error) {
       console.error('Error updating appointment:', error);
       throw error;
@@ -67,8 +88,9 @@ export const appointmentService = {
       const response = await api.put(`/appointment/${id}`, {
         status: 'cancelled'
       });
-      // Handle both direct object and wrapped response
-      return { data: response.data.data || response.data };
+      const resp = response.data;
+      const data = resp && typeof resp === 'object' && 'data' in resp ? resp.data : resp;
+      return { data: data as Appointment };
     } catch (error) {
       console.error('Error cancelling appointment:', error);
       throw error;
@@ -80,8 +102,9 @@ export const appointmentService = {
       const response = await api.put(`/appointment/${id}`, {
         status: 'completed'
       });
-      // Handle both direct object and wrapped response
-      return { data: response.data.data || response.data };
+      const resp = response.data;
+      const data = resp && typeof resp === 'object' && 'data' in resp ? resp.data : resp;
+      return { data: data as Appointment };
     } catch (error) {
       console.error('Error completing appointment:', error);
       throw error;

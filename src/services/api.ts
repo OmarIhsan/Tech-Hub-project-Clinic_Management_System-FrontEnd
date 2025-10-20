@@ -86,19 +86,39 @@ export const patientAPI = {
 export const doctorAPI = {
   getAll: async (params?: { offset?: number; limit?: number }): Promise<Doctor[]> => {
     const response = await api.get('/doctors', { params });
-    return response.data;
+    // Normalize possible response shapes:
+    // - direct array: [ ... ]
+    // - { data: [...] }
+    // - { data: { data: [...] } }
+    const resp = response.data;
+    if (Array.isArray(resp)) return resp as Doctor[];
+    if (resp && typeof resp === 'object') {
+      if (Array.isArray(resp.data)) return resp.data as Doctor[];
+      if (resp.data && typeof resp.data === 'object' && Array.isArray(resp.data.data)) return resp.data.data as Doctor[];
+    }
+    // fallback: empty array
+    return [];
   },
   getById: async (id: number): Promise<Doctor> => {
     const response = await api.get(`/doctors/${id}`);
-    return response.data;
+    const resp = response.data;
+    // Backend may return { data: doctor } or { doctor: {...} } or direct object
+    if (!resp) throw new Error('No doctor data');
+    if (resp.data && typeof resp.data === 'object') return resp.data as Doctor;
+    if (resp.doctor && typeof resp.doctor === 'object') return resp.doctor as Doctor;
+    return resp as Doctor;
   },
   create: async (doctor: Omit<Doctor, 'doctor_id' | 'createdAt' | 'updatedAt'>): Promise<Doctor> => {
     const response = await api.post('/doctors', doctor);
-    return response.data;
+    const resp = response.data;
+    if (resp && resp.data) return resp.data as Doctor;
+    return resp as Doctor;
   },
   update: async (id: number, doctor: Partial<Omit<Doctor, 'doctor_id' | 'createdAt' | 'updatedAt'>>): Promise<Doctor> => {
     const response = await api.put(`/doctors/${id}`, doctor);
-    return response.data;
+    const resp = response.data;
+    if (resp && resp.data) return resp.data as Doctor;
+    return resp as Doctor;
   },
   delete: async (id: number): Promise<void> => {
     await api.delete(`/doctors/${id}`);

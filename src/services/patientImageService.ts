@@ -17,10 +17,10 @@ interface UpdatePatientImageData {
 export const patientImageService = {
   getAll: async (params?: { patientId?: string; offset?: number; limit?: number }): Promise<{ data: PatientImage[] }> => {
     try {
-      const response = await api.get('/patient-images', { params });
-      // Handle both direct array and wrapped response
-      const data = response.data.data || response.data;
-      return { data: Array.isArray(data) ? data : [] };
+  const response = await api.get('/patient-images', { params });
+  const resp = response.data;
+  const data = resp && typeof resp === 'object' && 'data' in resp ? resp.data : resp;
+  return { data: Array.isArray(data) ? (data as PatientImage[]) : [] };
     } catch (error) {
       console.error('Error fetching patient images:', error);
       throw new Error('Failed to fetch patient images');
@@ -29,9 +29,10 @@ export const patientImageService = {
 
   getById: async (id: string | number): Promise<{ data: PatientImage }> => {
     try {
-      const response = await api.get(`/patient-images/${id}`);
-      // Handle both direct object and wrapped response
-      return { data: response.data.data || response.data };
+  const response = await api.get(`/patient-images/${id}`);
+  const resp = response.data;
+  const data = resp && typeof resp === 'object' && 'data' in resp ? resp.data : resp;
+  return { data: data as PatientImage };
     } catch (error) {
       console.error('Error fetching patient image:', error);
       throw error;
@@ -40,10 +41,10 @@ export const patientImageService = {
 
   getByPatientId: async (patientId: string | number): Promise<{ data: PatientImage[] }> => {
     try {
-      const response = await api.get('/patient-images', { params: { patientId } });
-      // Handle both direct array and wrapped response
-      const data = response.data.data || response.data;
-      return { data: Array.isArray(data) ? data : [] };
+  const response = await api.get('/patient-images', { params: { patientId } });
+  const resp = response.data;
+  const data = resp && typeof resp === 'object' && 'data' in resp ? resp.data : resp;
+  return { data: Array.isArray(data) ? (data as PatientImage[]) : [] };
     } catch (error) {
       console.error('Error fetching patient images:', error);
       throw new Error('Failed to fetch patient images');
@@ -52,9 +53,10 @@ export const patientImageService = {
 
   create: async (imageData: CreatePatientImageData): Promise<{ data: PatientImage }> => {
     try {
-      const response = await api.post('/patient-images', imageData);
-      // Handle both direct object and wrapped response
-      return { data: response.data.data || response.data };
+  const response = await api.post('/patient-images', imageData);
+  const resp = response.data;
+  const data = resp && typeof resp === 'object' && 'data' in resp ? resp.data : resp;
+  return { data: data as PatientImage };
     } catch (error) {
       console.error('Error creating patient image:', error);
       throw new Error('Failed to create patient image');
@@ -79,8 +81,9 @@ export const patientImageService = {
           'Content-Type': 'multipart/form-data',
         },
       });
-      // Handle both direct object and wrapped response
-      return { data: response.data.data || response.data };
+      const resp = response.data;
+      const data = resp && typeof resp === 'object' && 'data' in resp ? resp.data : resp;
+      return { data: data as PatientImage };
     } catch (error) {
       console.error('Error uploading patient image:', error);
       throw error;
@@ -89,9 +92,10 @@ export const patientImageService = {
 
   update: async (id: string | number, imageData: UpdatePatientImageData): Promise<{ data: PatientImage }> => {
     try {
-      const response = await api.put(`/patient-images/${id}`, imageData);
-      // Handle both direct object and wrapped response
-      return { data: response.data.data || response.data };
+  const response = await api.put(`/patient-images/${id}`, imageData);
+  const resp = response.data;
+  const data = resp && typeof resp === 'object' && 'data' in resp ? resp.data : resp;
+  return { data: data as PatientImage };
     } catch (error) {
       console.error('Error updating patient image:', error);
       throw error;

@@ -18,8 +18,10 @@ interface UpdateExpenseData {
 export const expenseService = {
   getAll: async (params?: { offset?: number; limit?: number; dateFrom?: string; dateTo?: string; category?: string }): Promise<{ data: Expense[] }> => {
     try {
-      const response = await api.get('/expenses', { params });
-      return { data: response.data };
+  const response = await api.get('/expenses', { params });
+  const resp = response.data;
+  const data = resp && typeof resp === 'object' && 'data' in resp ? resp.data : resp;
+  return { data: Array.isArray(data) ? (data as Expense[]) : [] };
     } catch (error) {
       console.error('Error fetching expenses:', error);
       throw new Error('Failed to fetch expenses');
@@ -28,8 +30,10 @@ export const expenseService = {
 
   getById: async (id: string): Promise<{ data: Expense }> => {
     try {
-      const response = await api.get(`/expenses/${id}`);
-      return { data: response.data };
+  const response = await api.get(`/expenses/${id}`);
+  const resp = response.data;
+  const data = resp && typeof resp === 'object' && 'data' in resp ? resp.data : resp;
+  return { data: data as Expense };
     } catch (error) {
       console.error('Error fetching expense:', error);
       throw error;
@@ -38,8 +42,10 @@ export const expenseService = {
 
   create: async (expenseData: CreateExpenseData): Promise<{ data: Expense }> => {
     try {
-      const response = await api.post('/expenses', expenseData);
-      return { data: response.data };
+  const response = await api.post('/expenses', expenseData);
+  const resp = response.data;
+  const data = resp && typeof resp === 'object' && 'data' in resp ? resp.data : resp;
+  return { data: data as Expense };
     } catch (error) {
       console.error('Error creating expense:', error);
       throw new Error('Failed to create expense');
@@ -48,8 +54,10 @@ export const expenseService = {
 
   update: async (id: string, expenseData: UpdateExpenseData): Promise<{ data: Expense }> => {
     try {
-      const response = await api.put(`/expenses/${id}`, expenseData);
-      return { data: response.data };
+  const response = await api.put(`/expenses/${id}`, expenseData);
+  const resp = response.data;
+  const data = resp && typeof resp === 'object' && 'data' in resp ? resp.data : resp;
+  return { data: data as Expense };
     } catch (error) {
       console.error('Error updating expense:', error);
       throw error;

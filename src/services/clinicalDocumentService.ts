@@ -19,8 +19,10 @@ interface UpdateClinicalDocumentData {
 export const clinicalDocumentService = {
   getAll: async (params?: { patientId?: string; offset?: number; limit?: number }): Promise<{ data: ClinicalDocument[] }> => {
     try {
-      const response = await api.get('/clinical-documents', { params });
-      return { data: response.data };
+  const response = await api.get('/clinical-documents', { params });
+  const resp = response.data;
+  const data = resp && typeof resp === 'object' && 'data' in resp ? resp.data : resp;
+  return { data: Array.isArray(data) ? (data as ClinicalDocument[]) : [] };
     } catch (error) {
       console.error('Error fetching clinical documents:', error);
       throw new Error('Failed to fetch clinical documents');
@@ -29,8 +31,10 @@ export const clinicalDocumentService = {
 
   getById: async (id: string): Promise<{ data: ClinicalDocument }> => {
     try {
-      const response = await api.get(`/clinical-documents/${id}`);
-      return { data: response.data };
+  const response = await api.get(`/clinical-documents/${id}`);
+  const resp = response.data;
+  const data = resp && typeof resp === 'object' && 'data' in resp ? resp.data : resp;
+  return { data: data as ClinicalDocument };
     } catch (error) {
       console.error('Error fetching clinical document:', error);
       throw error;
@@ -39,8 +43,10 @@ export const clinicalDocumentService = {
 
   getByPatientId: async (patientId: string): Promise<{ data: ClinicalDocument[] }> => {
     try {
-      const response = await api.get('/clinical-documents', { params: { patientId } });
-      return { data: response.data };
+  const response = await api.get('/clinical-documents', { params: { patientId } });
+  const resp = response.data;
+  const data = resp && typeof resp === 'object' && 'data' in resp ? resp.data : resp;
+  return { data: Array.isArray(data) ? (data as ClinicalDocument[]) : [] };
     } catch (error) {
       console.error('Error fetching patient clinical documents:', error);
       throw new Error('Failed to fetch patient clinical documents');
@@ -49,8 +55,10 @@ export const clinicalDocumentService = {
 
   create: async (documentData: CreateClinicalDocumentData): Promise<{ data: ClinicalDocument }> => {
     try {
-      const response = await api.post('/clinical-documents', documentData);
-      return { data: response.data };
+  const response = await api.post('/clinical-documents', documentData);
+  const resp = response.data;
+  const data = resp && typeof resp === 'object' && 'data' in resp ? resp.data : resp;
+  return { data: data as ClinicalDocument };
     } catch (error) {
       console.error('Error creating clinical document:', error);
       throw new Error('Failed to create clinical document');
@@ -76,7 +84,9 @@ export const clinicalDocumentService = {
           'Content-Type': 'multipart/form-data',
         },
       });
-      return { data: response.data };
+      const resp = response.data;
+      const data = resp && typeof resp === 'object' && 'data' in resp ? resp.data : resp;
+      return { data: data as ClinicalDocument };
     } catch (error) {
       console.error('Error uploading clinical document:', error);
       throw new Error('Failed to upload clinical document');
@@ -85,8 +95,10 @@ export const clinicalDocumentService = {
 
   update: async (id: string, documentData: UpdateClinicalDocumentData): Promise<{ data: ClinicalDocument }> => {
     try {
-      const response = await api.put(`/clinical-documents/${id}`, documentData);
-      return { data: response.data };
+  const response = await api.put(`/clinical-documents/${id}`, documentData);
+  const resp = response.data;
+  const data = resp && typeof resp === 'object' && 'data' in resp ? resp.data : resp;
+  return { data: data as ClinicalDocument };
     } catch (error) {
       console.error('Error updating clinical document:', error);
       throw error;

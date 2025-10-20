@@ -18,8 +18,10 @@ interface UpdateOtherIncomeData {
 export const otherIncomeService = {
   getAll: async (params?: { offset?: number; limit?: number }): Promise<{ data: OtherIncome[] }> => {
     try {
-      const response = await api.get('/other-incomes', { params });
-      return { data: response.data };
+  const response = await api.get('/other-incomes', { params });
+  const resp = response.data;
+  const data = resp && typeof resp === 'object' && 'data' in resp ? resp.data : resp;
+  return { data: Array.isArray(data) ? (data as OtherIncome[]) : [] };
     } catch (error) {
       console.error('Error fetching other incomes:', error);
       throw new Error('Failed to fetch other incomes');
@@ -28,8 +30,10 @@ export const otherIncomeService = {
 
   getById: async (id: string): Promise<{ data: OtherIncome }> => {
     try {
-      const response = await api.get(`/other-incomes/${id}`);
-      return { data: response.data };
+  const response = await api.get(`/other-incomes/${id}`);
+  const resp = response.data;
+  const data = resp && typeof resp === 'object' && 'data' in resp ? resp.data : resp;
+  return { data: data as OtherIncome };
     } catch (error) {
       console.error('Error fetching other income:', error);
       throw error;
@@ -38,8 +42,10 @@ export const otherIncomeService = {
 
   create: async (incomeData: CreateOtherIncomeData): Promise<{ data: OtherIncome }> => {
     try {
-      const response = await api.post('/other-incomes', incomeData);
-      return { data: response.data };
+  const response = await api.post('/other-incomes', incomeData);
+  const resp = response.data;
+  const data = resp && typeof resp === 'object' && 'data' in resp ? resp.data : resp;
+  return { data: data as OtherIncome };
     } catch (error) {
       console.error('Error creating other income:', error);
       throw new Error('Failed to create other income');
@@ -48,8 +54,10 @@ export const otherIncomeService = {
 
   update: async (id: string, incomeData: UpdateOtherIncomeData): Promise<{ data: OtherIncome }> => {
     try {
-      const response = await api.put(`/other-incomes/${id}`, incomeData);
-      return { data: response.data };
+  const response = await api.put(`/other-incomes/${id}`, incomeData);
+  const resp = response.data;
+  const data = resp && typeof resp === 'object' && 'data' in resp ? resp.data : resp;
+  return { data: data as OtherIncome };
     } catch (error) {
       console.error('Error updating other income:', error);
       throw error;

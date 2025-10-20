@@ -20,10 +20,10 @@ interface UpdateTreatmentPlanData {
 export const treatmentPlanService = {
   getAll: async (params?: { offset?: number; limit?: number }): Promise<{ data: TreatmentPlan[] }> => {
     try {
-      const response = await api.get('/treatment-plans', { params });
-      // Handle both direct array and wrapped response
-      const data = response.data.data || response.data;
-      return { data: Array.isArray(data) ? data : [] };
+  const response = await api.get('/treatment-plans', { params });
+  const resp = response.data;
+  const data = resp && typeof resp === 'object' && 'data' in resp ? (resp.data as unknown) : resp;
+  return { data: Array.isArray(data) ? (data as TreatmentPlan[]) : [] };
     } catch (error) {
       console.error('Error fetching treatment plans:', error);
       throw new Error('Failed to fetch treatment plans');
@@ -32,9 +32,10 @@ export const treatmentPlanService = {
 
   getById: async (id: number): Promise<{ data: TreatmentPlan }> => {
     try {
-      const response = await api.get(`/treatment-plans/${id}`);
-      // Handle both direct object and wrapped response
-      return { data: response.data.data || response.data };
+  const response = await api.get(`/treatment-plans/${id}`);
+  const resp = response.data;
+  const data = resp && typeof resp === 'object' && 'data' in resp ? (resp.data as unknown) : resp;
+  return { data: data as TreatmentPlan };
     } catch (error) {
       console.error('Error fetching treatment plan:', error);
       throw error;
@@ -43,9 +44,10 @@ export const treatmentPlanService = {
 
   create: async (planData: CreateTreatmentPlanData): Promise<{ data: TreatmentPlan }> => {
     try {
-      const response = await api.post('/treatment-plans', planData);
-      // Handle both direct object and wrapped response
-      return { data: response.data.data || response.data };
+  const response = await api.post('/treatment-plans', planData);
+  const resp = response.data;
+  const data = resp && typeof resp === 'object' && 'data' in resp ? (resp.data as unknown) : resp;
+  return { data: data as TreatmentPlan };
     } catch (error) {
       console.error('Error creating treatment plan:', error);
       throw new Error('Failed to create treatment plan');
@@ -54,9 +56,10 @@ export const treatmentPlanService = {
 
   update: async (id: number, planData: UpdateTreatmentPlanData): Promise<{ data: TreatmentPlan }> => {
     try {
-      const response = await api.put(`/treatment-plans/${id}`, planData);
-      // Handle both direct object and wrapped response
-      return { data: response.data.data || response.data };
+  const response = await api.put(`/treatment-plans/${id}`, planData);
+  const resp = response.data;
+  const data = resp && typeof resp === 'object' && 'data' in resp ? (resp.data as unknown) : resp;
+  return { data: data as TreatmentPlan };
     } catch (error) {
       console.error('Error updating treatment plan:', error);
       throw error;
@@ -77,8 +80,9 @@ export const treatmentPlanService = {
       const response = await api.put(`/treatment-plans/${id}`, {
         status: 'completed'
       });
-      // Handle both direct object and wrapped response
-      return { data: response.data.data || response.data };
+      const resp = response.data;
+      const data = resp && typeof resp === 'object' && 'data' in resp ? (resp.data as unknown) : resp;
+      return { data: data as TreatmentPlan };
     } catch (error) {
       console.error('Error completing treatment plan:', error);
       throw error;
@@ -90,8 +94,9 @@ export const treatmentPlanService = {
       const response = await api.put(`/treatment-plans/${id}`, {
         status: 'cancelled'
       });
-      // Handle both direct object and wrapped response
-      return { data: response.data.data || response.data };
+      const resp = response.data;
+      const data = resp && typeof resp === 'object' && 'data' in resp ? (resp.data as unknown) : resp;
+      return { data: data as TreatmentPlan };
     } catch (error) {
       console.error('Error cancelling treatment plan:', error);
       throw error;
