@@ -32,14 +32,12 @@ const StaffList: React.FC = () => {
       try {
         const result = await staffService.getAll();
         let staffArray: Staff[] = [];
-        // Type guard for backend response - { data: Staff[] }
         if (
           result &&
           typeof result === 'object' &&
           'data' in result &&
           Array.isArray(result.data)
         ) {
-          // Filter to show only staff members with role === 'staff'
           staffArray = (result.data as Staff[]).filter(
             (staff) => staff.role === StaffRole.STAFF
           );

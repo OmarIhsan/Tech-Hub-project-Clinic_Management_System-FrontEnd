@@ -9,9 +9,11 @@ import {
   TextField,
   CircularProgress,
   Alert,
+  Autocomplete,
 } from '@mui/material';
 import { ArrowBack as BackIcon } from '@mui/icons-material';
 import { otherIncomeService } from '../../services/api';
+import { patientAPI } from '../../services/api';
 import MButton from '../../components/MButton';
 import MOutlineButton from '../../components/MOutlineButton';
 import { useAuthContext } from '../../context/useAuthContext';
@@ -24,17 +26,26 @@ const IncomeForm = () => {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [patients, setPatients] = useState<{ patient_id: number; full_name: string }[]>([]);
   const [formData, setFormData] = useState({
     income_date: new Date().toISOString().split('T')[0],
     amount: '',
     source: '',
-    description: '',
+    patient_id: '',
   });
 
   useEffect(() => {
     if (isEditMode && id) {
       fetchIncome(Number(id));
     }
+    (async () => {
+      try {
+        const p = await patientAPI.getAll({ offset: 0, limit: 200 });
+        setPatients(p.map((pt) => ({ patient_id: pt.patient_id, full_name: pt.full_name })));
+      } catch (err) {
+        console.error('Failed to load patients for income form:', err);
+      }
+    })();
   }, [id, isEditMode]);
 
   const fetchIncome = async (incomeId: number) => {
@@ -47,7 +58,7 @@ const IncomeForm = () => {
         income_date: income.income_date.split('T')[0],
         amount: income.amount.toString(),
         source: income.source || '',
-        description: income.description || '',
+  patient_id: (income as unknown as Record<string, unknown>)?.patient_id ? String((income as unknown as Record<string, unknown>).patient_id) : '',
       });
     } catch (err: unknown) {
       console.error('Failed to fetch income:', err);
@@ -78,7 +89,6 @@ const IncomeForm = () => {
       return false;
     }
 
-    // Validate date is not in future
     const incomeDate = new Date(formData.income_date);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -105,10 +115,11 @@ const IncomeForm = () => {
       setError('');
 
       const incomeData = {
-        date: formData.income_date,
+        income_date: formData.income_date,
         amount: Number(formData.amount),
         source: formData.source,
-        notes: formData.description || undefined,
+        staff_id: user?.staff_id,
+        patient_id: formData.patient_id ? Number(formData.patient_id) : undefined,
       };
 
       if (isEditMode && id) {
@@ -121,8 +132,8 @@ const IncomeForm = () => {
     } catch (err: unknown) {
       console.error('Failed to save income:', err);
       if (err && typeof err === 'object' && 'response' in err) {
-        const apiError = err as { response?: { data?: { message?: string } } };
-        setError(apiError.response?.data?.message || 'Failed to save income');
+        const apiError = err as { response?: { data?: unknown; status?: number } };
+        setError(JSON.stringify(apiError.response?.data) || `Failed to save income (status ${apiError.response?.status})`);
       } else {
         setError('Failed to save income. Please try again.');
       }
@@ -141,7 +152,6 @@ const IncomeForm = () => {
 
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>
-      {/* Header */}
       <Box mb={4}>
         <Box display="flex" alignItems="center" gap={2} mb={2}>
           <MOutlineButton startIcon={<BackIcon />} onClick={() => navigate('/finance/income')}>
@@ -162,11 +172,9 @@ const IncomeForm = () => {
         </Alert>
       )}
 
-      {/* Form */}
       <Card>
         <CardContent>
           <Box component="form" onSubmit={handleSubmit}>
-            {/* Income Date */}
             <TextField
               fullWidth
               label="Income Date"
@@ -181,7 +189,6 @@ const IncomeForm = () => {
               }}
             />
 
-            {/* Amount */}
             <TextField
               fullWidth
               label="Amount"
@@ -197,7 +204,6 @@ const IncomeForm = () => {
               helperText="Enter amount in USD"
             />
 
-            {/* Source */}
             <TextField
               fullWidth
               label="Source"
@@ -209,19 +215,20 @@ const IncomeForm = () => {
               helperText="Enter the source of income"
             />
 
-            {/* Description */}
-            <TextField
-              fullWidth
-              label="Description"
-              multiline
-              rows={4}
-              value={formData.description}
-              onChange={(e) => handleChange('description', e.target.value)}
-              placeholder="Enter additional details (optional)"
-              sx={{ mb: 3 }}
+            <Autocomplete
+              options={patients}
+              getOptionLabel={(option) => option.full_name}
+              value={
+                formData.patient_id
+                  ? patients.find((p) => String(p.patient_id) === String(formData.patient_id)) || null
+                  : null
+              }
+              onChange={(_, newValue) => handleChange('patient_id', newValue ? String(newValue.patient_id) : '')}
+              renderInput={(params) => (
+                <TextField {...params} label="Patient (optional)" placeholder="Select patient" sx={{ mb: 3 }} />
+              )}
             />
 
-            {/* Action Buttons */}
             <Box display="flex" gap={2} justifyContent="flex-end">
               <MOutlineButton
                 onClick={() => navigate('/finance/income')}

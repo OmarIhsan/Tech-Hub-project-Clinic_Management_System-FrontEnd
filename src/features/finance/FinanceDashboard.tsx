@@ -36,7 +36,6 @@ const FinanceDashboard = () => {
 
   useEffect(() => {
     fetchFinancialData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dateRange]);
 
   const fetchFinancialData = async () => {
@@ -54,7 +53,6 @@ const FinanceDashboard = () => {
       const incomeData = incomeRes.data || [];
       const proceduresData = proceduresRes.data || [];
 
-      // Filter by date range
       const now = new Date();
       const startDate = getStartDate(now, dateRange);
 
@@ -147,7 +145,6 @@ const FinanceDashboard = () => {
 
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
-      {/* Header */}
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
         <Box>
           <Typography variant="h4" fontWeight="bold" gutterBottom>
@@ -179,7 +176,6 @@ const FinanceDashboard = () => {
         </Alert>
       )}
 
-      {/* Summary Cards */}
       <Box
         sx={{
           display: 'grid',
@@ -192,7 +188,6 @@ const FinanceDashboard = () => {
           mb: 4,
         }}
       >
-        {/* Total Expenses */}
         <Card sx={{ bgcolor: '#fff3e0' }}>
           <CardContent>
             <Box display="flex" alignItems="center" justifyContent="space-between">
@@ -212,7 +207,6 @@ const FinanceDashboard = () => {
           </CardContent>
         </Card>
 
-        {/* Other Income */}
         <Card sx={{ bgcolor: '#e8f5e9' }}>
           <CardContent>
             <Box display="flex" alignItems="center" justifyContent="space-between">
@@ -232,7 +226,6 @@ const FinanceDashboard = () => {
           </CardContent>
         </Card>
 
-        {/* Procedure Revenue */}
         <Card sx={{ bgcolor: '#e3f2fd' }}>
           <CardContent>
             <Box display="flex" alignItems="center" justifyContent="space-between">
@@ -252,7 +245,6 @@ const FinanceDashboard = () => {
           </CardContent>
         </Card>
 
-        {/* Net Income */}
         <Card sx={{ bgcolor: isPositive ? '#e8f5e9' : '#ffebee' }}>
           <CardContent>
             <Box display="flex" alignItems="center" justifyContent="space-between">
@@ -283,7 +275,6 @@ const FinanceDashboard = () => {
         </Card>
       </Box>
 
-      {/* Expenses by Category */}
       <Card sx={{ mb: 4 }}>
         <CardContent>
           <Typography variant="h6" fontWeight="bold" gutterBottom>

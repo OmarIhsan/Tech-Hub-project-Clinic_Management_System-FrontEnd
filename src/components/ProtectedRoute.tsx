@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { Typography } from '@mui/material';
 import { useAuthContext } from '../context/useAuthContext';
@@ -18,11 +18,28 @@ const ProtectedRoute: React.FC<Props> = ({ allowedRoles = [], children }) => {
   const role = typeof rawRole === 'string' ? rawRole : String(rawRole ?? '');
 
   if (allowedRoles.length && !allowedRoles.includes(role)) {
-    return (
-      <Typography sx={{ mt: 4 }} align="center">
-        You do not have permission to view this page.
-      </Typography>
-    );
+    const UnauthorizedMessage: React.FC<{ path: string }> = ({ path }) => {
+      useEffect(() => {
+        try {
+          const key = `unauth-refresh:${path}`;
+          const last = sessionStorage.getItem(key);
+          const now = Date.now();
+          if (!last || now - Number(last) > 5000) {
+            sessionStorage.setItem(key, String(now));
+            window.location.reload();
+          }
+        } catch {
+        }
+      }, [path]);
+
+      return (
+        <Typography sx={{ mt: 4 }} align="center">
+          You do not have permission to view this page.
+        </Typography>
+      );
+    };
+
+    return <UnauthorizedMessage path={location.pathname} />;
   }
 
   return <>{children}</>;

@@ -64,7 +64,14 @@ export const authAPI = {
 export const patientAPI = {
   getAll: async (params?: { offset?: number; limit?: number }): Promise<Patient[]> => {
     const response = await api.get('/patients', { params });
-    return response.data.data || response.data;
+    const resp = response.data;
+    if (!resp) return [];
+    if (Array.isArray(resp)) return resp as Patient[];
+    if (resp && typeof resp === 'object') {
+      if (Array.isArray(resp.data)) return resp.data as Patient[];
+      if (resp.data && typeof resp.data === 'object' && Array.isArray(resp.data.data)) return resp.data.data as Patient[];
+    }
+    return [];
   },
   getById: async (id: number): Promise<Patient> => {
     const response = await api.get(`/patients/${id}`);
@@ -86,23 +93,17 @@ export const patientAPI = {
 export const doctorAPI = {
   getAll: async (params?: { offset?: number; limit?: number }): Promise<Doctor[]> => {
     const response = await api.get('/doctors', { params });
-    // Normalize possible response shapes:
-    // - direct array: [ ... ]
-    // - { data: [...] }
-    // - { data: { data: [...] } }
     const resp = response.data;
     if (Array.isArray(resp)) return resp as Doctor[];
     if (resp && typeof resp === 'object') {
       if (Array.isArray(resp.data)) return resp.data as Doctor[];
       if (resp.data && typeof resp.data === 'object' && Array.isArray(resp.data.data)) return resp.data.data as Doctor[];
     }
-    // fallback: empty array
     return [];
   },
   getById: async (id: number): Promise<Doctor> => {
     const response = await api.get(`/doctors/${id}`);
     const resp = response.data;
-    // Backend may return { data: doctor } or { doctor: {...} } or direct object
     if (!resp) throw new Error('No doctor data');
     if (resp.data && typeof resp.data === 'object') return resp.data as Doctor;
     if (resp.doctor && typeof resp.doctor === 'object') return resp.doctor as Doctor;
@@ -128,19 +129,31 @@ export const doctorAPI = {
 export const medicalRecordAPI = {
   getAll: async (params?: { offset?: number; limit?: number }): Promise<MedicalRecord[]> => {
     const response = await api.get('/medical-records', { params });
-    return response.data;
+    const resp = response.data;
+    if (Array.isArray(resp)) return resp as MedicalRecord[];
+    if (resp && typeof resp === 'object') {
+      if (Array.isArray(resp.data)) return resp.data as MedicalRecord[];
+      if (Array.isArray(resp.data?.data)) return resp.data.data as MedicalRecord[];
+    }
+    return [];
   },
   getById: async (id: number): Promise<MedicalRecord> => {
     const response = await api.get(`/medical-records/${id}`);
-    return response.data;
+    const resp = response.data;
+    if (resp && typeof resp === 'object') return (resp.data || resp) as MedicalRecord;
+    return resp as MedicalRecord;
   },
-  create: async (record: { patient_id: number; doctor_id: number; diagnosis: string; prescription?: string; visit_date: string }): Promise<MedicalRecord> => {
+  create: async (record: { patient_id: number; doctor_id: number; diagnosis?: string; clinical_findings: string; treatment: string; allergies: string; medical_conditions?: string; current_meds_json?: unknown }): Promise<MedicalRecord> => {
     const response = await api.post('/medical-records', record);
-    return response.data;
+    const resp = response.data;
+    if (resp && typeof resp === 'object') return (resp.data || resp) as MedicalRecord;
+    return resp as MedicalRecord;
   },
-  update: async (id: number, record: { diagnosis?: string; prescription?: string }): Promise<MedicalRecord> => {
+  update: async (id: number, record: { diagnosis?: string; clinical_findings?: string; treatment?: string; allergies?: string; medical_conditions?: string; current_meds_json?: unknown } | { diagnosis?: string; prescription?: string }): Promise<MedicalRecord> => {
     const response = await api.put(`/medical-records/${id}`, record);
-    return response.data;
+    const resp = response.data;
+    if (resp && typeof resp === 'object') return (resp.data || resp) as MedicalRecord;
+    return resp as MedicalRecord;
   },
   delete: async (id: number): Promise<void> => {
     await api.delete(`/medical-records/${id}`);

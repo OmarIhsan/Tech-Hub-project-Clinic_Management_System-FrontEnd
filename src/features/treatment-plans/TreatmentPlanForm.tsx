@@ -17,6 +17,8 @@ import { treatmentPlanService, patientAPI, doctorAPI, appointmentService } from 
 import { TreatmentPlan, Appointment } from '../../types';
 import MButton from '../../components/MButton';
 import MOutlineButton from '../../components/MOutlineButton';
+import { useAuthContext } from '../../context/useAuthContext';
+import { StaffRole } from '../../types';
 
 const TreatmentPlanForm = () => {
   const { id } = useParams();
@@ -33,7 +35,7 @@ const TreatmentPlanForm = () => {
     diagnosis: '',
     start_date: '',
     expected_end_date: '',
-    status: 'active', // allowed: draft | active | ongoing | completed | cancelled
+    status: 'active',
     priority: 'medium',
     notes: '',
   });
@@ -41,11 +43,14 @@ const TreatmentPlanForm = () => {
   const [patients, setPatients] = useState([]);
   const [doctors, setDoctors] = useState([]);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
-  const [apptLoading, setApptLoading] = useState(false);
-  const [apptError, setApptError] = useState<string | null>(null);
+  const [, setApptLoading] = useState(false);
+  const [, setApptError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const { user } = useAuthContext();
+  const role = user?.role ?? '';
+  const canManagePlans = [StaffRole.OWNER, StaffRole.DOCTOR, StaffRole.STAFF].includes(role as StaffRole);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -58,7 +63,6 @@ const TreatmentPlanForm = () => {
         ]);
         setPatients(patientsData);
         setDoctors(doctorsData);
-        // Prefill from query params if creating a new plan
         if (!id) {
           const params = new URLSearchParams(location.search);
           const qPatient = params.get('patient_id');
@@ -68,7 +72,6 @@ const TreatmentPlanForm = () => {
             ...prev,
             patient_id: qPatient ? Number(qPatient) : prev.patient_id,
             doctor_id: qDoctor ? Number(qDoctor) : prev.doctor_id,
-            // store appointment_id in a temp field on state for inclusion in payload
             ...(qAppointment ? { appointment_id: Number(qAppointment) } : {}),
           }));
         }
@@ -89,12 +92,10 @@ const TreatmentPlanForm = () => {
     fetchData();
   }, [id, location.search]);
 
-  // When both patient and doctor are selected, fetch appointments for them
   useEffect(() => {
     const fetchAppointments = async () => {
       setAppointments([]);
       setApptError(null);
-      // clear any previously selected appointment when patient/doctor changes
       setTreatmentPlan(prev => ({ ...prev, appointment_id: undefined }));
 
       const pid = treatmentPlan.patient_id;
@@ -103,7 +104,6 @@ const TreatmentPlanForm = () => {
 
       try {
         setApptLoading(true);
-        // request appointments filtered by patient and doctor
   const params = { patient_id: Number(pid), doctor_id: Number(did), limit: 50 } as unknown as Record<string, unknown>;
   const resp = await appointmentService.getAll(params as unknown as { offset?: number; limit?: number });
         const list = resp.data || [];
@@ -131,7 +131,6 @@ const TreatmentPlanForm = () => {
     setSaving(true);
     
     try {
-      // Build backend expected payload
     type ApiPayload = {
       patient_id: number;
       doctor_id: number;
@@ -155,7 +154,6 @@ const TreatmentPlanForm = () => {
         console.log('Updating treatment plan payload:', payload);
         await treatmentPlanService.update(Number(id), payload);
       } else {
-        // include appointment_id if present in state
         const apptId = (treatmentPlan as { [k: string]: unknown })['appointment_id'] as number | undefined;
         if (apptId) payload.appointment_id = apptId;
         console.log('Creating treatment plan payload:', payload);
@@ -163,7 +161,6 @@ const TreatmentPlanForm = () => {
       }
       navigate('/treatment-plans');
     } catch (err) {
-      // Try to read a detailed message from axios response
       console.error('Failed to save treatment plan:', err);
       const e = err as unknown;
       const resp = (e as { response?: { data?: unknown } })?.response?.data as unknown;
@@ -182,6 +179,19 @@ const TreatmentPlanForm = () => {
       <Container maxWidth="lg">
         <Box sx={{ mt: 8, mb: 4, display: 'flex', justifyContent: 'center' }}>
           <CircularProgress />
+        </Box>
+      </Container>
+    );
+  }
+
+  if (!canManagePlans) {
+    return (
+      <Container maxWidth="lg">
+        <Box sx={{ mt: 8, mb: 4 }}>
+          <Paper sx={{ p: 4 }}>
+            <Typography variant="h5">Access Denied</Typography>
+            <Typography sx={{ mt: 2 }}>You do not have permission to create or edit treatment plans.</Typography>
+          </Paper>
         </Box>
       </Container>
     );
@@ -241,7 +251,6 @@ const TreatmentPlanForm = () => {
                       onChange={(e) => setTreatmentPlan(prev => ({ ...prev, appointment_id: Number(e.target.value) }))}
                       required
                     >
-                      {/* If appointments are available, show them; otherwise allow entering numeric id fallback */}
                       {appointments && appointments.length > 0 ? (
                         appointments.map((a) => (
                           <MenuItem key={a.id} value={a.id}>

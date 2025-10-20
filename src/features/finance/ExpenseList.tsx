@@ -114,12 +114,10 @@ const ExpenseList = () => {
   };
 
   const filteredExpenses = expenses.filter((exp) => {
-    // Category filter
     if (categoryFilter !== 'all' && exp.category !== categoryFilter) {
       return false;
     }
 
-    // Date range filter
     const expDate = new Date(exp.expense_date);
     if (startDate && expDate < new Date(startDate)) {
       return false;
@@ -171,7 +169,6 @@ const ExpenseList = () => {
 
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
-      {/* Header */}
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
         <Box>
           <Typography variant="h4" fontWeight="bold" gutterBottom>
@@ -197,7 +194,6 @@ const ExpenseList = () => {
         </Alert>
       )}
 
-      {/* Summary Card */}
       <Card sx={{ mb: 3, bgcolor: '#fff3e0' }}>
         <CardContent>
           <Box display="flex" alignItems="center" justifyContent="space-between">
@@ -219,7 +215,6 @@ const ExpenseList = () => {
         </CardContent>
       </Card>
 
-      {/* Filters */}
       <Card sx={{ mb: 3 }}>
         <CardContent>
           <Typography variant="h6" fontWeight="bold" gutterBottom>
@@ -276,7 +271,6 @@ const ExpenseList = () => {
         </CardContent>
       </Card>
 
-      {/* Expenses Table */}
       {filteredExpenses.length === 0 ? (
         <Card>
           <CardContent>
@@ -366,7 +360,6 @@ const ExpenseList = () => {
         </TableContainer>
       )}
 
-      {/* Delete Confirmation Dialog */}
       <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
         <DialogTitle>Confirm Delete</DialogTitle>
         <DialogContent>

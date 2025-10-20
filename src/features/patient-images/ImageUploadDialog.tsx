@@ -42,7 +42,7 @@ const IMAGE_TYPES = [
   'Other',
 ];
 
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const MAX_FILE_SIZE = 5 * 1024 * 1024;
 const ALLOWED_FILE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
 
 const ImageUploadDialog: React.FC<ImageUploadDialogProps> = ({
@@ -67,7 +67,6 @@ const ImageUploadDialog: React.FC<ImageUploadDialogProps> = ({
   useEffect(() => {
     if (open) {
       fetchPatients();
-      // Reset form when dialog opens
       setFormData({
         patientId: patientId?.toString() || '',
         imageType: '',
@@ -81,7 +80,6 @@ const ImageUploadDialog: React.FC<ImageUploadDialogProps> = ({
   }, [open, patientId]);
 
   useEffect(() => {
-    // Cleanup preview URL when component unmounts or file changes
     return () => {
       if (previewUrl) {
         URL.revokeObjectURL(previewUrl);
@@ -112,14 +110,12 @@ const ImageUploadDialog: React.FC<ImageUploadDialogProps> = ({
       return;
     }
 
-    // Validate file type
     if (!ALLOWED_FILE_TYPES.includes(file.type)) {
       setError('Please select a valid image file (JPEG, PNG, GIF, or WebP)');
       event.target.value = '';
       return;
     }
 
-    // Validate file size
     if (file.size > MAX_FILE_SIZE) {
       setError(`File size must be less than ${MAX_FILE_SIZE / (1024 * 1024)}MB`);
       event.target.value = '';
@@ -129,7 +125,6 @@ const ImageUploadDialog: React.FC<ImageUploadDialogProps> = ({
     setSelectedFile(file);
     setError('');
 
-    // Create preview URL
     const url = URL.createObjectURL(file);
     setPreviewUrl(url);
   };
@@ -168,7 +163,6 @@ const ImageUploadDialog: React.FC<ImageUploadDialogProps> = ({
 
       setSuccess('Image uploaded successfully!');
       
-      // Wait a moment to show success message, then call onSuccess
       setTimeout(() => {
         onSuccess();
         onClose();
@@ -212,7 +206,6 @@ const ImageUploadDialog: React.FC<ImageUploadDialogProps> = ({
             </Alert>
           )}
 
-          {/* Patient Selection */}
           <Box sx={{ mb: 2 }}>
             <Autocomplete
               options={patients}
@@ -248,7 +241,6 @@ const ImageUploadDialog: React.FC<ImageUploadDialogProps> = ({
             />
           </Box>
 
-          {/* Image Type Selection */}
           <Box sx={{ mb: 2 }}>
             <FormControl fullWidth>
               <InputLabel>Image Type *</InputLabel>
@@ -273,7 +265,6 @@ const ImageUploadDialog: React.FC<ImageUploadDialogProps> = ({
             </FormControl>
           </Box>
 
-          {/* File Upload */}
           <Box sx={{ mb: 2 }}>
             <Button
               variant="outlined"
@@ -296,7 +287,6 @@ const ImageUploadDialog: React.FC<ImageUploadDialogProps> = ({
             </Typography>
           </Box>
 
-          {/* Image Preview */}
           {previewUrl && (
             <Box
               sx={{
@@ -324,7 +314,6 @@ const ImageUploadDialog: React.FC<ImageUploadDialogProps> = ({
             </Box>
           )}
 
-          {/* No Preview */}
           {!previewUrl && (
             <Box
               sx={{
@@ -344,7 +333,6 @@ const ImageUploadDialog: React.FC<ImageUploadDialogProps> = ({
             </Box>
           )}
 
-          {/* Notes (Optional) */}
           <TextField
             fullWidth
             label="Notes (Optional)"

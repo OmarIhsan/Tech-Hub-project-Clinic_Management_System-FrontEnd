@@ -31,6 +31,8 @@ import {
 } from '../../services/api';
 import { Patient, Appointment, TreatmentPlan, ClinicalDocument, PatientImage, MedicalRecord } from '../../types';
 import MButton from '../../components/MButton';
+import { useAuthContext } from '../../context/useAuthContext';
+import { Procedure } from '../../types';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -59,6 +61,8 @@ const DoctorPatientDetail: React.FC = () => {
   const [documents, setDocuments] = useState<ClinicalDocument[]>([]);
   const [images, setImages] = useState<PatientImage[]>([]);
   const [medicalRecords, setMedicalRecords] = useState<MedicalRecord[]>([]);
+  const [procedures, setProcedures] = useState<Procedure[]>([]);
+  const { user } = useAuthContext();
 
   useEffect(() => {
     if (id) {
@@ -70,7 +74,6 @@ const DoctorPatientDetail: React.FC = () => {
     try {
       setLoading(true);
 
-      // Run requests in parallel but use allSettled so one 403 doesn't block others
       const results = await Promise.allSettled([
         patientAPI.getById(patientId),
         appointmentService.getAll(),
@@ -78,13 +81,12 @@ const DoctorPatientDetail: React.FC = () => {
         clinicalDocumentService.getAll(),
         patientImageService.getAll(),
         medicalRecordAPI.getAll(),
+        (await import('../../services/api')).procedureService.getAll(),
       ] as const);
 
-      // Helper to safely extract arrays from varied response shapes
       const extractArray = (r: PromiseSettledResult<unknown>): unknown[] => {
         if (r.status !== 'fulfilled') return [];
         const v = r.value as unknown;
-        // r.value may be { data: [...] } or { data: { data: [...] } } or an array
         if (Array.isArray(v)) return v;
         if (v && typeof v === 'object') {
           const obj = v as Record<string, unknown>;
@@ -104,34 +106,59 @@ const DoctorPatientDetail: React.FC = () => {
       const imagesResult = results[4];
       const medicalRecordsResult = results[5];
 
-      // Normalize patient
-      const resolvePatient = (p: unknown): Patient | null => {
+\      const resolvePatient = (p: unknown): Patient | null => {
         if (!p) return null;
-        // v can be direct patient, or { data: patient } or { patient: patient }
-        const v = p as Record<string, unknown>;
+\        const v = p as Record<string, unknown>;
         if ('patient' in v && v.patient && typeof v.patient === 'object') return v.patient as Patient;
         if ('data' in v) {
           const d = v.data as Record<string, unknown> | undefined;
           if (d && 'patient' in d && d.patient && typeof d.patient === 'object') return d.patient as Patient;
-          // sometimes data is the patient itself
           if (d && typeof d === 'object' && !Array.isArray(d) && Object.keys(d).length > 0) return d as unknown as Patient;
         }
-        // fallback: assume p is the patient object
         return v as unknown as Patient;
       };
 
       const normalizedPatient = resolvePatient(patientResult.status === 'fulfilled' ? patientResult.value : null);
 
   const appointmentsData = (extractArray(appointmentsResult) as Appointment[]).filter((a) => a.patient_id === patientId);
-  const treatmentPlansData = (extractArray(treatmentPlansResult) as TreatmentPlan[]).filter((t) => t.patient && t.patient.patient_id === patientId);
-  const documentsData = (extractArray(documentsResult) as ClinicalDocument[]).filter((d) => d.patient && d.patient.patient_id === patientId);
-  const imagesData = (extractArray(imagesResult) as PatientImage[]).filter((i) => i.patient && i.patient.patient_id === patientId);
-  const medicalRecordsData = (extractArray(medicalRecordsResult) as MedicalRecord[]).filter((m) => m.patient && m.patient.patient_id === patientId);
+  const treatmentPlansData = (extractArray(treatmentPlansResult) as TreatmentPlan[]).filter((t) => {
+    const r = t as unknown as Record<string, unknown>;
+    const pid = (r['patient_id'] ?? (r['patient'] && (r['patient'] as Record<string, unknown>)['patient_id'])) as number | undefined;
+    return pid === patientId;
+  });
+      const documentsData = (extractArray(documentsResult) as ClinicalDocument[]).filter((d) => {
+    const r = d as unknown as Record<string, unknown>;
+    const pid = (r['patient_id'] ?? (r['patient'] && (r['patient'] as Record<string, unknown>)['patient_id'])) as number | undefined;
+    return pid === patientId;
+  });
+      const proceduresResult = results[6];
+      let proceduresData: Procedure[] = [];
+      if (proceduresResult && proceduresResult.status === 'fulfilled') {
+        const rawProcedures = proceduresResult.value as unknown;
+        const rp = rawProcedures as unknown as Record<string, unknown>;
+        const arr = Array.isArray(rp.data) ? (rp.data as unknown as Procedure[]) : [];
+        proceduresData = arr.filter((pr) => {
+          const r = pr as unknown as Record<string, unknown>;
+          const pid = (r['patient_id'] ?? (r['patient'] && (r['patient'] as Record<string, unknown>)['patient_id'])) as number | undefined;
+          return pid === patientId;
+        });
+      }
+  const imagesData = (extractArray(imagesResult) as PatientImage[]).filter((i) => {
+    const r = i as unknown as Record<string, unknown>;
+    const pid = (r['patient_id'] ?? (r['patient'] && (r['patient'] as Record<string, unknown>)['patient_id'])) as number | undefined;
+    return pid === patientId;
+  });
+  const medicalRecordsData = (extractArray(medicalRecordsResult) as MedicalRecord[]).filter((m) => {
+    const r = m as unknown as Record<string, unknown>;
+    const pid = (r['patient_id'] ?? (r['patient'] && (r['patient'] as Record<string, unknown>)['patient_id'])) as number | undefined;
+    return pid === patientId;
+  });
 
       setPatient(normalizedPatient);
       setAppointments(appointmentsData);
       setTreatmentPlans(treatmentPlansData);
       setDocuments(documentsData);
+  setProcedures(proceduresData);
       setImages(imagesData);
       setMedicalRecords(medicalRecordsData);
     } catch (err: unknown) {
@@ -165,7 +192,6 @@ const DoctorPatientDetail: React.FC = () => {
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 8 }}>
       <Paper elevation={3} sx={{ p: 4 }}>
-        {/* Patient Header */}
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
           <Avatar sx={{ width: 80, height: 80, mr: 3, bgcolor: 'primary.main' }}>
             <PersonIcon sx={{ fontSize: 40 }} />
@@ -181,6 +207,31 @@ const DoctorPatientDetail: React.FC = () => {
               <Chip label={`DOB: ${new Date(patient.date_of_birth).toLocaleDateString()}`} size="small" />
               {patient.blood_group && <Chip label={`Blood: ${patient.blood_group}`} size="small" color="error" />}
             </Box>
+          </Box>
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            {user?.role === 'doctor' && (
+              <>
+                <MButton variant="contained" onClick={() => navigate(`/procedures/new?patient_id=${patient.patient_id}`)}>
+                  Add Procedure
+                </MButton>
+                <MButton variant="contained" onClick={() => navigate(`/treatment-plans/new?patient_id=${patient.patient_id}`)}>
+                  Add Treatment Plan
+                </MButton>
+              </>
+            )}
+            {user?.role === 'staff' && (
+              <>
+                <MButton variant="outlined" onClick={() => navigate(`/clinical-documents/new?patient_id=${patient.patient_id}`)}>
+                  Add Document
+                </MButton>
+                <MButton variant="outlined" onClick={() => navigate(`/patient-images/new?patient_id=${patient.patient_id}`)}>
+                  Add Image
+                </MButton>
+                <MButton variant="outlined" onClick={() => navigate(`/medical-records/new?patient_id=${patient.patient_id}`)}>
+                  Add Record
+                </MButton>
+              </>
+            )}
           </Box>
         </Box>
         <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
@@ -216,16 +267,15 @@ const DoctorPatientDetail: React.FC = () => {
 
         <Divider sx={{ my: 3 }} />
 
-        {/* Tabs for different sections */}
         <Tabs value={tabValue} onChange={handleTabChange} sx={{ borderBottom: 1, borderColor: 'divider' }}>
           <Tab label={`Appointments (${appointments.length})`} icon={<EventIcon />} iconPosition="start" />
           <Tab label={`Treatment Plans (${treatmentPlans.length})`} icon={<AssignmentIcon />} iconPosition="start" />
+          <Tab label={`Procedures (${procedures.length})`} icon={<LocalHospitalIcon />} iconPosition="start" />
           <Tab label={`Medical Records (${medicalRecords.length})`} icon={<LocalHospitalIcon />} iconPosition="start" />
           <Tab label={`Documents (${documents.length})`} icon={<DescriptionIcon />} iconPosition="start" />
           <Tab label={`Images (${images.length})`} icon={<ImageIcon />} iconPosition="start" />
         </Tabs>
 
-        {/* Appointments Tab */}
         <TabPanel value={tabValue} index={0}>
           <Box sx={{ display: 'grid', gap: 2 }}>
             {appointments.length === 0 ? (
@@ -258,44 +308,79 @@ const DoctorPatientDetail: React.FC = () => {
           </Box>
         </TabPanel>
 
-        {/* Treatment Plans Tab */}
         <TabPanel value={tabValue} index={1}>
           <Box sx={{ display: 'grid', gap: 2 }}>
             {treatmentPlans.length === 0 ? (
               <Alert severity="info">No treatment plans found for this patient</Alert>
             ) : (
-              treatmentPlans.map((plan) => (
-                <Card key={plan.plan_id} variant="outlined">
-                  <CardContent>
-                    <Typography variant="h6">
-                      Treatment by Dr. {plan.doctor.full_name}
-                    </Typography>
-                    <Typography variant="body1" sx={{ mt: 1 }}>
-                      {plan.treatment_description}
-                    </Typography>
-                    <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
-                      Start: {new Date(plan.start_date).toLocaleDateString()}
-                      {plan.end_date && ` - End: ${new Date(plan.end_date).toLocaleDateString()}`}
-                    </Typography>
-                    <Chip 
-                      label={plan.status} 
-                      size="small" 
-                      color={plan.status === 'completed' ? 'success' : plan.status === 'ongoing' ? 'primary' : 'default'}
-                      sx={{ mt: 1 }}
-                    />
-                    <Box sx={{ mt: 2 }}>
-                      <MButton size="small" onClick={() => navigate(`/treatment-plans/${plan.plan_id}`)}>
-                        View Details
-                      </MButton>
-                    </Box>
-                  </CardContent>
-                </Card>
-              ))
+              treatmentPlans.map((plan) => {
+                const r = plan as unknown as Record<string, unknown>;
+                const doctorObj = r['doctor'] as Record<string, unknown> | undefined;
+                const doctorLabel = (doctorObj && (doctorObj.full_name as string)) || `Doctor #${(r['doctor_id'] ?? doctorObj?.patient_id) ?? 'N/A'}`;
+                const start = r['start_date'] ? new Date(String(r['start_date'])).toLocaleDateString() : '-';
+                const end = r['end_date'] ? new Date(String(r['end_date'])).toLocaleDateString() : '';
+                return (
+                  <Card key={(r['plan_id'] ?? r['id'] ?? Math.random()) as string | number} variant="outlined">
+                    <CardContent>
+                      <Typography variant="h6">Treatment by Dr. {doctorLabel}</Typography>
+                      <Typography variant="body1" sx={{ mt: 1 }}>
+                        {r['treatment_description'] as string}
+                      </Typography>
+                      <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
+                        Start: {start}{end ? ` - End: ${end}` : ''}
+                      </Typography>
+                      <Chip 
+                        label={String(r['status'] ?? '')} 
+                        size="small" 
+                        color={String(r['status']) === 'completed' ? 'success' : String(r['status']) === 'ongoing' ? 'primary' : 'default'}
+                        sx={{ mt: 1 }}
+                      />
+                      <Box sx={{ mt: 2 }}>
+                        <MButton size="small" onClick={() => navigate(`/treatment-plans/${r['plan_id'] ?? r['id']}`)}>
+                          View Details
+                        </MButton>
+                      </Box>
+                    </CardContent>
+                  </Card>
+                );
+              })
             )}
           </Box>
         </TabPanel>
 
-        {/* Medical Records Tab */}
+        <TabPanel value={tabValue} index={2}>
+          <Box sx={{ display: 'grid', gap: 2 }}>
+            {procedures.length === 0 ? (
+              <Alert severity="info">No procedures found for this patient</Alert>
+            ) : (
+              procedures.map((pr) => {
+                const r = pr as unknown as Record<string, unknown>;
+                const doctorObj = r['doctor'] as Record<string, unknown> | undefined;
+                const doctorLabel = (doctorObj && (doctorObj.full_name as string)) || `Doctor #${(r['doctor_id'] ?? doctorObj?.doctor_id) ?? 'N/A'}`;
+                const date = r['procedure_date'] ? new Date(String(r['procedure_date'])).toLocaleDateString() : '-';
+                return (
+                  <Card key={(r['procedure_id'] ?? Math.random()) as string | number} variant="outlined">
+                    <CardContent>
+                      <Typography variant="h6">{r['procedure_name'] as string}</Typography>
+                      <Typography variant="body2" color="textSecondary">
+                        Performed by Dr. {doctorLabel} — {date}
+                      </Typography>
+                      {r['notes'] && <Typography sx={{ mt: 1 }}>{r['notes'] as string}</Typography>}
+                      <Box sx={{ mt: 2 }}>
+                        {user?.role === 'doctor' && (
+                          <MButton size="small" onClick={() => navigate(`/procedures/${r['procedure_id']}/edit`)}>
+                            Manage
+                          </MButton>
+                        )}
+                      </Box>
+                    </CardContent>
+                  </Card>
+                );
+              })
+            )}
+          </Box>
+        </TabPanel>
+
         <TabPanel value={tabValue} index={2}>
           <Box sx={{ display: 'grid', gap: 2 }}>
             {medicalRecords.length === 0 ? (
@@ -330,7 +415,6 @@ const DoctorPatientDetail: React.FC = () => {
           </Box>
         </TabPanel>
 
-        {/* Documents Tab */}
         <TabPanel value={tabValue} index={3}>
           <Box sx={{ display: 'grid', gap: 2 }}>
             {documents.length === 0 ? (
@@ -353,7 +437,6 @@ const DoctorPatientDetail: React.FC = () => {
           </Box>
         </TabPanel>
 
-        {/* Images Tab */}
         <TabPanel value={tabValue} index={4}>
           <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 2 }}>
             {images.length === 0 ? (

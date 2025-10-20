@@ -7,7 +7,6 @@ interface CreateTreatmentPlanData {
   doctor_id: number;
   appointment_id?: number;
   diagnosis_summary: string;
-  // backend may return null for prescription; allow null or string
   prescription?: string | null;
   plan_details?: string;
   status?: 'draft' | 'active' | 'ongoing' | 'completed' | 'cancelled' | string; // be permissive
@@ -19,7 +18,6 @@ interface UpdateTreatmentPlanData {
   status?: 'draft' | 'active' | 'ongoing' | 'completed' | 'cancelled' | string;
 }
 
-// Helper: unwrap backend envelope which sometimes nests payload under data.data (lists)
 const extractPayload = (resp: unknown): unknown => {
   if (!resp) return resp;
   if (typeof resp !== 'object' || resp === null) return resp;
@@ -43,8 +41,19 @@ export const treatmentPlanService = {
     try {
       const response = await api.get('/treatment-plans', { params });
       const resp = response.data;
+      if (resp && typeof resp === 'object') {
+        const top = resp as Record<string, unknown>;
+        if (top.data && typeof top.data === 'object') {
+          const inner = top.data as Record<string, unknown>;
+          if (Array.isArray(inner.data) && typeof inner.count === 'number') {
+            return { data: inner.data as TreatmentPlan[], count: inner.count as number };
+          }
+          if (Array.isArray(top.data) && typeof top.count === 'number') {
+            return { data: top.data as TreatmentPlan[], count: top.count as number };
+          }
+        }
+      }
       const data = extractPayload(resp);
-      // data may be an array or an object containing data + count
       if (Array.isArray(data)) return { data: data as TreatmentPlan[] };
       if (data && typeof data === 'object') {
         const obj = data as Record<string, unknown>;
@@ -55,7 +64,7 @@ export const treatmentPlanService = {
       return { data: [] };
     } catch (error) {
       console.error('Error fetching treatment plans:', error);
-      throw new Error('Failed to fetch treatment plans');
+      throw error;
     }
   },
 
@@ -64,7 +73,6 @@ export const treatmentPlanService = {
       const response = await api.get(`/treatment-plans/${id}`);
       const resp = response.data;
       const data = extractPayload(resp);
-      // If payload is array return first element
       if (Array.isArray(data)) return { data: data[0] as TreatmentPlan };
       return { data: data as TreatmentPlan };
     } catch (error) {
@@ -81,7 +89,6 @@ export const treatmentPlanService = {
       if (Array.isArray(data)) return { data: data[0] as TreatmentPlan };
       return { data: data as TreatmentPlan };
     } catch (error) {
-      // Preserve the original error (axios error) so callers can read response.data
       console.error('Error creating treatment plan:', error);
       throw error;
     }

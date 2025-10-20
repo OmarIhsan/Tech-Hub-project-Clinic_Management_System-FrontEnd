@@ -1,8 +1,7 @@
 import { BrowserRouter } from 'react-router';
 import { Box, AppBar, Toolbar, Typography, IconButton, ThemeProvider, BottomNavigation, BottomNavigationAction } from '@mui/material';
 import { LocalHospital as ClinicIcon, Home as HomeIcon, People as PeopleIcon, Group as GroupIcon, MonetizationOn as MonetizationOnIcon, ReceiptLong as ReceiptLongIcon } from '@mui/icons-material';
-import Brightness4Icon from '@mui/icons-material/Brightness4';
-import Brightness7Icon from '@mui/icons-material/Brightness7';
+import IOSSwitch from './components/IOSSwitch';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { useState, useEffect, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
@@ -35,11 +34,9 @@ function AppContent() {
     return isAdmin() ? [...baseNavItems, ...ownerNavItems] : baseNavItems;
   }, [isAdmin]);
 
-  // determine active index based on current location
   const activeIndex = navItems.findIndex((item) => location.pathname === item.path || location.pathname.startsWith(item.path + '/'));
   const [value, setValue] = useState(activeIndex === -1 ? 0 : activeIndex);
 
-  // keep active value in sync when route changes
   useEffect(() => {
     const idx = navItems.findIndex((item) => location.pathname === item.path || location.pathname.startsWith(item.path + '/'));
     setValue(idx === -1 ? 0 : idx);
@@ -50,9 +47,7 @@ function AppContent() {
     [isDarkMode]
   );
 
-  const handleThemeToggle = () => {
-    setIsDarkMode(!isDarkMode);
-  };
+
 
   const handleLogout = () => {
     logout();
@@ -85,14 +80,12 @@ function AppContent() {
             
             {isAuthenticated && (
               <>
-                <IconButton 
-                  color="inherit" 
-                  onClick={handleThemeToggle}
+                <IOSSwitch
+                  checked={isDarkMode}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setIsDarkMode(e.target.checked)}
                   sx={{ mr: 1 }}
-                  title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-                >
-                  {isDarkMode ? <Brightness7Icon /> : <Brightness4Icon />}
-                </IconButton>
+                  inputProps={{ 'aria-label': isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode' }}
+                />
                 
                 <IconButton 
                   color="inherit" 

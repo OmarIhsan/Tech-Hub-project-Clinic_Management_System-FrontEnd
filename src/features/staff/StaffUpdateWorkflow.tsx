@@ -39,7 +39,6 @@ const StaffUpdateWorkflow: React.FC = () => {
   const [patients, setPatients] = useState<Patient[]>([]);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
-  // Removed unused loading state
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
 

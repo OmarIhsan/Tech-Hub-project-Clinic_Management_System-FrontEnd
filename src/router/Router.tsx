@@ -17,6 +17,7 @@ import MedicalRecordList from '../features/medical-records/MedicalRecordList';
 import MedicalRecordDetail from '../features/medical-records/MedicalRecordDetail';
 import MedicalRecordForm from '../features/medical-records/MedicalRecordForm';
 import ClinicalDocumentList from '../features/clinical-documents/ClinicalDocumentList';
+import ClinicalDocumentUploadPage from '../features/clinical-documents/ClinicalDocumentUploadPage';
 import ProcedureList from '../features/procedures/ProcedureList';
 import ProcedureForm from '../features/procedures/ProcedureForm';
 import PatientImageGallery from '../features/patient-images/PatientImageGallery';
@@ -25,6 +26,7 @@ import { StaffAddWorkflow, StaffUpdateWorkflow } from '../features/staff';
 import StaffList from '../features/staff/StaffList';
 import FormComponentsDemo from '../features/demo/FormComponentsDemo';
 import ProtectedRoute from '../components/ProtectedRoute';
+import { StaffRole } from '../types';
 
 const AppRouter = () => (
   <Routes>
@@ -40,21 +42,50 @@ const AppRouter = () => (
     <Route path="/appointments" element={<ProtectedRoute><AppointmentList /></ProtectedRoute>} />
   <Route path="/appointments/search" element={<ProtectedRoute><AppointmentSearch /></ProtectedRoute>} />
     <Route path="/appointments/calendar" element={<ProtectedRoute><AppointmentCalendarView /></ProtectedRoute>} />
-    <Route path="/appointments/new" element={<ProtectedRoute><AppointmentForm /></ProtectedRoute>} />
+  <Route path="/appointments/new" element={<AppointmentForm />} />
     <Route path="/appointments/:id/edit" element={<ProtectedRoute><AppointmentForm /></ProtectedRoute>} />
-    <Route path="/treatment-plans" element={<ProtectedRoute><TreatmentPlanList /></ProtectedRoute>} />
-    <Route path="/treatment-plans/new" element={<ProtectedRoute><TreatmentPlanForm /></ProtectedRoute>} />
-    <Route path="/treatment-plans/:id" element={<ProtectedRoute><TreatmentPlanDetail /></ProtectedRoute>} />
-    <Route path="/treatment-plans/:id/edit" element={<ProtectedRoute><TreatmentPlanForm /></ProtectedRoute>} />
+    <Route
+      path="/treatment-plans"
+      element={
+        <ProtectedRoute allowedRoles={[StaffRole.OWNER, StaffRole.DOCTOR, StaffRole.STAFF]}>
+          <TreatmentPlanList />
+        </ProtectedRoute>
+      }
+    />
+    <Route
+      path="/treatment-plans/new"
+      element={
+        <ProtectedRoute allowedRoles={[StaffRole.OWNER, StaffRole.DOCTOR, StaffRole.STAFF]}>
+          <TreatmentPlanForm />
+        </ProtectedRoute>
+      }
+    />
+    <Route
+      path="/treatment-plans/:id"
+      element={
+        <ProtectedRoute allowedRoles={[StaffRole.OWNER, StaffRole.DOCTOR, StaffRole.STAFF]}>
+          <TreatmentPlanDetail />
+        </ProtectedRoute>
+      }
+    />
+    <Route
+      path="/treatment-plans/:id/edit"
+      element={
+        <ProtectedRoute allowedRoles={[StaffRole.OWNER, StaffRole.DOCTOR, StaffRole.STAFF]}>
+          <TreatmentPlanForm />
+        </ProtectedRoute>
+      }
+    />
     <Route path="/medical-records" element={<ProtectedRoute><MedicalRecordList /></ProtectedRoute>} />
-    <Route path="/medical-records/new" element={<ProtectedRoute><MedicalRecordForm /></ProtectedRoute>} />
+  <Route path="/medical-records/new" element={<MedicalRecordForm />} />
     <Route path="/medical-records/:id" element={<ProtectedRoute><MedicalRecordDetail /></ProtectedRoute>} />
     <Route path="/medical-records/:id/edit" element={<ProtectedRoute><MedicalRecordForm /></ProtectedRoute>} />
     <Route path="/procedures" element={<ProtectedRoute><ProcedureList /></ProtectedRoute>} />
     <Route path="/procedures/new" element={<ProtectedRoute><ProcedureForm /></ProtectedRoute>} />
     <Route path="/procedures/:id/edit" element={<ProtectedRoute><ProcedureForm /></ProtectedRoute>} />
-    <Route path="/patient-images" element={<ProtectedRoute><PatientImageGallery /></ProtectedRoute>} />
+  <Route path="/patient-images" element={<PatientImageGallery />} />
     <Route path="/documents" element={<ProtectedRoute><ClinicalDocumentList /></ProtectedRoute>} />
+    <Route path="/clinical-documents/new" element={<ClinicalDocumentUploadPage />} />
   <Route path="/staff" element={<ProtectedRoute><StaffList /></ProtectedRoute>} />
     <Route path="/finance" element={<ProtectedRoute><FinanceDashboard /></ProtectedRoute>} />
     <Route path="/finance/expenses" element={<ProtectedRoute><ExpenseList /></ProtectedRoute>} />

@@ -35,14 +35,12 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
 
   useEffect(() => {
     loadAppointments();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [doctorId, patientId]);
 
   useEffect(() => {
     if (selectedDate) {
       filterAppointmentsByDate(selectedDate);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedDate, appointments]);
 
   const loadAppointments = async () => {

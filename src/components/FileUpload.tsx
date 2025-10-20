@@ -42,11 +42,11 @@ const FileUpload = ({
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   }, []);
 
-  const validateFile = useCallback((file) => {
+  const validateFile = useCallback((file: File) => {
     if (file.size > maxFileSize) {
       return `File size exceeds ${formatFileSize(maxFileSize)} limit`;
     }
-    const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+    const fileExtension = '.' + file.name.split('.').pop()!.toLowerCase();
     if (!acceptedTypes.includes(fileExtension)) {
       return `File type not supported. Accepted types: ${acceptedTypes.join(', ')}`;
     }
@@ -54,8 +54,8 @@ const FileUpload = ({
     return null;
   }, [maxFileSize, acceptedTypes, formatFileSize]);
 
-  const handleFiles = useCallback((fileList) => {
-    const newFiles = Array.from(fileList);
+  const handleFiles = useCallback((fileList: FileList | File[]) => {
+    const newFiles: File[] = Array.from(fileList as any) as File[];
     
     if (!multiple && newFiles.length > 1) {
       setError('Only one file is allowed');
@@ -67,10 +67,10 @@ const FileUpload = ({
       return;
     }
 
-    const validFiles = [];
-    const errors = [];
+    const validFiles: Array<{ id: number; file: File; name: string; size: number; type: string; status: string }> = [];
+    const errors: string[] = [];
 
-    newFiles.forEach((file) => {
+    newFiles.forEach((file: File) => {
       const err = validateFile(file);
       if (err) {
         errors.push(`${file.name}: ${err}`);

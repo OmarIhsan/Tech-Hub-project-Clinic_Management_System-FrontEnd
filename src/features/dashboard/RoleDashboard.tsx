@@ -19,12 +19,13 @@ import NoteAddIcon from '@mui/icons-material/NoteAdd';
 import StatsChart from '../../components/StatsChart';
 import EmployeeAddDialog from '../employees/EmployeeAddDialog';
 import { patientAPI } from '../../services/patientService';
-import { doctorAPI, appointmentService, treatmentPlanService } from '../../services/api';
+import { doctorAPI, appointmentService, treatmentPlanService, expenseService, otherIncomeService } from '../../services/api';
+import { formatCurrency } from '../../utils/format';
 import staffAPI from '../../services/staffService';
 
 type StatCardProps = {
     title: string;
-    value: number;
+    value: React.ReactNode;
     icon: React.ReactNode;
     color: string;
     onClick?: () => void;
@@ -79,68 +80,202 @@ const RoleDashboard: React.FC = () => {
         appointments: 0,
         treatments: 0,
         expenses: 0,
+        expensesAmount: 0,
+        income: 0,
+        incomeAmount: 0,
         doctors: 0,
         staff: 0,
-        income: 0,
     });
 
     useEffect(() => {
         const fetchCounts = async () => {
             try {
-                const [pRes, dRes, sRes, apptRes, tpRes] = await Promise.all([
+                const fetchers: Promise<unknown>[] = [
                     patientAPI.getAll(),
                     doctorAPI.getAll(),
-                    staffAPI.getAll(),
-                    appointmentService.getAll(),
-                    treatmentPlanService.getAll(),
-                ]);
+                ];
+                const names: string[] = ['patients', 'doctors'];
 
-                const getCount = (res: unknown): number => {
-                    if (!res) return 0;
-                    if (Array.isArray(res)) return res.length;
-                    const obj = res as { data?: unknown; count?: unknown };
-                    if (Array.isArray(obj.data)) return obj.data.length;
-                    const inner = obj.data as unknown;
-                    if (inner && typeof inner === 'object') {
-                        const innerObj = inner as { data?: unknown; count?: unknown };
-                        if (Array.isArray(innerObj.data)) return innerObj.data.length;
-                        if (typeof innerObj.count === 'number') return innerObj.count as number;
-                    }
-                    if (typeof obj.count === 'number') return obj.count as number;
-                    return 0;
+                if (user && user.role === StaffRole.OWNER) {
+                    fetchers.push(staffAPI.getAll());
+                    names.push('staff');
+                }
+
+                fetchers.push(appointmentService.getAll());
+                names.push('appointments');
+                fetchers.push(treatmentPlanService.getAll());
+                names.push('treatment-plans');
+                // also fetch expenses so dashboard can show expense counts
+                fetchers.push(expenseService.getAll());
+                names.push('expenses');
+                // fetch incomes so dashboard can show income totals/counts
+                fetchers.push(otherIncomeService.getAll());
+                names.push('incomes');
+
+                const settled = await Promise.allSettled(fetchers);
+                const extractByName = (name: string) => {
+                    const idx = names.indexOf(name);
+                    if (idx === -1) return undefined;
+                    return settled[idx].status === 'fulfilled' ? (settled[idx] as PromiseFulfilledResult<unknown>).value : undefined;
                 };
 
-                const patientsCount = getCount(pRes);
-                const doctorsCount = getCount(dRes);
-                const staffCount = getCount(sRes);
-                let appointmentsCount = getCount(apptRes);
-                if (apptRes && typeof apptRes === 'object') {
-                    const apptObj = apptRes as { count?: unknown };
-                    if (typeof apptObj.count === 'number') appointmentsCount = apptObj.count as number;
-                }
+                const pRes = extractByName('patients');
+                const dRes = extractByName('doctors');
+                const sRes = extractByName('staff');
+                const apptRes = extractByName('appointments');
+                const tpRes = extractByName('treatment-plans');
+                settled.forEach((r, idx) => {
+                    if (r.status === 'rejected') {
+                        const names = ['patients', 'doctors', 'staff', 'appointments', 'treatment-plans'];
+                        console.error(`RoleDashboard: ${names[idx]} fetch failed:`, (r as PromiseRejectedResult).reason);
+                    }
+                });
 
-                // treatment plans count
-                let treatmentsCount = getCount(tpRes);
-                if (tpRes && typeof tpRes === 'object') {
-                    const tpObj = tpRes as { count?: unknown };
-                    if (typeof tpObj.count === 'number') treatmentsCount = tpObj.count as number;
-                }
+                        const countFromResult = (res: unknown): number => {
+                            if (!res) return 0;
+                            if (Array.isArray(res)) return res.length;
+                            if (typeof res === 'object' && res !== null) {
+                                const r = res as Record<string, unknown>;
+                                if (Array.isArray(r.data)) return r.data.length;
+                                if (r.data && typeof r.data === 'object') {
+                                    const inner = r.data as Record<string, unknown>;
+                                    if (Array.isArray(inner.data)) return inner.data.length;
+                                    if (typeof inner.count === 'number') return inner.count;
+                                }
+                                if (typeof r.count === 'number') return r.count;
+                            }
+                            return 0;
+                        };
 
-                setStats(prev => ({
-                    ...prev,
-                    patients: patientsCount,
-                    doctors: doctorsCount,
-                    staff: staffCount,
-                    appointments: appointmentsCount,
-                    treatments: treatmentsCount,
-                }));
-            } catch {
-                setStats(prev => ({ ...prev, patients: 0, doctors: 0 }));
+                        const patientsCount = countFromResult(pRes);
+                        if (patientsCount === 0) console.debug('RoleDashboard: patientAPI.getAll returned', pRes);
+
+                        const doctorsCount = Array.isArray(dRes) ? dRes.length : countFromResult(dRes);
+
+                        let staffCount = 0;
+                        if (Array.isArray(sRes)) staffCount = sRes.length;
+                        else if (sRes && typeof sRes === 'object' && 'data' in sRes && Array.isArray((sRes as unknown as Record<string, unknown>).data)) {
+                            staffCount = ((sRes as unknown as Record<string, unknown>).data as unknown[]).length;
+                        } else {
+                            staffCount = countFromResult(sRes);
+                        }
+
+                        let appointmentsCount = 0;
+                        if (apptRes && typeof apptRes === 'object') {
+                            const a = apptRes as Record<string, unknown>;
+                            if (typeof a.count === 'number') appointmentsCount = a.count as number;
+                            else if (Array.isArray(a.data)) appointmentsCount = (a.data as unknown[]).length;
+                            else appointmentsCount = countFromResult(apptRes);
+                        } else {
+                            appointmentsCount = countFromResult(apptRes);
+                        }
+                        let treatmentsCount = 0;
+                        if (tpRes && typeof tpRes === 'object') {
+                            const t = tpRes as Record<string, unknown>;
+                                if (typeof t.count === 'number') { 
+                                    treatmentsCount = t.count as number; 
+                                } else if (Array.isArray(t.data)) { 
+                                    const arr = t.data as unknown[]; 
+                                    treatmentsCount = arr.filter(item => { 
+                                        if (!item || typeof item !== 'object') return false; 
+                                        const it = item as Record<string, unknown>; 
+                                        return it.status === 'active' || it.status === 'ongoing'; 
+                                    }).length; 
+                            } else {
+                                treatmentsCount = countFromResult(tpRes);
+                            }
+                        } else {
+                            treatmentsCount = countFromResult(tpRes);
+                        }
+
+                                // compute expenses count and total amount
+                                const expensesRes = extractByName('expenses');
+                                const expensesCount = countFromResult(expensesRes);
+                                let expensesAmount = 0;
+                                try {
+                                    if (expensesRes) {
+                                        // possible shapes: array of expenses, { data: [...] }, or nested envelopes
+                                        let arr: unknown[] = [];
+                                        if (Array.isArray(expensesRes)) arr = expensesRes as unknown[];
+                                        else if (typeof expensesRes === 'object' && Array.isArray((expensesRes as Record<string, unknown>).data)) {
+                                            arr = ((expensesRes as Record<string, unknown>).data as unknown[]);
+                                        } else if (typeof expensesRes === 'object' && Array.isArray((expensesRes as Record<string, unknown>).data?.data)) {
+                                            arr = ((expensesRes as Record<string, unknown>).data as Record<string, unknown>).data as unknown[];
+                                        }
+
+                                        expensesAmount = arr.reduce((sum, item) => {
+                                            if (!item || typeof item !== 'object') return sum;
+                                            const it = item as Record<string, unknown>;
+                                            const a = it.amount ?? it['amount'];
+                                            if (typeof a === 'number') return sum + (a as number);
+                                            if (typeof a === 'string') {
+                                                const parsed = Number(String(a).replace(/,/g, ''));
+                                                return sum + (Number.isFinite(parsed) ? parsed : 0);
+                                            }
+                                            return sum;
+                                        }, 0);
+                                    }
+                                } catch (err) {
+                                    console.error('RoleDashboard: failed to compute expenses amount', err);
+                                }
+
+                        setStats(prev => ({
+                            ...prev,
+                            patients: patientsCount,
+                            doctors: doctorsCount,
+                            staff: staffCount,
+                            appointments: appointmentsCount,
+                            treatments: treatmentsCount,
+                            expenses: expensesCount,
+                            expensesAmount,
+                            // incomes
+                            income: 0,
+                            incomeAmount: 0,
+                        }));
+
+                        // compute income counts and totals from incomes response
+                        try {
+                            const incomesRes = extractByName('incomes');
+                            const incomesCount = countFromResult(incomesRes);
+                            let incomesAmount = 0;
+                            if (incomesRes) {
+                                let arr: unknown[] = [];
+                                if (Array.isArray(incomesRes)) arr = incomesRes as unknown[];
+                                else if (typeof incomesRes === 'object' && Array.isArray((incomesRes as Record<string, unknown>).data)) {
+                                    arr = ((incomesRes as Record<string, unknown>).data as unknown[]);
+                                } else if (typeof incomesRes === 'object' && Array.isArray((incomesRes as Record<string, unknown>).data?.data)) {
+                                    arr = ((incomesRes as Record<string, unknown>).data as Record<string, unknown>).data as unknown[];
+                                }
+
+                                incomesAmount = arr.reduce((sum, item) => {
+                                    if (!item || typeof item !== 'object') return sum;
+                                    const it = item as Record<string, unknown>;
+                                    const a = it.amount ?? it['amount'];
+                                    if (typeof a === 'number') return sum + (a as number);
+                                    if (typeof a === 'string') {
+                                        const parsed = Number(String(a).replace(/,/g, ''));
+                                        return sum + (Number.isFinite(parsed) ? parsed : 0);
+                                    }
+                                    return sum;
+                                }, 0);
+                            }
+
+                            setStats(prev => ({
+                                ...prev,
+                                income: incomesCount,
+                                incomeAmount: incomesAmount,
+                            }));
+                        } catch (err) {
+                            console.error('RoleDashboard: failed to compute incomes amount', err);
+                        }
+            } catch (err) {
+                console.error('Failed to load dashboard counts', err);
+                setStats({ patients: 0, appointments: 0, treatments: 0, expenses: 0, doctors: 0, staff: 0, income: 0 });
             }
         };
 
         fetchCounts();
-    }, []);
+    }, [user]);
 
     if (!user || !user.role) {
         return (
@@ -198,15 +333,15 @@ const RoleDashboard: React.FC = () => {
                                 onClick={() => navigate('/appointments')}
                             />
                             <StatCard
-                                title="Active Treatments"
-                                value={stats.treatments}
+                                title="Income (Total)"
+                                value={formatCurrency(stats.incomeAmount || 0, 'USD')}
                                 icon={<AssignmentIcon />}
                                 color="success"
-                                onClick={() => navigate('/treatment-plans')}
+                                onClick={() => navigate('/finance/income')}
                             />
                             <StatCard
-                                title="Expenses"
-                                value={stats.expenses}
+                                title="Expenses (Total)"
+                                value={formatCurrency(stats.expensesAmount || 0, 'USD')}
                                 icon={<AttachMoneyIcon />}
                                 color="warning"
                             />
@@ -257,7 +392,6 @@ const RoleDashboard: React.FC = () => {
                                 Quick Actions
                             </Typography>
 
-                            {/* Row 1: Add Employee (full width) */}
                             <Box sx={{ mb: 2 }}>
                                 <MButton
                                     fullWidth
@@ -270,7 +404,6 @@ const RoleDashboard: React.FC = () => {
                                 </MButton>
                             </Box>
 
-                            {/* Row 2: Doctors | Staff | Patients */}
                             <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, 1fr)' }, gap: 2, mb: 2 }}>
                                 <MButton fullWidth variant="outlined" startIcon={<PersonIcon />} onClick={() => navigate('/doctors')}>
                                     View Doctors
@@ -283,7 +416,6 @@ const RoleDashboard: React.FC = () => {
                                 </MButton>
                             </Box>
 
-                            {/* Row 3: Income | Expenses */}
                             <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' }, gap: 2, mb: 2 }}>
                                 <MButton fullWidth variant="outlined" startIcon={<MonetizationOnIcon />} onClick={() => navigate('/finance/income')}>
                                     View Income
@@ -293,7 +425,6 @@ const RoleDashboard: React.FC = () => {
                                 </MButton>
                             </Box>
 
-                            {/* Row 4: Rest of actions */}
                             <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, 1fr)' }, gap: 2 }}>
                                 <MButton fullWidth variant="contained" startIcon={<EventIcon />} onClick={() => navigate('/appointments/new')}>
                                     New Appointment
@@ -360,11 +491,11 @@ const RoleDashboard: React.FC = () => {
                                 onClick={() => navigate('/appointments')}
                             />
                             <StatCard
-                                title="Active Treatments"
-                                value={stats.treatments}
+                                title="Income (Total)"
+                                value={formatCurrency(stats.incomeAmount || 0, 'USD')}
                                 icon={<AssignmentIcon />}
                                 color="success"
-                                onClick={() => navigate('/treatment-plans')}
+                                onClick={() => navigate('/finance/income')}
                             />
                         </Box>
                         <Box
@@ -395,82 +526,136 @@ const RoleDashboard: React.FC = () => {
                             />
                         </Box>
                         <Box sx={{ mt: 4 }}>
+                            <Typography variant="h6" gutterBottom>
+                                Quick Actions
+                            </Typography>
+
                             <Box
                                 sx={{
                                     display: 'grid',
-                                    gridTemplateColumns: {
-                                        xs: '1fr',
-                                        sm: 'repeat(2, 1fr)',
-                                        md: 'repeat(3, 1fr)',
-                                    },
+                                    gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' },
                                     gap: 2,
+                                    mb: 2,
                                 }}
                             >
                                 <MButton
                                     fullWidth
                                     variant="contained"
+                                    color="primary"
                                     startIcon={<PersonIcon />}
                                     onClick={() => navigate('/patients/new')}
                                 >
-                                    Add New Patient
+                                    Add Patient
                                 </MButton>
+
                                 <MButton
                                     fullWidth
                                     variant="contained"
+                                    color="primary"
                                     startIcon={<EventIcon />}
                                     onClick={() => navigate('/appointments/new')}
                                 >
                                     New Appointment
                                 </MButton>
+
                                 <MButton
                                     fullWidth
                                     variant="contained"
+                                    color="primary"
                                     startIcon={<AssignmentIcon />}
                                     onClick={() => navigate('/treatment-plans/new')}
                                 >
                                     New Treatment Plan
                                 </MButton>
+
                                 <MButton
                                     fullWidth
-                                    variant="outlined"
-                                    onClick={() => navigate('/patients')}
-                                >
-                                    View All Patients
-                                </MButton>
-                                <MButton
-                                    fullWidth
-                                    variant="outlined"
-                                    onClick={() => navigate('/appointments')}
-                                >
-                                    View Appointments
-                                </MButton>
-                                <MButton
-                                    fullWidth
-                                    variant="outlined"
+                                    variant="contained"
+                                    color="primary"
+                                    startIcon={<NoteAddIcon />}
                                     onClick={() => navigate('/medical-records/new')}
                                 >
-                                    New Medical Record
+                                    Add Medical Record
                                 </MButton>
                                 <MButton
                                     fullWidth
-                                    variant="outlined"
-                                    onClick={() => navigate('/procedures')}
+                                    variant="contained"
+                                    color="primary"
+                                    startIcon={<DescriptionIcon />}
+                                    onClick={() => navigate('/clinical-documents/new')}
                                 >
-                                    View Procedures
+                                    Upload Document
                                 </MButton>
                                 <MButton
                                     fullWidth
-                                    variant="outlined"
+                                    variant="contained"
+                                    color="primary"
+                                    startIcon={<MedicalServicesIcon />}
                                     onClick={() => navigate('/procedures/new')}
                                 >
                                     Record Procedure
                                 </MButton>
+                            </Box>
+
+                            <Box
+                                sx={{
+                                    display: 'grid',
+                                    gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' },
+                                    gap: 2,
+                                }}
+                            >
                                 <MButton
                                     fullWidth
                                     variant="outlined"
+                                    startIcon={<PersonIcon />}
+                                    onClick={() => navigate('/patients')}
+                                >
+                                    View Patients
+                                </MButton>
+
+                                <MButton
+                                    fullWidth
+                                    variant="outlined"
+                                    startIcon={<EventIcon />}
+                                    onClick={() => navigate('/appointments')}
+                                >
+                                    View Appointments
+                                </MButton>
+
+                                <MButton
+                                    fullWidth
+                                    variant="outlined"
+                                    startIcon={<DescriptionIcon />}
+                                    onClick={() => navigate('/medical-records')}
+                                >
+                                    Medical Records
+                                </MButton>
+
+                                <MButton
+                                    fullWidth
+                                    variant="outlined"
+                                    startIcon={<DescriptionIcon />}
+                                    onClick={() => navigate('/documents')}
+                                >
+                                    Documents
+                                </MButton>
+
+                                <MButton
+                                    fullWidth
+                                    variant="outlined"
+                                    startIcon={<ImageIcon />}
                                     onClick={() => navigate('/patient-images')}
                                 >
                                     Patient Images
+                                </MButton>
+
+                                <MButton
+                                    fullWidth
+                                    variant="outlined"
+                                    startIcon={<MedicalServicesIcon />}
+                                    onClick={() => navigate('/procedures')}
+                                >
+                                    View Procedures
                                 </MButton>
                             </Box>
                         </Box>
@@ -478,11 +663,6 @@ const RoleDashboard: React.FC = () => {
                             elevation={1}
                             sx={{ p: 2, mt: 4, bgcolor: 'success.lighter' }}
                         >
-                            <Typography variant="body2" color="textSecondary">
-                                <strong>Doctor Access:</strong> You can add new patients,
-                                schedule appointments, create treatment plans, manage medical
-                                records, and view all patient information.
-                            </Typography>
                         </Paper>
                     </>
                 );
@@ -545,16 +725,16 @@ const RoleDashboard: React.FC = () => {
                                 <MButton
                                     fullWidth
                                     variant="contained"
-                                    onClick={() => navigate('/appointments/new')}
+                                    onClick={() => navigate('/patients/new')}
                                 >
-                                    New Appointment
+                                    New Patients
                                 </MButton>
                                 <MButton
                                     fullWidth
                                     variant="contained"
-                                    onClick={() => navigate('/patients')}
+                                    onClick={() => navigate('/appointments/new')}
                                 >
-                                    View Patients
+                                    New Appointment
                                 </MButton>
                                 <MButton
                                     fullWidth
@@ -563,19 +743,32 @@ const RoleDashboard: React.FC = () => {
                                 >
                                     Patient Images
                                 </MButton>
+                                <MButton
+                                    fullWidth
+                                    variant="outlined"
+                                    startIcon={<DescriptionIcon />}
+                                    onClick={() => navigate('/documents')}
+                                >
+                                    Documents
+                                </MButton>
+
+                                <MButton
+                                    fullWidth
+                                    variant="contained"
+                                    startIcon={<DescriptionIcon />}
+                                    onClick={() => navigate('/clinical-documents/new')}
+                                >
+                                    Upload Document
+                                </MButton>
+                                <MButton
+                                    fullWidth
+                                    variant="outlined"
+                                    onClick={() => navigate('/medical-records/new')}
+                                >
+                                    New Medical Record
+                                </MButton>
                             </Box>
                         </Box>
-                        <Paper
-                            elevation={1}
-                            sx={{ p: 2, mt: 4, bgcolor: 'info.lighter' }}
-                        >
-                            <Typography variant="body2" color="textSecondary">
-                                <strong>Note:</strong> As a staff member, you have limited
-                                access. You can manage appointments and view patient
-                                information, but cannot create or modify medical records,
-                                treatment plans, or financial data.
-                            </Typography>
-                        </Paper>
                     </>
                 );
             default:

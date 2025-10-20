@@ -42,7 +42,6 @@ const StaffMemberForm: React.FC<StaffMemberFormProps> = ({ onSuccess, onCancel }
         role: staffData.role,
       });
 
-      // Reset form
       setStaffData({
         email: '',
         full_name: '',

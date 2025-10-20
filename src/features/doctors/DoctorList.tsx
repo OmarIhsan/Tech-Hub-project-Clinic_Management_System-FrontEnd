@@ -27,14 +27,12 @@ const DoctorList: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
 
-  // normalize various possible API response shapes into Doctor[]
   const normalizeDoctors = (res: unknown): Doctor[] => {
     if (Array.isArray(res)) return res as Doctor[];
 
     if (res && typeof res === 'object') {
       const r1 = res as Record<string, unknown>;
       if (Array.isArray(r1.data)) return r1.data as Doctor[];
-      // some services wrap twice: { data: { data: [...] } }
       const inner = r1.data;
       if (inner && typeof inner === 'object') {
         const r2 = inner as Record<string, unknown>;

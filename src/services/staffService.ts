@@ -24,7 +24,6 @@ export const staffService = {
   const response = await api.get('/staff', { params });
   const resp = response.data;
   const data = resp && typeof resp === 'object' && 'data' in resp ? resp.data : resp;
-  // Normalize staff objects: map snake_case timestamps to camelCase
   const normalize = (s: unknown): Staff => {
     const obj = s as { [k: string]: unknown };
     return {
@@ -43,7 +42,6 @@ export const staffService = {
       console.error('Error fetching staff:', error);
       const err = error as AxiosError | unknown;
       if (err && typeof err === 'object' && 'response' in err && (err as AxiosError).response?.status === 403) {
-        // Forbidden - return empty list so UI stays stable; caller can show permission message if desired
         return { data: [] };
       }
       throw new Error('Failed to fetch staff');

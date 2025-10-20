@@ -43,6 +43,7 @@ const ExpenseForm = () => {
     amount: '',
     category: 'Other',
     description: '',
+    reason: '',
   });
 
   useEffect(() => {
@@ -61,7 +62,8 @@ const ExpenseForm = () => {
         expense_date: expense.expense_date.split('T')[0],
         amount: expense.amount.toString(),
         category: expense.category || 'Other',
-        description: expense.description || '',
+        description: expense.description || expense.reason || '',
+        reason: expense.reason || expense.description || '',
       });
     } catch (err: unknown) {
       console.error('Failed to fetch expense:', err);
@@ -92,7 +94,6 @@ const ExpenseForm = () => {
       return false;
     }
 
-    // Validate date is not in future
     const expenseDate = new Date(formData.expense_date);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -119,10 +120,11 @@ const ExpenseForm = () => {
       setError('');
 
       const expenseData = {
-        date: formData.expense_date,
+        expense_date: formData.expense_date,
         amount: Number(formData.amount),
         category: formData.category,
-        description: formData.description || undefined,
+        reason: formData.reason || formData.description || undefined,
+        staff_id: user?.staff_id,
       };
 
       if (isEditMode && id) {
@@ -135,8 +137,8 @@ const ExpenseForm = () => {
     } catch (err: unknown) {
       console.error('Failed to save expense:', err);
       if (err && typeof err === 'object' && 'response' in err) {
-        const apiError = err as { response?: { data?: { message?: string } } };
-        setError(apiError.response?.data?.message || 'Failed to save expense');
+        const apiError = err as { response?: { data?: unknown; status?: number } };
+        setError(JSON.stringify(apiError.response?.data) || `Failed to save expense (status ${apiError.response?.status})`);
       } else {
         setError('Failed to save expense. Please try again.');
       }
@@ -155,7 +157,6 @@ const ExpenseForm = () => {
 
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>
-      {/* Header */}
       <Box mb={4}>
         <Box display="flex" alignItems="center" gap={2} mb={2}>
           <MOutlineButton startIcon={<BackIcon />} onClick={() => navigate('/finance/expenses')}>
@@ -176,11 +177,9 @@ const ExpenseForm = () => {
         </Alert>
       )}
 
-      {/* Form */}
       <Card>
         <CardContent>
           <Box component="form" onSubmit={handleSubmit}>
-            {/* Expense Date */}
             <TextField
               fullWidth
               label="Expense Date"
@@ -195,7 +194,6 @@ const ExpenseForm = () => {
               }}
             />
 
-            {/* Amount */}
             <TextField
               fullWidth
               label="Amount"
@@ -211,7 +209,6 @@ const ExpenseForm = () => {
               helperText="Enter amount in USD"
             />
 
-            {/* Category */}
             <FormControl fullWidth sx={{ mb: 3 }} required>
               <InputLabel>Category</InputLabel>
               <Select
@@ -227,7 +224,6 @@ const ExpenseForm = () => {
               </Select>
             </FormControl>
 
-            {/* Description */}
             <TextField
               fullWidth
               label="Description"
@@ -239,7 +235,6 @@ const ExpenseForm = () => {
               sx={{ mb: 3 }}
             />
 
-            {/* Action Buttons */}
             <Box display="flex" gap={2} justifyContent="flex-end">
               <MOutlineButton
                 onClick={() => navigate('/finance/expenses')}

@@ -25,7 +25,7 @@ export const clinicalDocumentService = {
   return { data: Array.isArray(data) ? (data as ClinicalDocument[]) : [] };
     } catch (error) {
       console.error('Error fetching clinical documents:', error);
-      throw new Error('Failed to fetch clinical documents');
+      throw error;
     }
   },
 

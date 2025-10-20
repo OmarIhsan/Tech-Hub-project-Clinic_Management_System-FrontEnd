@@ -50,7 +50,30 @@ const ClinicalDocumentList = () => {
   const documentsResponse = await clinicalDocumentService.getAll();
   setDocuments(documentsResponse.data || []);
     } catch (err) {
-      setError('Failed to load documents. Please try again.');
+        let message = 'Failed to load documents. Please try again.';
+      try {
+        const e = err as unknown as { response?: { status?: number; data?: unknown } };
+        const status = e?.response?.status;
+        const data = e?.response?.data;
+        if (status === 403) {
+          message = 'Access Restricted: Your current role does not have permission to view clinical documents.';
+        } else if (data && typeof data === 'object') {
+          const dObj = data as Record<string, unknown>;
+          const maybeMsg = dObj['message'] ?? dObj['error'];
+          if (typeof maybeMsg === 'string' && maybeMsg.length > 0) message = maybeMsg;
+          else {
+            try {
+              const asStr = JSON.stringify(dObj);
+              if (asStr && asStr !== '{}') message = asStr;
+            } catch {
+              // ignore
+            }
+          }
+        }
+      } catch {
+        // ignore
+      }
+      setError(message);
       console.error('Failed to fetch documents:', err);
     } finally {
       setLoading(false);

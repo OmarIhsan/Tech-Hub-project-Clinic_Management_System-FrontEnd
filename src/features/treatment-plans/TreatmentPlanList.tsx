@@ -33,12 +33,14 @@ import {
   Description as DocumentIcon,
 } from '@mui/icons-material';
 import { treatmentPlanService, clinicalDocumentService } from '../../services/api';
-import { ClinicalDocument } from '../../types';
+import { ClinicalDocument, TreatmentPlan } from '../../types';
 import DocumentUploadDialog from '../clinical-documents/DocumentUploadDialog';
+import { useAuthContext } from '../../context/useAuthContext';
+import { StaffRole } from '../../types';
 
 const TreatmentPlanList = () => {
   const navigate = useNavigate();
-  const [treatmentPlans, setTreatmentPlans] = useState([]);
+  const [treatmentPlans, setTreatmentPlans] = useState<TreatmentPlan[]>([]);
   const [statusFilter, setStatusFilter] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -47,6 +49,9 @@ const TreatmentPlanList = () => {
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [documentsLoading, setDocumentsLoading] = useState(false);
   const [documentsPermissionDenied, setDocumentsPermissionDenied] = useState(false);
+  const { user } = useAuthContext();
+  const role = user?.role ?? '';
+  const canManagePlans = [StaffRole.OWNER, StaffRole.DOCTOR, StaffRole.STAFF].includes(role as StaffRole);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -56,7 +61,17 @@ const TreatmentPlanList = () => {
         const treatmentPlansResponse = await treatmentPlanService.getAll();
         const plansData = treatmentPlansResponse.data || [];
         setTreatmentPlans(Array.isArray(plansData) ? plansData : []);
-      } catch (err) {
+      } catch (err: unknown) {
+        console.error('Failed to fetch data:', err);
+        if (err && typeof err === 'object' && 'response' in err) {
+          const axiosErr = err as { response?: { status?: number } };
+          if (axiosErr.response?.status === 403) {
+            setError('Permission denied: you do not have access to view treatment plans.');
+            setTreatmentPlans([]);
+            setLoading(false);
+            return;
+          }
+        }
         setError('Failed to load treatment plans. Please try again.');
         console.error('Failed to fetch data:', err);
         setTreatmentPlans([]);
@@ -68,46 +83,6 @@ const TreatmentPlanList = () => {
     fetchData();
   }, []);
 
-  useEffect(() => {
-    if (tabValue === 1) {
-      fetchDocuments();
-    }
-  }, [tabValue]);
-
-  const fetchDocuments = async () => {
-    try {
-      setDocumentsLoading(true);
-      setDocumentsPermissionDenied(false);
-      const response = await clinicalDocumentService.getAll();
-      setDocuments(response.data || []);
-    } catch (err: unknown) {
-      console.error('Failed to load documents:', err);
-      if (err && typeof err === 'object' && 'response' in err) {
-        const axiosError = err as { response?: { status?: number } };
-        if (axiosError?.response?.status === 403) {
-          console.warn('User does not have permission to access clinical documents');
-          setDocumentsPermissionDenied(true);
-          setDocuments([]);
-        }
-      }
-    } finally {
-      setDocumentsLoading(false);
-    }
-  };
-
-  const filteredTreatmentPlans = treatmentPlans.filter((plan) => {
-    return !statusFilter || plan.status === statusFilter;
-  });
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'ongoing': return 'primary';
-      case 'completed': return 'success';
-      case 'cancelled': return 'error';
-      default: return 'default';
-    }
-  };
-
   const fmtDate = (d: unknown) => {
     if (!d) return '-';
     try {
@@ -116,6 +91,42 @@ const TreatmentPlanList = () => {
       return date.toLocaleDateString();
     } catch {
       return '-';
+    }
+  };
+
+  const filteredTreatmentPlans = treatmentPlans.filter((plan) => {
+    if (!statusFilter) return true;
+    const s = String((plan as unknown as Record<string, unknown>).status ?? '');
+    return s === statusFilter;
+  });
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'ongoing': return 'primary';
+      case 'completed': return 'success';
+      case 'cancelled': return 'error';
+      default: return 'default';
+    }
+  };
+
+  const fetchDocuments = async () => {
+    try {
+      setDocumentsLoading(true);
+      setDocumentsPermissionDenied(false);
+      const response = await clinicalDocumentService.getAll();
+      const docs = response.data || [];
+      setDocuments(Array.isArray(docs) ? docs : []);
+    } catch (err: unknown) {
+      console.error('Failed to load documents:', err);
+      if (err && typeof err === 'object' && 'response' in err) {
+        const axiosError = err as { response?: { status?: number } };
+        if (axiosError?.response?.status === 403) {
+          setDocumentsPermissionDenied(true);
+          setDocuments([]);
+        }
+      }
+    } finally {
+      setDocumentsLoading(false);
     }
   };
 
@@ -149,13 +160,15 @@ const TreatmentPlanList = () => {
           >
             Upload Document
           </Button>
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={() => navigate('/treatment-plans/new')}
-          >
-            New Treatment Plan
-          </Button>
+          {canManagePlans && (
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={() => navigate('/treatment-plans/new')}
+            >
+              New Treatment Plan
+            </Button>
+          )}
         </Box>
       </Box>
 
@@ -219,56 +232,60 @@ const TreatmentPlanList = () => {
                         </TableCell>
                       </TableRow>
                     ) : (
-                      filteredTreatmentPlans.map((plan) => (
-                        <TableRow key={plan.plan_id} hover>
-                          <TableCell>
-                            <Typography variant="body2" fontWeight={500}>
-                              { (plan as any).patient?.full_name || `Patient #${(plan as any).patient_id ?? 'N/A'}` }
-                            </Typography>
-                          </TableCell>
-                          <TableCell>
-                            <Typography variant="body2">
-                              { (plan as any).doctor?.full_name || `Doctor #${(plan as any).doctor_id ?? 'N/A'}` }
-                            </Typography>
-                          </TableCell>
-                          <TableCell>
-                            <Typography variant="body2" noWrap sx={{ maxWidth: 300 }}>
-                              {plan.treatment_description}
-                            </Typography>
-                          </TableCell>
-                          <TableCell>
-                            {fmtDate((plan as any).start_date || (plan as any).createdAt)}
-                          </TableCell>
-                          <TableCell>
-                            {fmtDate((plan as any).end_date || (plan as any).expected_end_date)}
-                          </TableCell>
-                          <TableCell>
-                            <Chip
-                              label={String((plan as any).status || '').toUpperCase()}
-                              color={getStatusColor((plan as any).status)}
-                              size="small"
-                            />
-                          </TableCell>
-                          <TableCell align="center">
-                            <IconButton
-                              size="small"
-                              color="info"
-                              onClick={() => navigate(`/treatment-plans/${plan.plan_id}`)}
-                              title="View"
-                            >
-                              <ViewIcon />
-                            </IconButton>
-                            <IconButton
-                              size="small"
-                              color="primary"
-                              onClick={() => navigate(`/treatment-plans/${plan.plan_id}/edit`)}
-                              title="Edit"
-                            >
-                              <EditIcon />
-                            </IconButton>
-                          </TableCell>
-                        </TableRow>
-                      ))
+                      filteredTreatmentPlans.map((plan) => {
+                        const r = plan as unknown as Record<string, unknown>;
+                        const patientObj = r.patient as Record<string, unknown> | undefined;
+                        const doctorObj = r.doctor as Record<string, unknown> | undefined;
+                        const patientLabel = (patientObj?.full_name as string) || `Patient #${(r.patient_id ?? patientObj?.patient_id) ?? 'N/A'}`;
+                        const doctorLabel = (doctorObj?.full_name as string) || `Doctor #${(r.doctor_id ?? doctorObj?.doctor_id) ?? 'N/A'}`;
+                        const desc = (r.treatment_description as string) ?? '';
+                        const start = fmtDate(r.start_date ?? r.createdAt);
+                        const end = fmtDate(r.end_date ?? r.expected_end_date);
+                        const status = String(r.status ?? '');
+                        const key = (r.plan_id ?? r.id ?? r.planId) as string | number | undefined;
+                        return (
+                          <TableRow key={String(key ?? Math.random())} hover>
+                            <TableCell>
+                              <Typography variant="body2" fontWeight={500}>
+                                {patientLabel}
+                              </Typography>
+                            </TableCell>
+                            <TableCell>
+                              <Typography variant="body2">{doctorLabel}</Typography>
+                            </TableCell>
+                            <TableCell>
+                              <Typography variant="body2" noWrap sx={{ maxWidth: 300 }}>
+                                {desc}
+                              </Typography>
+                            </TableCell>
+                            <TableCell>{start}</TableCell>
+                            <TableCell>{end}</TableCell>
+                            <TableCell>
+                              <Chip label={status.toUpperCase()} color={getStatusColor(status)} size="small" />
+                            </TableCell>
+                            <TableCell align="center">
+                              <IconButton
+                                size="small"
+                                color="info"
+                                onClick={() => navigate(`/treatment-plans/${String(key)}`)}
+                                title="View"
+                              >
+                                <ViewIcon />
+                              </IconButton>
+                              {canManagePlans && (
+                                <IconButton
+                                  size="small"
+                                  color="primary"
+                                  onClick={() => navigate(`/treatment-plans/${String(key)}/edit`)}
+                                  title="Edit"
+                                >
+                                  <EditIcon />
+                                </IconButton>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })
                     )}
                   </TableBody>
                 </Table>

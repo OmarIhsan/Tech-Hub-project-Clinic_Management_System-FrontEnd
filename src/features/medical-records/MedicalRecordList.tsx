@@ -51,17 +51,49 @@ const MedicalRecordList = () => {
     fetchData();
   }, []);
 
-  const getPatientName = (patientId: string) => {
-    const patient = patients.find(p => p.id === patientId);
-    return patient?.name || 'Unknown Patient';
+  const getPatientName = (patientId: string | number) => {
+    const patient = patients.find((p) => {
+      const pobj = p as unknown as Record<string, unknown>;
+      const pid = pobj['patient_id'] ?? pobj['id'] ?? pobj['patientId'];
+      return pid !== undefined && String(pid) === String(patientId);
+    });
+    if (!patient) return 'Unknown Patient';
+
+    const maybe = patient as unknown as Record<string, unknown>;
+
+    if (typeof maybe.name === 'string' && maybe.name.trim()) return maybe.name;
+    if (typeof maybe.fullName === 'string' && maybe.fullName.trim()) return maybe.fullName;
+    if (typeof maybe.patientName === 'string' && maybe.patientName.trim()) return maybe.patientName;
+
+    const first =
+      typeof maybe.firstName === 'string'
+        ? maybe.firstName
+        : typeof maybe.givenName === 'string'
+        ? maybe.givenName
+        : '';
+    const last =
+      typeof maybe.lastName === 'string'
+        ? maybe.lastName
+        : typeof maybe.familyName === 'string'
+        ? maybe.familyName
+        : '';
+
+    const combined = [first, last].filter(Boolean).join(' ');
+    return combined || 'Unknown Patient';
   };
 
-  const getDoctorName = (doctorId: string) => {
-    const doctor = doctors.find(d => d.id === doctorId);
-    return doctor?.name || 'Unknown Doctor';
+  const getDoctorName = (doctorId: string | number) => {
+    const doctor = doctors.find((d) => {
+      const dobj = d as unknown as Record<string, unknown>;
+      const did = dobj['doctor_id'] ?? dobj['id'] ?? dobj['doctorId'];
+      return did !== undefined && String(did) === String(doctorId);
+    });
+    if (!doctor) return 'Unknown Doctor';
+    const maybe = doctor as unknown as Record<string, unknown>;
+    return (maybe['full_name'] as string) || (maybe['fullName'] as string) || (maybe['name'] as string) || 'Unknown Doctor';
   };
 
-  const getStatusColor = (status: MedicalRecord['status']) => {
+  const getStatusColor = (status?: string) => {
     switch (status) {
       case 'draft': return 'warning';
       case 'finalized': return 'success';
@@ -117,60 +149,83 @@ const MedicalRecordList = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {medicalRecords.map((record) => (
-                <TableRow key={record.id}>
-                  <TableCell>{getPatientName(record.patientId)}</TableCell>
-                  <TableCell>{getDoctorName(record.doctorId)}</TableCell>
-                  <TableCell>
-                    {new Date(record.recordDate).toLocaleDateString()}
-                  </TableCell>
-                  <TableCell>
-                    <Box>
-                      <Typography variant="body2" fontWeight="bold">
-                        {record.diagnosis.primary}
-                      </Typography>
-                      {record.diagnosis.icd10Code && (
-                        <Typography variant="caption" color="text.secondary">
-                          ICD-10: {record.diagnosis.icd10Code}
+              {medicalRecords.map((record) => {
+                const rObj = record as unknown as Record<string, unknown>;
+                const diagRaw = rObj['diagnosis'];
+                let primary = '';
+                let icd10 = '';
+                let severity = '';
+                if (typeof diagRaw === 'string') {
+                  primary = diagRaw;
+                } else if (diagRaw && typeof diagRaw === 'object') {
+                  const diagObj = diagRaw as Record<string, unknown>;
+                  primary = typeof diagObj['primary'] === 'string' ? (diagObj['primary'] as string) : '';
+                  icd10 = typeof diagObj['icd10Code'] === 'string' ? (diagObj['icd10Code'] as string) : '';
+                  severity = typeof diagObj['severity'] === 'string' ? (diagObj['severity'] as string) : '';
+                }
+
+                const recordKey = (rObj['record_id'] ?? rObj['id'] ?? JSON.stringify(record)) as string;
+
+                const patientField = rObj['patient'] as Record<string, unknown> | undefined;
+                const patientId = (patientField?.['patient_id'] ?? rObj['patientId'] ?? rObj['patient_id'] ?? '') as string | number;
+                const doctorField = rObj['doctor'] as Record<string, unknown> | undefined;
+                const doctorId = (doctorField?.['doctor_id'] ?? rObj['doctorId'] ?? rObj['doctor_id'] ?? '') as string | number;
+                const dateValue = (rObj['visit_date'] ?? rObj['createdAt'] ?? rObj['recordDate'] ?? Date.now()) as string | number | Date;
+                const rawStatus = (rObj['status'] ?? rObj['record_status'] ?? '') as string;
+
+                return (
+                  <TableRow key={recordKey}>
+                    <TableCell>{getPatientName(patientId)}</TableCell>
+                    <TableCell>{getDoctorName(doctorId)}</TableCell>
+                    <TableCell>{new Date(dateValue).toLocaleDateString()}</TableCell>
+                    <TableCell>
+                      <Box>
+                        <Typography variant="body2" fontWeight="bold">
+                          {primary || '—'}
                         </Typography>
-                      )}
-                    </Box>
-                  </TableCell>
-                  <TableCell>
-                    <Chip
-                      label={record.diagnosis.severity.toUpperCase()}
-                      color={getSeverityColor(record.diagnosis.severity)}
-                      size="small"
-                      variant="outlined"
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <Chip
-                      label={record.status.toUpperCase()}
-                      color={getStatusColor(record.status)}
-                      size="small"
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <Box sx={{ display: 'flex', gap: 1 }}>
-                      <MOutlineButton
-                        component={Link}
-                        to={`/medical-records/${record.id}`}
+                        {icd10 && (
+                          <Typography variant="caption" color="text.secondary">
+                            ICD-10: {icd10}
+                          </Typography>
+                        )}
+                      </Box>
+                    </TableCell>
+                    <TableCell>
+                      <Chip
+                        label={severity ? severity.toUpperCase() : 'N/A'}
+                        color={getSeverityColor(severity || '')}
                         size="small"
-                      >
-                        View
-                      </MOutlineButton>
-                      <MOutlineButton
-                        component={Link}
-                        to={`/medical-records/${record.id}/edit`}
+                        variant="outlined"
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <Chip
+                        label={typeof rawStatus === 'string' && rawStatus ? rawStatus.toUpperCase() : 'N/A'}
+                        color={getStatusColor(typeof rawStatus === 'string' ? rawStatus : undefined)}
                         size="small"
-                      >
-                        Edit
-                      </MOutlineButton>
-                    </Box>
-                  </TableCell>
-                </TableRow>
-              ))}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <Box sx={{ display: 'flex', gap: 1 }}>
+                        <MOutlineButton
+                          component={Link}
+                          to={`/medical-records/${recordKey}`}
+                          size="small"
+                        >
+                          View
+                        </MOutlineButton>
+                        <MOutlineButton
+                          component={Link}
+                          to={`/medical-records/${recordKey}/edit`}
+                          size="small"
+                        >
+                          Edit
+                        </MOutlineButton>
+                      </Box>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
 

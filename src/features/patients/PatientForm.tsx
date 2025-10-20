@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Paper, TextField, Typography, CircularProgress, Alert } from '@mui/material';
+import { Box, Paper, TextField, Typography, CircularProgress, Alert, MenuItem } from '@mui/material';
 import { useNavigate, useParams } from 'react-router-dom';
 import MButton from '../../components/MButton';
 import { patientAPI } from '../../services/patientService';
@@ -7,7 +7,7 @@ import { patientAPI } from '../../services/patientService';
 interface PatientPayload {
   full_name: string;
   gender?: string;
-  date_of_birth?: string; // YYYY-MM-DD
+  date_of_birth?: string;
   phone?: string;
   email?: string;
   address?: string;
@@ -15,7 +15,7 @@ interface PatientPayload {
 
 const PatientForm: React.FC = () => {
   const navigate = useNavigate();
-  const { id } = useParams(); // for edit support if needed
+  const { id } = useParams();
   const [form, setForm] = useState<PatientPayload>({
     full_name: '',
     gender: '',
@@ -116,14 +116,17 @@ const PatientForm: React.FC = () => {
           fullWidth
         />
         <TextField
-          select={false}
+          select
           label="Gender"
           name="gender"
           value={form.gender}
           onChange={handleChange}
-          placeholder="Male / Female / Other"
           fullWidth
-        />
+        >
+          <MenuItem value="Male">Male</MenuItem>
+          <MenuItem value="Female">Female</MenuItem>
+          <MenuItem value="Other">Other</MenuItem>
+        </TextField>
         <TextField
           label="Date of birth"
           name="date_of_birth"

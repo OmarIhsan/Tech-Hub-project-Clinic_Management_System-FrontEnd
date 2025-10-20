@@ -19,7 +19,7 @@ export interface Patient {
 
 export interface Doctor {
   doctor_id: number;
-  staff_id?: number; // <-- added this property
+  staff_id?: number;
   full_name: string;
   gender?: string;
   phone: string;
@@ -76,18 +76,24 @@ export interface PatientImage {
 
 export interface Procedure {
   procedure_id: number;
-  patient: {
+  patient?: {
     patient_id: number;
-    full_name: string;
+    full_name?: string;
   };
-  doctor: {
+  doctor?: {
     doctor_id: number;
-    full_name: string;
+    full_name?: string;
   };
+  patient_id?: number;
+  doctor_id?: number;
   procedure_name: string;
   procedure_date: string;
   cost: number;
   notes?: string;
+  appointment_id?: number;
+  plan_id?: number;
+  procedure_notes?: string;
+  performed_at?: string;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -102,6 +108,7 @@ export interface Expense {
   amount: number;
   category: string;
   description?: string;
+  reason?: string;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -116,6 +123,8 @@ export interface OtherIncome {
   amount: number;
   source: string;
   description?: string;
+  patient_id?: number;
+  staff_id?: number;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -144,7 +153,6 @@ export interface Appointment {
 
 export interface TreatmentPlan {
   plan_id: number;
-  // Flattened fields to match backend payloads
   patient_id: number;
   doctor_id: number;
   appointment_id?: number;
@@ -156,7 +164,6 @@ export interface TreatmentPlan {
   start_date?: string;
   expected_end_date?: string;
   end_date?: string;
-  // Include all known status variants to remain compatible with older code and backend
   status: 'draft' | 'active' | 'ongoing' | 'completed' | 'cancelled';
   priority?: 'low' | 'medium' | 'high' | 'urgent';
   notes?: string;
@@ -175,9 +182,12 @@ export interface MedicalRecord {
     doctor_id: number;
     full_name: string;
   };
-  diagnosis: string;
+  diagnosis?: string | { primary?: string; icd10Code?: string; severity?: string };
   prescription?: string;
-  visit_date: string;
+  visit_date?: string;
+  clinical_findings?: string;
+  treatment?: string;
+  allergies?: string;
   createdAt?: string;
   updatedAt?: string;
 }

@@ -21,10 +21,6 @@ export const appointmentService = {
     try {
   const response = await api.get('/appointment', { params });
   const resp = response.data as unknown;
-      // Support shapes like:
-      // { data: [...] }
-      // { data: { data: [...], count } }
-      // { data: { data: { data: [...] } } }
       let data: unknown = [];
       if (Array.isArray(resp)) data = resp;
       else if (resp && typeof resp === 'object') {
@@ -40,7 +36,6 @@ export const appointmentService = {
           } else data = obj.data ?? resp;
         } else data = resp;
       }
-      // attempt to extract count if present in known envelope shapes
       let count: number | undefined;
       if (resp && typeof resp === 'object') {
         const obj = resp as Record<string, unknown>;

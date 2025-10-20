@@ -84,7 +84,6 @@ const NavigationIcons = () => {
       return;
     }
     
-    // Owner navigation
     switch (newValue) {
       case 1:
         navigate('/patients');
@@ -126,7 +125,6 @@ const NavigationIcons = () => {
       );
     }
     
-    // Owner - full navigation
     return (
       <>
         <BottomNavigationAction label="Home" icon={<HomeIcon />} />

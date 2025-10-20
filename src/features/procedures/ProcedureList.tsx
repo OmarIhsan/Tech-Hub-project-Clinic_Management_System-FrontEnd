@@ -40,7 +40,6 @@ const ProcedureList = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>('');
   
-  // Filters
   const [patientFilter, setPatientFilter] = useState<string>('');
   const [doctorFilter, setDoctorFilter] = useState<string>('');
   const [startDate, setStartDate] = useState<string>('');
@@ -59,7 +58,7 @@ const ProcedureList = () => {
         patientAPI.getAll(),
         doctorAPI.getAll(),
       ]);
-      
+      console.debug('[ProcedureList] proceduresData:', proceduresData);
       const proceduresList = proceduresData.data || [];
       setProcedures(Array.isArray(proceduresList) ? proceduresList : []);
       setPatients(Array.isArray(patientsData) ? patientsData : []);
@@ -87,15 +86,18 @@ const ProcedureList = () => {
     }
   };
 
-  // Filter procedures
   const filteredProcedures = procedures.filter((procedure) => {
-    const matchesPatient = !patientFilter || 
-      procedure.patient?.patient_id === Number(patientFilter);
-    
-    const matchesDoctor = !doctorFilter || 
-      procedure.doctor?.doctor_id === Number(doctorFilter);
-    
-    const procedureDate = new Date(procedure.procedure_date);
+  const raw = procedure as unknown as Record<string, unknown>;
+  const procPatientId = procedure.patient?.patient_id ?? (raw.patient_id as number | undefined);
+  const procDoctorId = procedure.doctor?.doctor_id ?? (raw.doctor_id as number | undefined);
+
+    const matchesPatient = !patientFilter || procPatientId === Number(patientFilter);
+
+    const matchesDoctor = !doctorFilter || procDoctorId === Number(doctorFilter);
+
+  const raw2 = procedure as unknown as Record<string, unknown>;
+  const dateStr = procedure.procedure_date || (raw2.performed_at as string | undefined) || procedure.createdAt;
+    const procedureDate = dateStr ? new Date(dateStr) : new Date(0);
     const matchesStartDate = !startDate || 
       procedureDate >= new Date(startDate);
     
@@ -105,8 +107,7 @@ const ProcedureList = () => {
     return matchesPatient && matchesDoctor && matchesStartDate && matchesEndDate;
   });
 
-  // Calculate total cost
-  const totalCost = filteredProcedures.reduce((sum, proc) => sum + (proc.cost || 0), 0);
+  const totalCost = filteredProcedures.reduce((sum, proc) => sum + ((proc.cost as number) || 0), 0);
 
   if (loading) {
     return (
@@ -137,7 +138,6 @@ const ProcedureList = () => {
         </Alert>
       )}
 
-      {/* Summary Card */}
       <Card sx={{ mb: 3, bgcolor: 'primary.light', color: 'primary.contrastText' }}>
         <CardContent>
           <Box display="flex" justifyContent="space-between" alignItems="center">
@@ -155,7 +155,6 @@ const ProcedureList = () => {
         </CardContent>
       </Card>
 
-      {/* Filters */}
       <Card sx={{ mb: 3 }}>
         <CardContent>
           <Typography variant="h6" gutterBottom>
@@ -229,7 +228,6 @@ const ProcedureList = () => {
         </CardContent>
       </Card>
 
-      {/* Procedures Table */}
       <Card>
         <CardContent>
           <TableContainer component={Paper}>
@@ -275,12 +273,12 @@ const ProcedureList = () => {
                     <TableRow key={procedure.procedure_id} hover>
                       <TableCell>
                         <Typography variant="body2" fontWeight={500}>
-                          {procedure.patient?.full_name || `Patient #${procedure.patient?.patient_id}`}
+                          {procedure.patient?.full_name || `Patient #${(procedure as unknown as Record<string, unknown>).patient_id ?? procedure.patient?.patient_id}`}
                         </Typography>
                       </TableCell>
                       <TableCell>
                         <Typography variant="body2">
-                          {procedure.doctor?.full_name || `Doctor #${procedure.doctor?.doctor_id}`}
+                          {procedure.doctor?.full_name || `Doctor #${(procedure as unknown as Record<string, unknown>).doctor_id ?? procedure.doctor?.doctor_id}`}
                         </Typography>
                       </TableCell>
                       <TableCell>
@@ -289,18 +287,22 @@ const ProcedureList = () => {
                         </Typography>
                       </TableCell>
                       <TableCell>
-                        {new Date(procedure.procedure_date).toLocaleDateString()}
+                          {(() => {
+                          const raw3 = procedure as unknown as Record<string, unknown>;
+                          const d = procedure.procedure_date || (raw3.performed_at as string | undefined) || procedure.createdAt;
+                          return d ? new Date(d).toLocaleDateString() : '-';
+                        })()}
                       </TableCell>
                       <TableCell align="right">
                         <Chip
-                          label={`$${procedure.cost.toLocaleString('en-US', { minimumFractionDigits: 2 })}`}
+                          label={`$${((procedure.cost as number) || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}`}
                           color="success"
                           size="small"
                         />
                       </TableCell>
                       <TableCell>
                         <Typography variant="body2" noWrap sx={{ maxWidth: 200 }}>
-                          {procedure.notes || '-'}
+                          {(procedure.notes as string) || ((procedure as unknown as Record<string, unknown>).procedure_notes as string | undefined) || '-'}
                         </Typography>
                       </TableCell>
                       <TableCell align="center">

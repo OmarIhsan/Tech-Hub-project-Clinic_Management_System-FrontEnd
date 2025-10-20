@@ -115,7 +115,6 @@ const PatientImageGallery = () => {
   };
 
   const handleDownload = (image: PatientImage) => {
-    // In a real implementation, this would download the actual file
     const link = document.createElement('a');
     link.href = image.file_path;
     link.download = `patient-${image.patient.patient_id}-${image.image_type}-${image.image_id}.jpg`;
@@ -129,7 +128,6 @@ const PatientImageGallery = () => {
     setUploadDialogOpen(false);
   };
 
-  // Filter images
   const filteredImages = images.filter((image) => {
     const matchesPatient = !filterPatient || 
       image.patient?.patient_id === Number(filterPatient);
@@ -140,7 +138,6 @@ const PatientImageGallery = () => {
     return matchesPatient && matchesType;
   });
 
-  // Get unique image types for filter
   const imageTypes = Array.from(new Set(images.map(img => img.image_type))).filter(Boolean);
 
   if (loading) {
@@ -174,7 +171,6 @@ const PatientImageGallery = () => {
         </Alert>
       )}
 
-      {/* Filters */}
       <Card sx={{ mb: 3 }}>
         <CardContent>
           <Typography variant="h6" gutterBottom>
@@ -228,7 +224,6 @@ const PatientImageGallery = () => {
         </CardContent>
       </Card>
 
-      {/* Images Grid */}
       {filteredImages.length === 0 ? (
         <Card>
           <CardContent>
@@ -369,7 +364,6 @@ const PatientImageGallery = () => {
         </Box>
       )}
 
-      {/* Preview Dialog */}
       <Dialog
         open={previewOpen}
         onClose={handlePreviewClose}
@@ -432,7 +426,6 @@ const PatientImageGallery = () => {
         </DialogActions>
       </Dialog>
 
-      {/* Delete Confirmation Dialog */}
       <Dialog
         open={deleteDialogOpen}
         onClose={() => !deleting && setDeleteDialogOpen(false)}
@@ -471,7 +464,6 @@ const PatientImageGallery = () => {
         </DialogActions>
       </Dialog>
 
-      {/* Upload Dialog */}
       <ImageUploadDialog
         open={uploadDialogOpen}
         onClose={() => setUploadDialogOpen(false)}

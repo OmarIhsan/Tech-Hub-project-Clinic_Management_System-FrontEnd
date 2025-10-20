@@ -8,7 +8,7 @@ interface StaffCreatePayload {
   full_name: string;
   phone: string;
   email: string;
-  hire_date: string; // YYYY-MM-DD
+  hire_date: string;
   role: 'staff';
   password: string;
 }
@@ -52,7 +52,6 @@ const StaffAddForm: React.FC = () => {
       };
 
       await staffAPI.create(payload);
-      // After creating a staff member, redirect to the staff list
       navigate('/staff');
     } catch (err: unknown) {
       const e = err as unknown;

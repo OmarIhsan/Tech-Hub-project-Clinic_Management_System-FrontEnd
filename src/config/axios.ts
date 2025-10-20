@@ -1,46 +1,3 @@
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 
 const api = axios.create({
@@ -56,6 +13,14 @@ api.interceptors.request.use(
     const token = localStorage.getItem('accessToken');
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
+    }
+    try {
+      if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.DEV) {
+        const masked = token ? `***${String(token).slice(-6)}` : null;
+        console.debug('[api] Request:', { url: config.url, method: config.method, Authorization: masked });
+      }
+    } catch {
+      // ignore
     }
     return config;
   },
@@ -73,6 +38,17 @@ api.interceptors.response.use(
       localStorage.removeItem('accessToken');
       localStorage.removeItem('user');
       window.location.href = '/login';
+    }
+    try {
+      if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.DEV) {
+        console.error('[api] Response error:', {
+          url: error.config?.url,
+          status: error.response?.status,
+          data: error.response?.data,
+        });
+      }
+    } catch {
+      // ignore
     }
     return Promise.reject(error);
   }

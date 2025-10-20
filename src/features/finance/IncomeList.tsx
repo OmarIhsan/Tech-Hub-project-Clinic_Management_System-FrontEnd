@@ -31,6 +31,7 @@ import {
 } from '@mui/icons-material';
 import { otherIncomeService } from '../../services/api';
 import { OtherIncome } from '../../types';
+import { formatCurrency as fmtCurrency } from '../../utils/format';
 import MButton from '../../components/MButton';
 import MOutlineButton from '../../components/MOutlineButton';
 
@@ -108,7 +109,6 @@ const IncomeList = () => {
   };
 
   const filteredIncome = income.filter((inc) => {
-    // Date range filter
     const incDate = new Date(inc.income_date);
     if (startDate && incDate < new Date(startDate)) {
       return false;
@@ -123,10 +123,7 @@ const IncomeList = () => {
   const totalIncome = filteredIncome.reduce((sum, inc) => sum + Number(inc.amount || 0), 0);
 
   const formatCurrency = (amount: number): string => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount);
+    return fmtCurrency(amount, 'USD');
   };
 
   const formatDate = (dateString: string): string => {
@@ -147,7 +144,6 @@ const IncomeList = () => {
 
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
-      {/* Header */}
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
         <Box>
           <Typography variant="h4" fontWeight="bold" gutterBottom>
@@ -173,7 +169,6 @@ const IncomeList = () => {
         </Alert>
       )}
 
-      {/* Summary Card */}
       <Card sx={{ mb: 3, bgcolor: '#e8f5e9' }}>
         <CardContent>
           <Box display="flex" alignItems="center" justifyContent="space-between">
@@ -184,7 +179,7 @@ const IncomeList = () => {
                   Total Income
                 </Typography>
                 <Typography variant="h4" fontWeight="bold" color="success.main">
-                  {formatCurrency(totalIncome)}
+                  {fmtCurrency(totalIncome, 'USD')}
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
                   {filteredIncome.length} transactions
@@ -195,7 +190,6 @@ const IncomeList = () => {
         </CardContent>
       </Card>
 
-      {/* Filters */}
       <Card sx={{ mb: 3 }}>
         <CardContent>
           <Typography variant="h6" fontWeight="bold" gutterBottom>
@@ -234,7 +228,6 @@ const IncomeList = () => {
         </CardContent>
       </Card>
 
-      {/* Income Table */}
       {filteredIncome.length === 0 ? (
         <Card>
           <CardContent>
@@ -318,7 +311,6 @@ const IncomeList = () => {
         </TableContainer>
       )}
 
-      {/* Delete Confirmation Dialog */}
       <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
         <DialogTitle>Confirm Delete</DialogTitle>
         <DialogContent>

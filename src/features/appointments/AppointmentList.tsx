@@ -59,7 +59,6 @@ const AppointmentList = () => {
           appointmentService.getAll(),
           doctorAPI.getAll(),
         ]);
-        // Ensure appointments is always an array
         const appointmentsData = appointmentsResponse.data || [];
         setAppointments(Array.isArray(appointmentsData) ? appointmentsData : []);
         setDoctors(Array.isArray(doctorsData) ? doctorsData : []);

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Paper, TextField, Typography, CircularProgress } from '@mui/material';
+import { Box, Paper, TextField, Typography, CircularProgress, MenuItem } from '@mui/material';
 import { useNavigate, useParams } from 'react-router-dom';
 import MButton from '../../components/MButton';
 import { doctorAPI } from '../../services/api';
@@ -9,10 +9,10 @@ interface DoctorCreatePayload {
   full_name: string;
   phone: string;
   email: string;
-  hire_date: string; // YYYY-MM-DD
+  hire_date: string;
   role: string;
   password: string;
-  gender?: string; // added
+  gender?: string;
 }
 
 const DoctorForm: React.FC = () => {
@@ -27,7 +27,7 @@ const DoctorForm: React.FC = () => {
     hire_date: '',
     role: 'doctor',
     password: '',
-    gender: 'Male', // default or '' to let user choose
+    gender: 'Male',
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -48,7 +48,7 @@ const DoctorForm: React.FC = () => {
             hire_date: loadedDoctor.hire_date,
             role: 'doctor',
             password: '',
-            gender: 'Male', // default or '' to let user choose
+            gender: 'Male',
           });
         }
       } catch (err) {
@@ -71,7 +71,6 @@ const DoctorForm: React.FC = () => {
     e?.preventDefault();
     setError(null);
 
-    // basic validation
     if (!form.full_name || !form.phone || !form.email || !form.hire_date || !form.password) {
       setError('Please fill all required fields.');
       return;
@@ -79,7 +78,6 @@ const DoctorForm: React.FC = () => {
 
     setSaving(true);
     try {
-      // send payload exactly as requested
       const payload: DoctorCreatePayload = {
         full_name: form.full_name,
         phone: form.phone,
@@ -87,7 +85,7 @@ const DoctorForm: React.FC = () => {
         hire_date: form.hire_date,
         role: 'doctor',
         password: form.password,
-        gender: form.gender, // include gender
+        gender: form.gender,
       };
 
       if (id) {
@@ -97,7 +95,6 @@ const DoctorForm: React.FC = () => {
       }
       navigate('/doctors');
     } catch (err: unknown) {
-      // show backend message when available
       type ErrorWithResponse = {
         response?: {
           data?: {
@@ -180,12 +177,18 @@ const DoctorForm: React.FC = () => {
           type="password"
           fullWidth
         />
-        <select name="gender" value={form.gender} onChange={handleChange}>
-          <option value="Male">Male</option>
-          <option value="Female">Female</option>
-          <option value="Other">Other</option>
-        </select>
-        {/* or use MUI <TextField select> — place this inside the form markup */}
+        <TextField
+          select
+          label="Gender"
+          name="gender"
+          value={form.gender}
+          onChange={handleChange}
+          fullWidth
+        >
+          <MenuItem value="Male">Male</MenuItem>
+          <MenuItem value="Female">Female</MenuItem>
+          <MenuItem value="Other">Other</MenuItem>
+        </TextField>
         <MButton type="submit" variant="contained" disabled={saving}>
           {saving ? 'Saving...' : id ? 'Update Doctor' : 'Create Doctor'}
         </MButton>

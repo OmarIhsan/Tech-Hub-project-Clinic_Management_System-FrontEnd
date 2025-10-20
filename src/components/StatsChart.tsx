@@ -17,12 +17,13 @@ import {
 interface ChartDatum {
   name: string;
   value: number;
+  [key: string]: string | number;
 }
 
 interface StatsChartProps {
   title: string;
   type: 'bar' | 'pie';
-  data: ChartDatum[] | unknown[]; // Accept simple chart-friendly objects or unknown arrays
+  data: ChartDatum[] | unknown[];
   colors?: string[];
 }
 
@@ -34,7 +35,6 @@ export const StatsChart: React.FC<StatsChartProps> = ({
   data,
   colors = COLORS 
 }) => {
-  // If data already matches {name,value} shape use it, otherwise try to map
   const isChartDatum = (v: unknown): v is ChartDatum => {
     if (!v || typeof v !== 'object') return false;
     const obj = v as Record<string, unknown>;

@@ -4,15 +4,19 @@ import { OtherIncome } from '../types';
 interface CreateOtherIncomeData {
   amount: number;
   source: string;
-  date: string;
-  notes?: string;
+  income_date: string;
+  staff_id?: number;
+  patient_id?: number;
+  description?: string;
 }
 
 interface UpdateOtherIncomeData {
   amount?: number;
   source?: string;
-  date?: string;
-  notes?: string;
+  income_date?: string;
+  staff_id?: number;
+  patient_id?: number;
+  description?: string;
 }
 
 export const otherIncomeService = {
@@ -48,7 +52,7 @@ export const otherIncomeService = {
   return { data: data as OtherIncome };
     } catch (error) {
       console.error('Error creating other income:', error);
-      throw new Error('Failed to create other income');
+      throw error;
     }
   },
 

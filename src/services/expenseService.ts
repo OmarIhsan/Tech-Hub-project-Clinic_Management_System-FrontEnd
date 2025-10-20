@@ -4,15 +4,17 @@ import { Expense } from '../types';
 interface CreateExpenseData {
   amount: number;
   category: string;
-  date: string;
-  description?: string;
+  expense_date: string;
+  reason?: string;
+  staff_id?: number;
 }
 
 interface UpdateExpenseData {
   amount?: number;
   category?: string;
-  date?: string;
-  description?: string;
+  expense_date?: string;
+  reason?: string;
+  staff_id?: number;
 }
 
 export const expenseService = {
