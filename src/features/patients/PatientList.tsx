@@ -146,9 +146,8 @@ const PatientList = () => {
 
       <Card>
         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-          <Tabs value={tabValue} onChange={(e, newValue) => setTabValue(newValue)}>
+          <Tabs value={tabValue} onChange={(_, newValue) => setTabValue(newValue)}>
             <Tab label="Patients List" />
-            <Tab label="Patient Documents" />
           </Tabs>
         </Box>
 

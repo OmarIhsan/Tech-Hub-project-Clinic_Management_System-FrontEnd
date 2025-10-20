@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Container,
@@ -17,23 +17,44 @@ import MOutlineButton from '../../components/MOutlineButton';
 import FloatingAddButton from '../../components/FloatingAddButton';
 import { doctorAPI } from '../../services/api';
 import { Doctor } from '../../types';
+import { useAuthContext } from '../../context/useAuthContext';
 
-const DoctorList = () => {
+const DoctorList: React.FC = () => {
   const navigate = useNavigate();
+  const { user } = useAuthContext();
   const [actionLoading, setActionLoading] = useState<number | null>(null);
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
+
+  // normalize various possible API response shapes into Doctor[]
+  const normalizeDoctors = (res: unknown): Doctor[] => {
+    if (Array.isArray(res)) return res as Doctor[];
+
+    if (res && typeof res === 'object') {
+      const r1 = res as Record<string, unknown>;
+      if (Array.isArray(r1.data)) return r1.data as Doctor[];
+      // some services wrap twice: { data: { data: [...] } }
+      const inner = r1.data;
+      if (inner && typeof inner === 'object') {
+        const r2 = inner as Record<string, unknown>;
+        if (Array.isArray(r2.data)) return r2.data as Doctor[];
+      }
+    }
+    return [];
+  };
 
   useEffect(() => {
     const fetchDoctors = async () => {
       try {
         setIsLoading(true);
         setIsError(false);
-        const data = await doctorAPI.getAll();
-        setDoctors(data || []);
+        const res = await doctorAPI.getAll();
+        const list = normalizeDoctors(res);
+        setDoctors(list);
       } catch (err) {
-        console.error('Failed to load doctors:', err);
+        console.error('Failed to fetch doctors', err);
+        setDoctors([]);
         setIsError(true);
       } finally {
         setIsLoading(false);
@@ -49,13 +70,21 @@ const DoctorList = () => {
     try {
       setActionLoading(id);
       await doctorAPI.delete(id);
-      setDoctors(doctors.filter(d => d.doctor_id !== id));
+      setDoctors(prev => prev.filter(d => (d.doctor_id ?? d.staff_id) !== id));
     } catch (err) {
       console.error('Failed to delete doctor:', err);
     } finally {
       setActionLoading(null);
     }
   };
+
+  if (!user) {
+    return (
+      <Typography sx={{ mt: 4 }} align="center">
+        You must be logged in to view this page.
+      </Typography>
+    );
+  }
 
   if (isLoading) {
     return (
@@ -88,37 +117,48 @@ const DoctorList = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {doctors.map((doctor) => (
-                <TableRow key={doctor.doctor_id}>
-                  <TableCell>{doctor.full_name}</TableCell>
-                  <TableCell>{doctor.gender}</TableCell>
-                  <TableCell>{doctor.phone}</TableCell>
-                  <TableCell>{doctor.email}</TableCell>
-                  <TableCell>
-                    <MOutlineButton
-                      component={Link}
-                      to={`/doctors/${doctor.doctor_id}/edit`}
-                      size="small"
-                      sx={{ mr: 1 }}
-                    >
-                      Edit
-                    </MOutlineButton>
-                    <MOutlineButton
-                      color="error"
-                      size="small"
-                      onClick={() => handleDelete(doctor.doctor_id)}
-                      disabled={actionLoading === doctor.doctor_id}
-                    >
-                      {actionLoading === doctor.doctor_id ? 'Deleting...' : 'Delete'}
-                    </MOutlineButton>
+              {doctors.length ? (
+                doctors.map((doctor) => {
+                  const id = doctor.doctor_id ?? doctor.staff_id;
+                  return (
+                    <TableRow key={id}>
+                      <TableCell>{doctor.full_name ?? doctor.full_name}</TableCell>
+                      <TableCell>{doctor.gender ?? '-'}</TableCell>
+                      <TableCell>{doctor.phone ?? '-'}</TableCell>
+                      <TableCell>{doctor.email ?? '-'}</TableCell>
+                      <TableCell>
+                        <MOutlineButton
+                          component={Link}
+                          to={`/doctors/${id}/edit`}
+                          size="small"
+                          sx={{ mr: 1 }}
+                        >
+                          Edit
+                        </MOutlineButton>
+                        <MOutlineButton
+                          color="error"
+                          size="small"
+                          onClick={() => handleDelete(Number(id))}
+                          disabled={actionLoading === Number(id)}
+                        >
+                          {actionLoading === Number(id) ? 'Deleting...' : 'Delete'}
+                        </MOutlineButton>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={5} align="center">
+                    No doctors found.
                   </TableCell>
                 </TableRow>
-              ))}
+              )}
             </TableBody>
           </Table>
         </Paper>
       </Box>
-      
+
       <FloatingAddButton
         onClick={() => navigate('/doctors/new')}
         ariaLabel="Add new doctor"

@@ -19,8 +19,9 @@ export interface Patient {
 
 export interface Doctor {
   doctor_id: number;
+  staff_id?: number; // <-- added this property
   full_name: string;
-  gender: string;
+  gender?: string;
   phone: string;
   email: string;
   hire_date: string;

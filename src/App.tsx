@@ -1,7 +1,6 @@
-
 import { BrowserRouter } from 'react-router';
-import { Box, AppBar, Toolbar, Typography, IconButton, ThemeProvider } from '@mui/material';
-import { LocalHospital as ClinicIcon } from '@mui/icons-material';
+import { Box, AppBar, Toolbar, Typography, IconButton, ThemeProvider, BottomNavigation, BottomNavigationAction } from '@mui/material';
+import { LocalHospital as ClinicIcon, Home as HomeIcon, People as PeopleIcon } from '@mui/icons-material';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
 import LogoutIcon from '@mui/icons-material/Logout';
@@ -9,7 +8,6 @@ import { useState, useMemo } from 'react';
 import { lightTheme, darkTheme } from './components/theme';
 import './App.css'
 import AppRouter from './router/Router';
-import NavigationIcons from './components/NavigationIcons';
 import { useAuthContext } from './context/useAuthContext';
 import { useNavigate } from 'react-router-dom';
 
@@ -17,6 +15,7 @@ function AppContent() {
   const { logout, isAuthenticated } = useAuthContext();
   const navigate = useNavigate();
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [value, setValue] = useState(0);
 
   const theme = useMemo(
     () => (isDarkMode ? darkTheme : lightTheme),
@@ -30,6 +29,10 @@ function AppContent() {
   const handleLogout = () => {
     logout();
     navigate('/login');
+  };
+
+  const handleChange = (event, newValue) => {
+    setValue(newValue);
   };
 
   return (
@@ -85,7 +88,13 @@ function AppContent() {
           <AppRouter />
         </Box>
 
-        <NavigationIcons />
+        <BottomNavigation value={value} onChange={handleChange}>
+          {[ 
+            <BottomNavigationAction label="Home" icon={<HomeIcon />} key="home" />,
+            <BottomNavigationAction label="Doctors" icon={<ClinicIcon />} key="doctors" />,
+            <BottomNavigationAction label="Patients" icon={<PeopleIcon />} key="patients" />
+          ]}
+        </BottomNavigation>
       </Box>
     </ThemeProvider>
   );

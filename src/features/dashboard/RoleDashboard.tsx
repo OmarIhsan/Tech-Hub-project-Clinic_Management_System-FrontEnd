@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuthContext } from '../../context/useAuthContext';
 import { StaffRole } from '../../types';
 import { Box, Container, Typography, Paper } from '@mui/material';
@@ -11,6 +11,9 @@ import AssignmentIcon from '@mui/icons-material/Assignment';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import StatsChart from '../../components/StatsChart';
 import EmployeeAddDialog from '../employees/EmployeeAddDialog';
+import { patientAPI } from '../../services/patientService';
+import { doctorAPI } from '../../services/api';
+import staffAPI from '../../services/staffService';
 
 type StatCardProps = {
     title: string;
@@ -64,7 +67,7 @@ const RoleDashboard: React.FC = () => {
     const { user } = useAuthContext();
     const navigate = useNavigate();
     const [employeeDialogOpen, setEmployeeDialogOpen] = useState(false);
-    const [stats] = useState({
+    const [stats, setStats] = useState({
         patients: 0,
         appointments: 0,
         treatments: 0,
@@ -73,6 +76,43 @@ const RoleDashboard: React.FC = () => {
         staff: 0,
         income: 0,
     });
+
+    useEffect(() => {
+        const fetchCounts = async () => {
+            try {
+                const [pRes, dRes, sRes] = await Promise.all([
+                    patientAPI.getAll(),
+                    doctorAPI.getAll(),
+                    staffAPI.getAll(),
+                ]);
+
+                const getCount = (res: any): number => {
+                    if (!res) return 0;
+                    if (Array.isArray(res)) return res.length;
+                    if (Array.isArray(res.data)) return res.data.length;
+                    if (res.data && Array.isArray(res.data.data)) return res.data.data.length;
+                    if (res.data && typeof res.data.count === 'number') return res.data.count;
+                    if (typeof res.count === 'number') return res.count;
+                    return 0;
+                };
+
+                const patientsCount = getCount(pRes);
+                const doctorsCount = getCount(dRes);
+                const staffCount = getCount(sRes);
+
+                setStats(prev => ({
+                    ...prev,
+                    patients: patientsCount,
+                    doctors: doctorsCount,
+                    staff: staffCount,
+                }));
+            } catch {
+                setStats(prev => ({ ...prev, patients: 0, doctors: 0 }));
+            }
+        };
+
+        fetchCounts();
+    }, []);
 
     if (!user || !user.role) {
         return (
@@ -183,32 +223,6 @@ const RoleDashboard: React.FC = () => {
                                 onClick={() => navigate('/finance/expenses')}
                             />
                         </Box>
-                        <Box
-                            sx={{
-                                display: 'grid',
-                                gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' },
-                                gap: 3,
-                                mb: 4,
-                            }}
-                        >
-                            <StatsChart
-                                title="Financial Overview"
-                                type="bar"
-                                data={[
-                                    { name: 'Income', value: stats.income },
-                                    { name: 'Expenses', value: stats.expenses },
-                                ]}
-                                colors={['#00C49F', '#FF8042']}
-                            />
-                            <StatsChart
-                                title="Staff Distribution"
-                                type="pie"
-                                data={[
-                                    { name: 'Doctors', value: stats.doctors },
-                                    { name: 'Staff', value: stats.staff },
-                                ]}
-                            />
-                        </Box>
                         <Box sx={{ mt: 4 }}>
                             <Typography variant="h6" gutterBottom>
                                 Quick Actions
@@ -232,6 +246,13 @@ const RoleDashboard: React.FC = () => {
                                 >
                                     Add Employee
                                 </MButton>
+                                <MButton
+                                    fullWidth
+                                    variant="outlined"
+                                    onClick={() => navigate('/finance/income')}
+                                >
+                                    View Income
+                                </MButton>
                             </Box>
                             <EmployeeAddDialog
                                 open={employeeDialogOpen}
@@ -248,7 +269,7 @@ const RoleDashboard: React.FC = () => {
                                 Doctor Dashboard
                             </Typography>
                             <Typography variant="body1" color="textSecondary">
-                                Welcome back, Dr. {user.name || user.email}
+                                Welcome back, Dr. {user.full_name || user.email}
                             </Typography>
                         </Box>
                         <Box
@@ -299,7 +320,7 @@ const RoleDashboard: React.FC = () => {
                                 data={[
                                     { name: 'Patients', value: stats.patients },
                                     { name: 'Appointments', value: stats.appointments },
-                                    { name: 'Active Treatments', value: stats.treatments },
+                                    { name: 'Treatments', value: stats.treatments },
                                 ]}
                             />
                             <StatsChart
@@ -412,7 +433,7 @@ const RoleDashboard: React.FC = () => {
                                 Staff Dashboard
                             </Typography>
                             <Typography variant="body1" color="textSecondary">
-                                Welcome back, {user.name || user.email}
+                                Welcome back, {Staff.full_name || user.email}
                             </Typography>
                         </Box>
                         <Box

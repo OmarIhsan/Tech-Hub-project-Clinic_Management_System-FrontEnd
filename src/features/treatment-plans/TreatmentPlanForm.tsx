@@ -23,16 +23,14 @@ const TreatmentPlanForm = () => {
   const navigate = useNavigate();
   
   const [treatmentPlan, setTreatmentPlan] = useState<Partial<TreatmentPlan>>({
-    patientId: '',
-    doctorId: '',
-    title: '',
-    description: '',
+    patient_id: '',
+    doctor_id: '',
+    treatment_description: '',
     diagnosis: '',
-    startDate: '',
-    expectedEndDate: '',
-    status: 'draft',
+    start_date: '',
+    expected_end_date: '',
+    status: 'ongoing', // must be 'ongoing' | 'completed' | 'cancelled'
     priority: 'medium',
-    steps: [],
     notes: '',
   });
   
@@ -128,13 +126,13 @@ const TreatmentPlanForm = () => {
                 <FormControl fullWidth>
                   <InputLabel>Patient *</InputLabel>
                   <Select 
-                    name="patientId" 
-                    value={treatmentPlan.patientId || ''} 
+                    name="patient_id" 
+                    value={treatmentPlan.patient_id || ''} 
                     label="Patient *" 
-                    onChange={(e) => setTreatmentPlan(prev => ({ ...prev, patientId: e.target.value }))} 
+                    onChange={(e) => setTreatmentPlan(prev => ({ ...prev, patient_id: Number(e.target.value) }))} 
                     required
                   >
-                    {patients.map((p) => (<MenuItem key={p.id} value={p.id}>{p.name}</MenuItem>))}
+                    {patients.map((p) => (<MenuItem key={p.patient_id} value={p.patient_id}>{p.full_name}</MenuItem>))}
                   </Select>
                 </FormControl>
               </Box>
@@ -142,23 +140,23 @@ const TreatmentPlanForm = () => {
                 <FormControl fullWidth>
                   <InputLabel>Doctor *</InputLabel>
                   <Select 
-                    name="doctorId" 
-                    value={treatmentPlan.doctorId || ''} 
+                    name="doctor_id" 
+                    value={treatmentPlan.doctor_id || ''} 
                     label="Doctor *" 
-                    onChange={(e) => setTreatmentPlan(prev => ({ ...prev, doctorId: e.target.value }))} 
+                    onChange={(e) => setTreatmentPlan(prev => ({ ...prev, doctor_id: Number(e.target.value) }))} 
                     required
                   >
-                    {doctors.map((d) => (<MenuItem key={d.id} value={d.id}>{d.name} - {d.specialty}</MenuItem>))}
+                    {doctors.map((d) => (<MenuItem key={d.doctor_id} value={d.doctor_id}>{d.full_name}</MenuItem>))}
                   </Select>
                 </FormControl>
               </Box>
             </Box>
 
             <TextField
-              label="Treatment Plan Title *"
-              name="title"
-              value={treatmentPlan.title || ''}
-              onChange={(e) => setTreatmentPlan(prev => ({ ...prev, title: e.target.value }))}
+              label="Treatment Description"
+              name="treatment_description"
+              value={treatmentPlan.treatment_description || ''}
+              onChange={(e) => setTreatmentPlan(prev => ({ ...prev, treatment_description: e.target.value }))}
               fullWidth
               required
             />
@@ -186,10 +184,26 @@ const TreatmentPlanForm = () => {
 
             <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
               <Box sx={{ flex: '1 1 200px' }}>
-                <TextField label="Start Date" name="startDate" type="date" value={treatmentPlan.startDate || ''} onChange={(e) => setTreatmentPlan(prev => ({ ...prev, startDate: e.target.value }))} fullWidth InputLabelProps={{ shrink: true }} />
+                <TextField label="Start Date" name="start_date" type="date" value={treatmentPlan.start_date || ''} onChange={(e) => setTreatmentPlan(prev => ({ ...prev, start_date: e.target.value }))} fullWidth InputLabelProps={{ shrink: true }} />
               </Box>
               <Box sx={{ flex: '1 1 200px' }}>
-                <TextField label="Expected End Date" name="expectedEndDate" type="date" value={treatmentPlan.expectedEndDate || ''} onChange={(e) => setTreatmentPlan(prev => ({ ...prev, expectedEndDate: e.target.value }))} fullWidth InputLabelProps={{ shrink: true }} />
+                <TextField label="Expected End Date" name="expected_end_date" type="date" value={treatmentPlan.expected_end_date || ''} onChange={(e) => setTreatmentPlan(prev => ({ ...prev, expected_end_date: e.target.value }))} fullWidth InputLabelProps={{ shrink: true }} />
+              </Box>
+              <Box sx={{ flex: '1 1 200px' }}>
+                <FormControl fullWidth>
+                  <InputLabel>Status</InputLabel>
+                  <Select
+                    name="status"
+                    value={treatmentPlan.status || 'ongoing'}
+                    label="Status"
+                    onChange={(e) => setTreatmentPlan(prev => ({ ...prev, status: e.target.value as 'ongoing' | 'completed' | 'cancelled' }))}
+                    required
+                  >
+                    <MenuItem value="ongoing">Ongoing</MenuItem>
+                    <MenuItem value="completed">Completed</MenuItem>
+                    <MenuItem value="cancelled">Cancelled</MenuItem>
+                  </Select>
+                </FormControl>
               </Box>
               <Box sx={{ flex: '1 1 200px' }}>
                 <FormControl fullWidth>
@@ -230,7 +244,7 @@ const TreatmentPlanForm = () => {
             <MButton
               variant="contained"
               onClick={handleSubmit}
-              disabled={saving || !treatmentPlan.patientId || !treatmentPlan.doctorId || !treatmentPlan.title || !treatmentPlan.diagnosis}
+              disabled={saving || !treatmentPlan.patient_id || !treatmentPlan.doctor_id || !treatmentPlan.treatment_description || !treatmentPlan.diagnosis}
             >
               {saving ? 'Saving...' : id ? 'Update Plan' : 'Create Plan'}
             </MButton>

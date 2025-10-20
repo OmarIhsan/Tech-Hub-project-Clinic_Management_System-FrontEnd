@@ -23,7 +23,6 @@ import { FinanceDashboard, ExpenseList, ExpenseForm, IncomeList, IncomeForm } fr
 import { StaffAddWorkflow, StaffUpdateWorkflow } from '../features/staff';
 import FormComponentsDemo from '../features/demo/FormComponentsDemo';
 import ProtectedRoute from '../components/ProtectedRoute';
-import RoleRoute from '../components/RoleRoute';
 
 const AppRouter = () => (
   <Routes>
@@ -33,9 +32,9 @@ const AppRouter = () => (
     <Route path="/patients/new" element={<PatientForm />} />
     <Route path="/patients/:id" element={<ProtectedRoute><PatientDetail /></ProtectedRoute>} />
     <Route path="/patients/:id/edit" element={<ProtectedRoute><PatientForm /></ProtectedRoute>} />
-    <Route path="/doctors" element={<ProtectedRoute><RoleRoute role="admin"><DoctorList /></RoleRoute></ProtectedRoute>} />
-    <Route path="/doctors/new" element={<ProtectedRoute><RoleRoute role="admin"><DoctorForm /></RoleRoute></ProtectedRoute>} />
-    <Route path="/doctors/:id/edit" element={<ProtectedRoute><RoleRoute role="admin"><DoctorForm /></RoleRoute></ProtectedRoute>} />
+    <Route path="/doctors" element={<ProtectedRoute><DoctorList /></ProtectedRoute>} />
+    <Route path="/doctors/new" element={<ProtectedRoute><DoctorForm /></ProtectedRoute>} />
+    <Route path="/doctors/:id/edit" element={<ProtectedRoute><DoctorForm /></ProtectedRoute>} />
     <Route path="/appointments" element={<ProtectedRoute><AppointmentList /></ProtectedRoute>} />
     <Route path="/appointments/calendar" element={<ProtectedRoute><AppointmentCalendarView /></ProtectedRoute>} />
     <Route path="/appointments/new" element={<ProtectedRoute><AppointmentForm /></ProtectedRoute>} />
@@ -53,13 +52,13 @@ const AppRouter = () => (
     <Route path="/procedures/:id/edit" element={<ProtectedRoute><ProcedureForm /></ProtectedRoute>} />
     <Route path="/patient-images" element={<ProtectedRoute><PatientImageGallery /></ProtectedRoute>} />
     <Route path="/documents" element={<ProtectedRoute><ClinicalDocumentList /></ProtectedRoute>} />
-    <Route path="/finance" element={<ProtectedRoute><RoleRoute role="admin"><FinanceDashboard /></RoleRoute></ProtectedRoute>} />
-    <Route path="/finance/expenses" element={<ProtectedRoute><RoleRoute role="admin"><ExpenseList /></RoleRoute></ProtectedRoute>} />
-    <Route path="/finance/expenses/new" element={<ProtectedRoute><RoleRoute role="admin"><ExpenseForm /></RoleRoute></ProtectedRoute>} />
-    <Route path="/finance/expenses/:id/edit" element={<ProtectedRoute><RoleRoute role="admin"><ExpenseForm /></RoleRoute></ProtectedRoute>} />
-    <Route path="/finance/income" element={<ProtectedRoute><RoleRoute role="admin"><IncomeList /></RoleRoute></ProtectedRoute>} />
-    <Route path="/finance/income/new" element={<ProtectedRoute><RoleRoute role="admin"><IncomeForm /></RoleRoute></ProtectedRoute>} />
-    <Route path="/finance/income/:id/edit" element={<ProtectedRoute><RoleRoute role="admin"><IncomeForm /></RoleRoute></ProtectedRoute>} />
+    <Route path="/finance" element={<ProtectedRoute><FinanceDashboard /></ProtectedRoute>} />
+    <Route path="/finance/expenses" element={<ProtectedRoute><ExpenseList /></ProtectedRoute>} />
+    <Route path="/finance/expenses/new" element={<ProtectedRoute><ExpenseForm /></ProtectedRoute>} />
+    <Route path="/finance/expenses/:id/edit" element={<ProtectedRoute><ExpenseForm /></ProtectedRoute>} />
+    <Route path="/finance/income" element={<ProtectedRoute><IncomeList /></ProtectedRoute>} />
+    <Route path="/finance/income/new" element={<ProtectedRoute><IncomeForm /></ProtectedRoute>} />
+    <Route path="/finance/income/:id/edit" element={<ProtectedRoute><IncomeForm /></ProtectedRoute>} />
     <Route path="/staff/add" element={<ProtectedRoute><StaffAddWorkflow /></ProtectedRoute>} />
     <Route path="/staff/update" element={<ProtectedRoute><StaffUpdateWorkflow /></ProtectedRoute>} />
     <Route path="/demo" element={<ProtectedRoute><FormComponentsDemo /></ProtectedRoute>} />
