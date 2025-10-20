@@ -28,8 +28,7 @@ const getTabValue = (pathname: string, role?: StaffRole): number => {
     if (pathname.includes('/procedures')) return 3;
     return 0;
   }
-  
-  // Owner - full navigation
+
   if (pathname.includes('/patients')) return 1;
   if (pathname.includes('/doctors')) return 2;
   if (pathname.includes('/appointments')) return 3;

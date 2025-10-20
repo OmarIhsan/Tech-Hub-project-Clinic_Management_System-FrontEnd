@@ -105,10 +105,10 @@ const RoleDashboard: React.FC = () => {
                 names.push('appointments');
                 fetchers.push(treatmentPlanService.getAll());
                 names.push('treatment-plans');
-                // also fetch expenses so dashboard can show expense counts
+
                 fetchers.push(expenseService.getAll());
                 names.push('expenses');
-                // fetch incomes so dashboard can show income totals/counts
+
                 fetchers.push(otherIncomeService.getAll());
                 names.push('incomes');
 
@@ -188,32 +188,34 @@ const RoleDashboard: React.FC = () => {
                             treatmentsCount = countFromResult(tpRes);
                         }
 
-                                // compute expenses count and total amount
                                 const expensesRes = extractByName('expenses');
                                 const expensesCount = countFromResult(expensesRes);
                                 let expensesAmount = 0;
                                 try {
                                     if (expensesRes) {
-                                        // possible shapes: array of expenses, { data: [...] }, or nested envelopes
-                                        let arr: unknown[] = [];
-                                        if (Array.isArray(expensesRes)) arr = expensesRes as unknown[];
-                                        else if (typeof expensesRes === 'object' && Array.isArray((expensesRes as Record<string, unknown>).data)) {
-                                            arr = ((expensesRes as Record<string, unknown>).data as unknown[]);
-                                        } else if (typeof expensesRes === 'object' && Array.isArray((expensesRes as Record<string, unknown>).data?.data)) {
-                                            arr = ((expensesRes as Record<string, unknown>).data as Record<string, unknown>).data as unknown[];
-                                        }
 
-                                        expensesAmount = arr.reduce((sum, item) => {
+                                                let arr: unknown[] = [];
+                                                if (Array.isArray(expensesRes)) arr = expensesRes as unknown[];
+                                                else if (expensesRes && typeof expensesRes === 'object') {
+                                                    const er = expensesRes as Record<string, unknown>;
+                                                    if (Array.isArray(er.data)) arr = er.data as unknown[];
+                                                    else if (er.data && typeof er.data === 'object') {
+                                                        const inner = er.data as Record<string, unknown>;
+                                                        if (Array.isArray(inner.data)) arr = inner.data as unknown[];
+                                                    }
+                                                }
+
+                                        expensesAmount = arr.reduce((sum: number, item: unknown) => {
                                             if (!item || typeof item !== 'object') return sum;
                                             const it = item as Record<string, unknown>;
                                             const a = it.amount ?? it['amount'];
-                                            if (typeof a === 'number') return sum + (a as number);
+                                            if (typeof a === 'number') return sum + a;
                                             if (typeof a === 'string') {
                                                 const parsed = Number(String(a).replace(/,/g, ''));
                                                 return sum + (Number.isFinite(parsed) ? parsed : 0);
                                             }
                                             return sum;
-                                        }, 0);
+                                        }, 0) as number;
                                     }
                                 } catch (err) {
                                     console.error('RoleDashboard: failed to compute expenses amount', err);
@@ -227,13 +229,12 @@ const RoleDashboard: React.FC = () => {
                             appointments: appointmentsCount,
                             treatments: treatmentsCount,
                             expenses: expensesCount,
-                            expensesAmount,
-                            // incomes
+                            expensesAmount: expensesAmount,
+
                             income: 0,
                             incomeAmount: 0,
                         }));
 
-                        // compute income counts and totals from incomes response
                         try {
                             const incomesRes = extractByName('incomes');
                             const incomesCount = countFromResult(incomesRes);
@@ -243,21 +244,26 @@ const RoleDashboard: React.FC = () => {
                                 if (Array.isArray(incomesRes)) arr = incomesRes as unknown[];
                                 else if (typeof incomesRes === 'object' && Array.isArray((incomesRes as Record<string, unknown>).data)) {
                                     arr = ((incomesRes as Record<string, unknown>).data as unknown[]);
-                                } else if (typeof incomesRes === 'object' && Array.isArray((incomesRes as Record<string, unknown>).data?.data)) {
-                                    arr = ((incomesRes as Record<string, unknown>).data as Record<string, unknown>).data as unknown[];
+                                } else if (incomesRes && typeof incomesRes === 'object') {
+                                    const ir = incomesRes as Record<string, unknown>;
+                                    if (Array.isArray(ir.data)) arr = ir.data as unknown[];
+                                    else if (ir.data && typeof ir.data === 'object') {
+                                        const inner = ir.data as Record<string, unknown>;
+                                        if (Array.isArray(inner.data)) arr = inner.data as unknown[];
+                                    }
                                 }
 
-                                incomesAmount = arr.reduce((sum, item) => {
+                                incomesAmount = arr.reduce((sum: number, item: unknown) => {
                                     if (!item || typeof item !== 'object') return sum;
                                     const it = item as Record<string, unknown>;
                                     const a = it.amount ?? it['amount'];
-                                    if (typeof a === 'number') return sum + (a as number);
+                                    if (typeof a === 'number') return sum + a;
                                     if (typeof a === 'string') {
                                         const parsed = Number(String(a).replace(/,/g, ''));
                                         return sum + (Number.isFinite(parsed) ? parsed : 0);
                                     }
                                     return sum;
-                                }, 0);
+                                }, 0) as number;
                             }
 
                             setStats(prev => ({
@@ -270,7 +276,7 @@ const RoleDashboard: React.FC = () => {
                         }
             } catch (err) {
                 console.error('Failed to load dashboard counts', err);
-                setStats({ patients: 0, appointments: 0, treatments: 0, expenses: 0, doctors: 0, staff: 0, income: 0 });
+                setStats({ patients: 0, appointments: 0, treatments: 0, expenses: 0, expensesAmount: 0, income: 0, incomeAmount: 0, doctors: 0, staff: 0 });
             }
         };
 

@@ -1,7 +1,6 @@
 import React from 'react';
 import { TextField, TextFieldProps } from '@mui/material';
 
-
 type FormInputProps = TextFieldProps & {
   error?: boolean | string | null;
   helperText?: React.ReactNode;

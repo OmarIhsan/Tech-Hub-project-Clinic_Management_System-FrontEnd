@@ -3,6 +3,7 @@ import { Box, Paper, TextField, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import MButton from '../../components/MButton';
 import staffAPI from '../../services/staffService';
+import type { CreateStaffData } from '../../services/staffService';
 
 interface StaffCreatePayload {
   full_name: string;
@@ -51,7 +52,15 @@ const StaffAddForm: React.FC = () => {
         password: form.password,
       };
 
-      await staffAPI.create(payload);
+      // staffService.create expects CreateStaffData shape; map local fields to API shape
+      const createPayload = {
+        name: payload.full_name,
+        email: payload.email,
+        phone: payload.phone,
+        role: payload.role,
+        hireDate: payload.hire_date,
+      };
+  await staffAPI.create(createPayload as unknown as CreateStaffData);
       navigate('/staff');
     } catch (err: unknown) {
       const e = err as unknown;

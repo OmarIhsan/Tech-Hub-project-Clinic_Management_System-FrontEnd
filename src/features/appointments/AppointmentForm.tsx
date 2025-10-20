@@ -20,7 +20,6 @@ import { appointmentService, patientAPI, doctorAPI } from '../../services/api';
 import MButton from '../../components/MButton';
 import { Patient, Doctor } from '../../types';
 
-
 const AppointmentForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();

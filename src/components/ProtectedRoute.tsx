@@ -28,7 +28,8 @@ const ProtectedRoute: React.FC<Props> = ({ allowedRoles = [], children }) => {
             sessionStorage.setItem(key, String(now));
             window.location.reload();
           }
-        } catch {
+        } catch (err) {
+          console.error('ProtectedRoute refresh helper failed', err);
         }
       }, [path]);
 

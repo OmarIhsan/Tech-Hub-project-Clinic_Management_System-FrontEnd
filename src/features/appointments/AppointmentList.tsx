@@ -35,7 +35,6 @@ import { appointmentService, doctorAPI, clinicalDocumentService } from '../../se
 import { ClinicalDocument } from '../../types';
 import DocumentUploadDialog from '../clinical-documents/DocumentUploadDialog';
 
-
 const AppointmentList = () => {
   const navigate = useNavigate();
   const [appointments, setAppointments] = useState([]);

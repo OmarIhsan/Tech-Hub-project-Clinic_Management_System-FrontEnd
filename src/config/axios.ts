@@ -19,8 +19,8 @@ api.interceptors.request.use(
         const masked = token ? `***${String(token).slice(-6)}` : null;
         console.debug('[api] Request:', { url: config.url, method: config.method, Authorization: masked });
       }
-    } catch {
-      // ignore
+    } catch (err) {
+      console.error('api request logging failed', err);
     }
     return config;
   },
@@ -30,9 +30,7 @@ api.interceptors.request.use(
 );
 
 api.interceptors.response.use(
-  (response) => {
-    return response;
-  },
+  (response) => response,
   (error: AxiosError) => {
     if (error.response?.status === 401) {
       localStorage.removeItem('accessToken');
@@ -47,8 +45,8 @@ api.interceptors.response.use(
           data: error.response?.data,
         });
       }
-    } catch {
-      // ignore
+    } catch (err) {
+      console.error('api response logging failed', err);
     }
     return Promise.reject(error);
   }

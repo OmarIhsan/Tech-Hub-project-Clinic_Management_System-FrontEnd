@@ -22,7 +22,7 @@ const StatusBadge: React.FC<StatusBadgeProps> = ({ status, size = 'small' }) => 
   const color = STATUS_COLOR_MAP[key] || 'default';
   const label = typeof status === 'string' ? status.replace(/-/g, ' ').toUpperCase() : String(status);
 
-  return <Chip label={label} size={size} color={color as any} />;
+  return <Chip label={label} size={size} color={color as 'default' | 'primary' | 'success' | 'error' | 'warning' | 'info'} />;
 };
 
 export default StatusBadge;

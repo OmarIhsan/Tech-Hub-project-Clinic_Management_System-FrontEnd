@@ -20,6 +20,8 @@ import {
   CheckCircle as CheckIcon
 } from '@mui/icons-material';
 
+type FileItem = { id: number; file: File; name: string; size: number; type: string; status: string };
+
 const FileUpload = ({ 
   onFilesChange, 
   acceptedTypes = ['.pdf', '.jpg', '.jpeg', '.png', '.doc', '.docx'],
@@ -29,7 +31,7 @@ const FileUpload = ({
   disabled = false
 }) => {
   const [dragActive, setDragActive] = useState(false);
-  const [files, setFiles] = useState([]);
+  const [files, setFiles] = useState<FileItem[]>([]);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [error, setError] = useState('');
@@ -55,7 +57,7 @@ const FileUpload = ({
   }, [maxFileSize, acceptedTypes, formatFileSize]);
 
   const handleFiles = useCallback((fileList: FileList | File[]) => {
-    const newFiles: File[] = Array.from(fileList as any) as File[];
+    const newFiles: File[] = Array.isArray(fileList) ? fileList : Array.from(fileList as FileList);
     
     if (!multiple && newFiles.length > 1) {
       setError('Only one file is allowed');
@@ -100,7 +102,7 @@ const FileUpload = ({
     }
   }, [files, maxFiles, multiple, onFilesChange, validateFile]);
 
-  const handleDrag = useCallback((e) => {
+  const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
     if (e.type === "dragenter" || e.type === "dragover") {
@@ -110,7 +112,7 @@ const FileUpload = ({
     }
   }, []);
 
-  const handleDrop = useCallback((e) => {
+  const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
@@ -122,7 +124,7 @@ const FileUpload = ({
     }
   }, [disabled, handleFiles]);
 
-  const handleInputChange = (e) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (disabled) return;
     
     if (e.target.files && e.target.files[0]) {
@@ -130,8 +132,8 @@ const FileUpload = ({
     }
   };
 
-  const removeFile = (fileId) => {
-    const updatedFiles = files.filter(f => f.id !== fileId);
+  const removeFile = (fileId: number) => {
+    const updatedFiles = files.filter((f: FileItem) => f.id !== fileId);
     setFiles(updatedFiles);
     
     if (onFilesChange) {

@@ -44,40 +44,47 @@ const ClinicalDocumentList = () => {
   }, []);
 
   const fetchDocuments = async () => {
-    try {
-      setLoading(true);
-      setError('');
-  const documentsResponse = await clinicalDocumentService.getAll();
-  setDocuments(documentsResponse.data || []);
-    } catch (err) {
-        let message = 'Failed to load documents. Please try again.';
       try {
-        const e = err as unknown as { response?: { status?: number; data?: unknown } };
-        const status = e?.response?.status;
-        const data = e?.response?.data;
-        if (status === 403) {
-          message = 'Access Restricted: Your current role does not have permission to view clinical documents.';
-        } else if (data && typeof data === 'object') {
-          const dObj = data as Record<string, unknown>;
-          const maybeMsg = dObj['message'] ?? dObj['error'];
-          if (typeof maybeMsg === 'string' && maybeMsg.length > 0) message = maybeMsg;
-          else {
-            try {
-              const asStr = JSON.stringify(dObj);
-              if (asStr && asStr !== '{}') message = asStr;
-            } catch {
-              // ignore
+        setLoading(true);
+        setError('');
+        const documentsResponse = await clinicalDocumentService.getAll();
+        const resp = documentsResponse as unknown;
+        if (resp && typeof resp === 'object' && 'data' in (resp as Record<string, unknown>)) {
+          setDocuments(((resp as Record<string, unknown>).data as unknown) as unknown[]);
+        } else if (Array.isArray(resp)) {
+          setDocuments(resp as unknown[]);
+        } else {
+          setDocuments([]);
+        }
+      } catch (err: unknown) {
+        let message = 'Failed to load documents. Please try again.';
+        try {
+          const e = err as unknown as { response?: { status?: number; data?: unknown } };
+          const status = e?.response?.status;
+          const data = e?.response?.data;
+          if (status === 403) {
+            message = 'Access Restricted: Your current role does not have permission to view clinical documents.';
+          } else if (data && typeof data === 'object') {
+            const dObj = data as Record<string, unknown>;
+            const maybeMsg = dObj['message'] ?? dObj['error'];
+            if (typeof maybeMsg === 'string' && maybeMsg.length > 0) message = maybeMsg;
+            else {
+              try {
+                const asStr = JSON.stringify(dObj);
+                if (asStr && asStr !== '{}') message = asStr;
+              } catch (innerErr) {
+                console.error('ClinicalDocumentList: failed to stringify error data', innerErr);
+              }
             }
           }
+        } catch (inner) {
+          console.error('ClinicalDocumentList: error parsing fetch error', inner);
         }
-      } catch {
-        // ignore
+        setError(message);
+        console.error('Failed to fetch documents:', err);
+      } finally {
+        setLoading(false);
       }
-      setError(message);
-      console.error('Failed to fetch documents:', err);
-    } finally {
-      setLoading(false);
-    }
   };
 
   const handleDelete = async (id) => {

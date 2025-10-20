@@ -47,8 +47,6 @@ function AppContent() {
     [isDarkMode]
   );
 
-
-
   const handleLogout = () => {
     logout();
     navigate('/login');

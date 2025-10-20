@@ -130,7 +130,7 @@ const MedicalRecordDetail = () => {
                 Diagnosis
               </Typography>
               <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>
-                {medicalRecord.diagnosis}
+                {typeof medicalRecord.diagnosis === 'string' ? medicalRecord.diagnosis : JSON.stringify(medicalRecord.diagnosis ?? '')}
               </Typography>
             </CardContent>
           </Card>

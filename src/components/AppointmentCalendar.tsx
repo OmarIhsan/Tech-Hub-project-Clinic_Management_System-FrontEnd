@@ -170,7 +170,7 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
         )}
       </Paper>
 
-      {/* Details Dialog */}
+      {}
       <Dialog open={detailsOpen} onClose={() => setDetailsOpen(false)} maxWidth="md" fullWidth>
         <DialogTitle>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

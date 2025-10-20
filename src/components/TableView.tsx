@@ -26,7 +26,7 @@ interface TableViewProps<T> {
   title?: string;
 }
 
-function TableView<T extends Record<string, any>>({
+function TableView<T extends Record<string, unknown>>({
   columns,
   rows,
   rowsPerPageOptions = [5, 10, 25],
@@ -65,10 +65,10 @@ function TableView<T extends Record<string, any>>({
           </TableHead>
           <TableBody>
             {visibleRows.map((row, idx) => (
-              <TableRow key={(row as any).id || idx} hover>
+              <TableRow key={((row as unknown as Record<string, unknown>)['id'] as string | number) || idx} hover>
                 {columns.map((col) => (
                   <TableCell key={String(col.key)}>
-                    {col.render ? col.render(row) : (row as any)[col.key as string]}
+                    {col.render ? col.render(row) : String((row as unknown as Record<string, unknown>)[col.key as string] ?? '')}
                   </TableCell>
                 ))}
               </TableRow>

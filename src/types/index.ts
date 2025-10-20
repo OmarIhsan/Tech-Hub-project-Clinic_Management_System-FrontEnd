@@ -129,7 +129,6 @@ export interface OtherIncome {
   updatedAt?: string;
 }
 
-
 export interface Appointment {
   id: number;
   patient_id: number;

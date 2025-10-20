@@ -1,7 +1,6 @@
 import api from '../config/axios';
 import { TreatmentPlan } from '../types';
 
-
 interface CreateTreatmentPlanData {
   patient_id: number;
   doctor_id: number;

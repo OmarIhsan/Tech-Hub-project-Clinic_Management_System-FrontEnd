@@ -28,7 +28,6 @@ export interface TreatmentStepValidationSchema {
   notes?: string;
 }
 
-
 export class ValidationError extends Error {
   constructor(message: string, public field?: string) {
     super(message);
@@ -428,7 +427,6 @@ export const treatmentStepValidation = {
   },
 };
 
-
 export const validationUtils = {
   
   isValidUUID: (id: string): boolean => {
@@ -459,7 +457,6 @@ export const validationUtils = {
     return input.trim().replace(/\s+/g, ' ');
   },
 };
-
 
 export default {
   appointmentValidation,

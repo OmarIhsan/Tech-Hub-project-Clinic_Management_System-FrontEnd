@@ -35,52 +35,52 @@ const FinanceDashboard = () => {
   const [dateRange, setDateRange] = useState<'month' | 'quarter' | 'year'>('month');
 
   useEffect(() => {
+    const fetchFinancialData = async () => {
+      try {
+        setLoading(true);
+        setError('');
+
+        const [expensesRes, incomeRes, proceduresRes] = await Promise.all([
+          expenseService.getAll(),
+          otherIncomeService.getAll(),
+          procedureService.getAll(),
+        ]);
+
+        const expensesData = expensesRes.data || [];
+        const incomeData = incomeRes.data || [];
+        const proceduresData = proceduresRes.data || [];
+
+        const now = new Date();
+        const startDate = getStartDate(now, dateRange);
+
+        const filteredExpenses = expensesData.filter((exp: Expense) => {
+          const expDate = new Date(exp.expense_date);
+          return expDate >= startDate && expDate <= now;
+        });
+
+        const filteredIncome = incomeData.filter((inc: OtherIncome) => {
+          const incDate = new Date(inc.income_date);
+          return incDate >= startDate && incDate <= now;
+        });
+
+        const filteredProcedures = proceduresData.filter((proc: Procedure) => {
+          const procDate = new Date(proc.procedure_date);
+          return procDate >= startDate && procDate <= now;
+        });
+
+        setExpenses(filteredExpenses);
+        setIncome(filteredIncome);
+        setProcedures(filteredProcedures);
+      } catch (err: unknown) {
+        console.error('Failed to fetch financial data:', err);
+        setError('Failed to load financial data. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchFinancialData();
   }, [dateRange]);
-
-  const fetchFinancialData = async () => {
-    try {
-      setLoading(true);
-      setError('');
-
-      const [expensesRes, incomeRes, proceduresRes] = await Promise.all([
-        expenseService.getAll(),
-        otherIncomeService.getAll(),
-        procedureService.getAll(),
-      ]);
-
-      const expensesData = expensesRes.data || [];
-      const incomeData = incomeRes.data || [];
-      const proceduresData = proceduresRes.data || [];
-
-      const now = new Date();
-      const startDate = getStartDate(now, dateRange);
-
-      const filteredExpenses = expensesData.filter((exp: Expense) => {
-        const expDate = new Date(exp.expense_date);
-        return expDate >= startDate && expDate <= now;
-      });
-
-      const filteredIncome = incomeData.filter((inc: OtherIncome) => {
-        const incDate = new Date(inc.income_date);
-        return incDate >= startDate && incDate <= now;
-      });
-
-      const filteredProcedures = proceduresData.filter((proc: Procedure) => {
-        const procDate = new Date(proc.procedure_date);
-        return procDate >= startDate && procDate <= now;
-      });
-
-      setExpenses(filteredExpenses);
-      setIncome(filteredIncome);
-      setProcedures(filteredProcedures);
-    } catch (err: unknown) {
-      console.error('Failed to fetch financial data:', err);
-      setError('Failed to load financial data. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const getStartDate = (now: Date, range: 'month' | 'quarter' | 'year'): Date => {
     const date = new Date(now);

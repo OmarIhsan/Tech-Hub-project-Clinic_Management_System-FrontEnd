@@ -106,9 +106,9 @@ const DoctorPatientDetail: React.FC = () => {
       const imagesResult = results[4];
       const medicalRecordsResult = results[5];
 
-\      const resolvePatient = (p: unknown): Patient | null => {
-        if (!p) return null;
-\        const v = p as Record<string, unknown>;
+      const resolvePatient = (p: unknown): Patient | null => {
+  if (!p) return null;
+  const v = p as Record<string, unknown>;
         if ('patient' in v && v.patient && typeof v.patient === 'object') return v.patient as Patient;
         if ('data' in v) {
           const d = v.data as Record<string, unknown> | undefined;
@@ -120,17 +120,17 @@ const DoctorPatientDetail: React.FC = () => {
 
       const normalizedPatient = resolvePatient(patientResult.status === 'fulfilled' ? patientResult.value : null);
 
-  const appointmentsData = (extractArray(appointmentsResult) as Appointment[]).filter((a) => a.patient_id === patientId);
+    const appointmentsData = (extractArray(appointmentsResult) as Appointment[]).filter((a) => a.patient_id === patientId);
   const treatmentPlansData = (extractArray(treatmentPlansResult) as TreatmentPlan[]).filter((t) => {
     const r = t as unknown as Record<string, unknown>;
     const pid = (r['patient_id'] ?? (r['patient'] && (r['patient'] as Record<string, unknown>)['patient_id'])) as number | undefined;
     return pid === patientId;
   });
       const documentsData = (extractArray(documentsResult) as ClinicalDocument[]).filter((d) => {
-    const r = d as unknown as Record<string, unknown>;
-    const pid = (r['patient_id'] ?? (r['patient'] && (r['patient'] as Record<string, unknown>)['patient_id'])) as number | undefined;
-    return pid === patientId;
-  });
+        const r = d as unknown as Record<string, unknown>;
+        const pid = (r['patient_id'] ?? (r['patient'] && (r['patient'] as Record<string, unknown>)['patient_id'])) as number | undefined;
+        return pid === patientId;
+      });
       const proceduresResult = results[6];
       let proceduresData: Procedure[] = [];
       if (proceduresResult && proceduresResult.status === 'fulfilled') {
@@ -143,16 +143,16 @@ const DoctorPatientDetail: React.FC = () => {
           return pid === patientId;
         });
       }
-  const imagesData = (extractArray(imagesResult) as PatientImage[]).filter((i) => {
-    const r = i as unknown as Record<string, unknown>;
-    const pid = (r['patient_id'] ?? (r['patient'] && (r['patient'] as Record<string, unknown>)['patient_id'])) as number | undefined;
-    return pid === patientId;
-  });
-  const medicalRecordsData = (extractArray(medicalRecordsResult) as MedicalRecord[]).filter((m) => {
-    const r = m as unknown as Record<string, unknown>;
-    const pid = (r['patient_id'] ?? (r['patient'] && (r['patient'] as Record<string, unknown>)['patient_id'])) as number | undefined;
-    return pid === patientId;
-  });
+      const imagesData = (extractArray(imagesResult) as PatientImage[]).filter((i) => {
+        const r = i as unknown as Record<string, unknown>;
+        const pid = (r['patient_id'] ?? (r['patient'] && (r['patient'] as Record<string, unknown>)['patient_id'])) as number | undefined;
+        return pid === patientId;
+      });
+      const medicalRecordsData = (extractArray(medicalRecordsResult) as MedicalRecord[]).filter((m) => {
+        const r = m as unknown as Record<string, unknown>;
+        const pid = (r['patient_id'] ?? (r['patient'] && (r['patient'] as Record<string, unknown>)['patient_id'])) as number | undefined;
+        return pid === patientId;
+      });
 
       setPatient(normalizedPatient);
       setAppointments(appointmentsData);
@@ -396,7 +396,7 @@ const DoctorPatientDetail: React.FC = () => {
                       Date: {new Date(record.visit_date).toLocaleDateString()}
                     </Typography>
                     <Typography variant="body1" sx={{ mt: 2 }}>
-                      <strong>Diagnosis:</strong> {record.diagnosis}
+                      <strong>Diagnosis:</strong> {typeof record.diagnosis === 'string' ? record.diagnosis : JSON.stringify(record.diagnosis ?? '')}
                     </Typography>
                     {record.prescription && (
                       <Typography variant="body1" sx={{ mt: 1 }}>

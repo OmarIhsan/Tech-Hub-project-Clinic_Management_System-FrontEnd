@@ -27,8 +27,8 @@ const RoleRoute: React.FC<RoleRouteProps> = ({ children, role }) => {
             sessionStorage.setItem(key, String(now));
             window.location.reload();
           }
-        } catch {
-          // ignore
+        } catch (err) {
+          console.error('RoleRoute: failed to handle unauth refresh', err);
         }
       }, [path]);
 

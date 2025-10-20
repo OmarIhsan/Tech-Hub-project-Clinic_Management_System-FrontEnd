@@ -2,7 +2,7 @@ import api from '../config/axios';
 import type { AxiosError } from 'axios';
 import { Staff } from '../types';
 
-interface CreateStaffData {
+export interface CreateStaffData {
   name: string;
   email: string;
   phone: string;

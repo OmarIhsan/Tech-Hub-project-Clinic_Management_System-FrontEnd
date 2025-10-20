@@ -6,9 +6,9 @@ import { patientAPI } from '../../services/patientService';
 
 interface PatientPayload {
   full_name: string;
-  gender?: string;
-  date_of_birth?: string;
-  phone?: string;
+  gender: string;
+  date_of_birth: string;
+  phone: string;
   email?: string;
   address?: string;
 }
@@ -79,7 +79,8 @@ const PatientForm: React.FC = () => {
       }
       navigate('/patients');
     } catch (err: unknown) {
-      const msg = (err as any)?.response?.data?.message || (err as any)?.message || 'Failed to save patient';
+      const apiErr = err as { response?: { data?: { message?: string } }; message?: string } | undefined;
+      const msg = apiErr?.response?.data?.message || apiErr?.message || 'Failed to save patient';
       setError(String(msg));
     } finally {
       setSaving(false);
