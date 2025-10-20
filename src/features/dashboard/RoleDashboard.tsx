@@ -207,6 +207,7 @@ const RoleDashboard: React.FC = () => {
                                 value={stats.staff}
                                 icon={<PersonIcon />}
                                 color="info"
+                                onClick={() => navigate('/staff')}
                             />
                             <StatCard
                                 title="Income Records"
