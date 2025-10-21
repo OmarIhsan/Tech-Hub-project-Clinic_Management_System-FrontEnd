@@ -16,7 +16,7 @@ import {
 import MOutlineButton from '../../components/MOutlineButton';
 import FloatingAddButton from '../../components/FloatingAddButton';
 import { staffService } from '../../services/staffService';
-import { Staff, StaffRole } from '../../types';
+import { Staff } from '../../types';
 
 const StaffList: React.FC = () => {
   const navigate = useNavigate();
@@ -38,9 +38,7 @@ const StaffList: React.FC = () => {
           'data' in result &&
           Array.isArray(result.data)
         ) {
-          staffArray = (result.data as Staff[]).filter(
-            (staff) => staff.role === StaffRole.STAFF
-          );
+          staffArray = result.data as Staff[];
         }
         setStaffMembers(staffArray);
       } catch {

@@ -13,7 +13,7 @@ const FloatingAddButton = ({ onClick, ariaLabel = 'add', ...props }: FloatingAdd
     onClick={onClick}
     sx={{
       position: 'fixed',
-      bottom: 32,
+      bottom: 60,
       right: 32,
       zIndex: 1000,
       ...props.sx,
