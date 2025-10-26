@@ -1,106 +1,45 @@
 # Tech Hub — Clinic Management System (FrontEnd)
 
-This repository contains the frontend for the "Tech Hub — Clinic Management System" — a TypeScript + React (Vite) single-page application that provides user interfaces for patients, staff, doctors, appointments, procedures, finance (income/expenses), clinical documents, medical records, and more.
+This repository contains the frontend application for the "Tech Hub — Clinic Management System" — a TypeScript + React SPA built with Vite and Material UI. The frontend provides role-aware interfaces for clinic staff to manage patients, staff, appointments, procedures, clinical documents, medical records, and finances.
 
-This README mirrors and complements the backend documentation. It explains the project structure, how to run the app locally, how to contribute, and key implementation notes.
+This README documents how the project is organized, how to run and develop the app locally, expected API shapes that the frontend integrates with, and common troubleshooting tips.
 
 ---
 
 ## Table of Contents
 
 - About
-- Features
-- Tech stack
-- Repository structure
+- Quick start
+- Project structure (short)
+- Key files & services
 - Environment & configuration
-- Development (run locally)
-- Linting & type-checking
-- Testing
-- Building for production
-- Useful notes about API shape and payloads
-- Troubleshooting
+- Development workflow
+- Linting, type-checking & formatting
+- Building & deploying
+- API expectations & payload notes
+- Troubleshooting & debugging tips
 - Contributing
+- Next steps & suggestions
+- License & acknowledgements
 
 ---
 
 ## About
 
-The frontend is a TypeScript React application built with Vite and Material-UI (MUI). It consumes a RESTful backend API (see the backend repo) to manage clinic data: patients, staff, doctors, treatment plans, procedures, appointments, clinical documents, and finances.
+The frontend app is a modular React + TypeScript application that talks to a RESTful backend API. It's intended for clinic staff and administrators (roles such as OWNER, DOCTOR, STAFF) and includes role-based routes and UI. The UI library used is Material UI (MUI), and HTTP calls are consolidated through a small service layer using Axios.
 
 Primary goals:
-- Provide responsive, role-aware UI for clinic staff (Owner, Doctor, and Staff roles).
-- Centralize API calls, error handling, and normalization in small service modules.
-- Keep components composable and typed with TypeScript for maintainability.
+- Provide a responsive, role-aware UI for clinic operations.
+- Centralize API calls and normalization in `src/services`.
+- Keep components small, typed, and reusable.
 
 ---
 
-## Features
+## Quick start
 
-- Authentication (login) and role-based routing/guards.
-- Patient list, create, edit and detailed views.
-- Staff management (list, add, update, delete).
-- Appointments (calendar, create, list).
-- Procedures and treatment plans (create/list/manage).
-- Clinical document upload & listing.
-- Patient images upload and gallery.
-- Financials: income and expense forms and lists.
-- Dashboard views for different roles with quick actions.
-
----
-
-## Tech stack
-
-- React 18 + TypeScript
-- Vite
-- Material UI (MUI)
-- Axios for HTTP
-- ESLint + TypeScript for static checks
-- Optional: local JSON DB for demo runs (db.json)
-
----
-
-## Repository structure
-
-Top-level important files:
-
-- `index.html`, `main.tsx` — app entry.
-- `vite.config.ts` — Vite configuration.
-- `package.json` — scripts and dependencies.
-- `tsconfig.json` — TypeScript config.
-
-Key folders:
-
-- `src/`
-  - `assets/` — images and static assets
-  - `components/` — shared UI components (TableView, MButton, ProtectedRoute, FloatingAddButton, etc.)
-  - `config/` — axios instance and central config (`src/config/axios.ts`)
-  - `context/` — React context for auth
-  - `features/` — feature areas (appointments, patients, staff, finance, dashboard, clinical-documents, medical-records, etc.)
-  - `services/` — thin API wrappers (patientService, staffService, expenseService, otherIncomeService, procedureService, clinicalDocumentService, api.ts aggregator)
-  - `hooks/` — small hooks such as `useFetch`
-  - `utils/` — helpers like `formatCurrency`
-  - `types/` — central TypeScript types
-  - `validation/` — client-side validation schemas
-
----
-
-## Environment & configuration
-
-Required environment variables (set in `.env` or shell):
-
-- `VITE_API_BASE_URL` — base URL for the backend API (default: `http://localhost:3000/api/v1`).
-
-Example `.env` for local dev:
-
-```
-VITE_API_BASE_URL=http://localhost:3000/api/v1
-```
-
-Note: Vite requires `VITE_` prefixed env vars to be exposed to the client.
-
----
-
-## Development (run locally)
+Prerequisites:
+- Node.js (>= 16 recommended)
+- npm (or yarn)
 
 1. Install dependencies
 
@@ -108,101 +47,189 @@ Note: Vite requires `VITE_` prefixed env vars to be exposed to the client.
 npm install
 ```
 
-2. Start the development server
+2. Configure environment variables (create a `.env` file at repo root)
+
+```powershell
+# example .env
+VITE_API_BASE_URL=http://localhost:3000/api/v1
+```
+
+3. Run the dev server
 
 ```powershell
 npm run dev
 ```
 
-3. Open the app
+4. Open the app in your browser (Vite prints the URL, typically `http://localhost:5173`).
 
-- Navigate to `http://localhost:5173` (or the URL Vite prints).
-- Ensure your backend API is running and `VITE_API_BASE_URL` points to it.
+Notes:
+- Ensure the backend API is running and reachable from the `VITE_API_BASE_URL` above.
 
 ---
 
-## Linting & type-checking
+## Project structure (short)
 
-- Run ESLint autofix
+Top-level files:
+- `package.json` — scripts & dependencies
+- `vite.config.ts` — Vite configuration
+- `tsconfig.json` — TypeScript settings
+
+Important folders in `src/`:
+- `components/` — shared UI building blocks (TableView, buttons, switches)
+- `config/` — axios instance & HTTP interceptors (`src/config/axios.ts`)
+- `context/` — auth context and provider
+- `features/` — main feature areas (appointments, patients, staff, finance, dashboard, clinical-documents, medical-records, etc.)
+- `services/` — API wrappers & response normalization
+- `hooks/` — small custom hooks (e.g., `useFetch`)
+- `types/` — shared TypeScript types
+- `validation/` — client-side validation schemas
+
+---
+
+## Key files & services (what to look for)
+
+- `src/config/axios.ts` — central Axios instance. Adds Authorization headers, handles 401 behavior (clear tokens/redirect), and provides DEV logging. Modify this when you need global HTTP behavior changes.
+- `src/services/*.ts` — small wrappers around REST endpoints. Each service normalizes varied backend envelope shapes (flat arrays or { data: [...] }). If an API changes, update the corresponding service and `src/types`.
+- `src/context/AuthContext.tsx` — stores auth state and tokens. Used by route guards and request interceptors.
+- `src/features/*/*` — feature-specific pages and forms that call services. Forms generally surface raw server validation messages for visibility.
+- `src/components/TableView.tsx` — generic table used by many list screens.
+
+---
+
+## Environment & configuration
+
+Use a `.env` file for local development. The only required variable for the app is:
+
+- `VITE_API_BASE_URL` — example: `http://localhost:3000/api/v1`
+
+Vite exposes `VITE_*` variables to client-side code. If you add other environment variables, prefix them with `VITE_`.
+
+---
+
+## Development workflow
+
+- Install deps: `npm install`
+- Start dev server: `npm run dev`
+- Hot reloads are handled by Vite; edits to `src/` will update the browser.
+
+Recommended iterative flow when working on API changes:
+1. Update `src/services/<service>.ts` to adapt to backend envelope or field changes.
+2. Update `src/types` with new DTO shapes.
+3. Make UI changes in `src/features/...` and run the app.
+
+Debugging tips:
+- Check browser DevTools network tab for request payloads and server responses.
+- In development the Axios instance logs requests/responses (if DEV-mode logging is enabled). You can add console logs inside `src/config/axios.ts` while debugging.
+
+---
+
+## Linting, formatting & type-checking
+
+The project uses ESLint and TypeScript. Run these before opening a PR.
+
+- Lint & autofix
 
 ```powershell
 npx eslint . --fix --ext .ts,.tsx,.js,.jsx
 ```
 
-- Run TypeScript type-check
+- Type-check only
 
 ```powershell
 npm run type-check
-# (package.json should define `type-check` -> `tsc --noEmit`)
+# (this should run: `tsc --noEmit`)
 ```
 
----
-
-## Testing
-
-There are currently no automated tests included in this repository. We recommend adding unit tests for `services/*` and a small integration/smoke test for the main flows (create patient, create staff, create income/expense).
+Common linter notes:
+- There may be some `react-hooks/exhaustive-deps` warnings in complex hooks (e.g., AppointmentCalendar). Address them by adding the correct dependencies, or wrapping callbacks in `useCallback` where appropriate.
 
 ---
 
-## Building for production
+## Building & deploying
+
+Build for production (generates `dist/`):
 
 ```powershell
 npm run build
 ```
 
-The output will be in `dist/`. Deploy static assets to your chosen static host (Netlify, Vercel, or a static server). Ensure the backend base URL is set appropriately for production.
+Deploy the `dist/` output to static hosting (Netlify, Vercel, S3 + CloudFront, etc.). Ensure the runtime environment or host rewrites routes to `index.html` for client-side routing.
+
+Set the production API base URL using environment variables at build or runtime.
 
 ---
 
-## API shape and payload notes (frontend expectations)
+## API expectations & payload notes
 
-This frontend expects the backend API to follow a mostly consistent shape but some endpoints wrap data in an envelope. Notes gathered from implementation:
+This frontend was implemented to tolerate a few backend envelope shapes but also relies on certain field names for create/update payloads. Key notes:
 
-- Many `GET` list endpoints return an envelope such as:
-  ```json
-  { "statusCode": 200, "data": [ /* array */ ], "timestamp": "..." }
-  ```
-  The services normalize this by checking for `resp.data`.
+- List endpoints often return an envelope like:
 
-- `staff` endpoint (list) is expected to return `data: [ { staff_id, full_name, phone, email, role, hire_date, ... } ]`.
+```json
+{ "statusCode": 200, "data": [ /* array */ ], "timestamp": "..." }
+```
 
-- Creating resources (patients, staff, procedures) may require specific field names. Example staff creation payload used by frontend:
-  ```json
-  {
-    "full_name": "Jon Smith",
-    "phone": "+9647701234567",
-    "email": "jon1.sm2@gmail.com",
-    "hire_date": "2022-09-04",
-    "role": "staff",
-    "password": "securePassword123"
-  }
-  ```
+Services in `src/services` normalize responses to handle both the plain array and the envelope above.
 
-- API error handling: the axios instance logs full response data in DEV; some forms surface raw server JSON for debugging/validation.
+- Notable endpoints used by the frontend (conventional mapping):
+
+  - `GET  /staff` — list staff
+  - `POST /staff` — create staff (payload expects fields like `full_name`, `phone`, `email`, `hire_date`, `role`, `password`)
+  - `GET  /patients`, `POST /patients` — patients
+  - `GET/POST /appointments` — appointments
+  - `GET/POST /procedures` — procedures
+  - `GET/POST /expenses` — expenses (field `expense_date`, `amount`, `reason`, `staff_id`)
+  - `GET/POST /incomes` — incomes (field `income_date`, `amount`, `source`, `staff_id`, optional `patient_id`)
+  - `POST /clinical-documents` — upload clinical documents (multipart/form-data)
+
+These routes are conventions inferred from the frontend code. If your backend uses different endpoints or fields, update the corresponding service file in `src/services`.
+
+Error handling:
+- Many forms surface raw server validation messages (stringified) to help developers troubleshoot 400 responses quickly. You can replace these raw messages with a richer, field-level UI later.
 
 ---
 
-## Troubleshooting
+## Troubleshooting & debugging tips
 
-- 400 responses when creating records: inspect the server response body in the browser console network tab — many backend validation errors are returned as JSON; frontend sometimes stringifies them for display.
-- CORS or network errors: ensure backend `VITE_API_BASE_URL` is correct and the backend allows traffic from the dev server origin.
-- Lint/type errors after mass edits: run the commands under "Linting & type-checking" and follow TypeScript errors to find missing fields or incorrect payload shapes.
+- 400 validation errors when creating resources: inspect the server response body in the network tab. Backend validation errors are often descriptive JSON objects.
+- 401 unauthorized errors: ensure the Authorization token (if used) is present. The AuthContext stores tokens and `src/config/axios.ts` attaches them to requests.
+- CORS/network: confirm the backend accepts requests from the Vite dev server origin.
+- Runtime type issues: run `npm run type-check` and fix TypeScript errors in `src/types` or service return types.
+
+If you run into a runtime bug after the automated comment-stripper/cleanup steps, examine commit history for areas touched by the script and inspect for accidental whitespace/format changes.
 
 ---
 
 ## Contributing
 
-- Create a feature branch from `main`.
+- Branch from `main` and push feature branches named like `feature/<short-description>`.
 - Run lint and type-check locally before opening a PR.
-- If you modify API payloads, update `src/services/*` normalization logic and `src/types`.
+- If you change an API payload or response shape:
+  1. Update the corresponding `src/services/*` normalization.
+  2. Update `src/types` to reflect the DTO changes.
+  3. Update tests (if present) and add a short note in the PR describing the backend contract change.
+
+Recommended PR checks to add (CI):
+- `npm run type-check` (tsc --noEmit)
+- `npx eslint . --ext .ts,.tsx --max-warnings=0`
 
 ---
 
-## Acknowledgements
+## Next steps & suggestions
 
-- Built with React, Vite, TypeScript, and Material-UI.
-- Some automated code changes and cleanup were performed during development to normalize API shapes, remove comments, and enforce lint rules.
+Here are a few small improvements you might want to add next:
+
+1. Add a lightweight CI pipeline (GitHub Actions) to run `type-check` + `eslint` on PRs.
+2. Add a couple of unit tests for `src/services/staffService.ts` and `src/services/patientService.ts`.
+3. Replace raw validation JSON in forms with a user-friendly, field-level error UI.
+4. Add a `routes-to-api.md` that maps frontend routes to backend endpoints (useful when the backend evolves).
+
+If you'd like, I can implement any of the items above — tell me which one to do first.
 
 ---
 
-© Clinic Management System FrontEnd Team - QafLab
+## License & acknowledgements
+
+© Clinic Management System Frontend Team - QafLab
+
+Built with React, Vite, TypeScript, and Material-UI.
