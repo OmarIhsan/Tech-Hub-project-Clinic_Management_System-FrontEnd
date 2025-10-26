@@ -1,218 +1,213 @@
-# Frontend Guide – Clinic Management System (React + TypeScript + MUI)
+# Tech Hub — Clinic Management System (FrontEnd)
 
-**Team Setup:**  
-This guide is tailored for a 2-member team, with tasks c---
+This repository contains the frontend for the "Tech Hub — Clinic Management System" — a TypeScript + React (Vite) single-page application that provides user interfaces for patients, staff, doctors, appointments, procedures, finance (income/expenses), clinical documents, medical records, and more.
 
-## New Features Implemented
+This README mirrors and complements the backend documentation. It explains the project structure, how to run the app locally, how to contribute, and key implementation notes.
 
-### Clinical Documents Management
-- **Route:** `/documents`
-- **Features:**
-  - Document listing with type-based filtering
-  - File upload with drag-and-drop support
-  - Document preview dialog
-  - File type validation (PDF, images, documents)
-  - File size validation (configurable)
-  - Mock data integration
+---
 
-### Reusable Form Components
-- **FormInput:** Enhanced TextField with error handling
-- **SelectField:** Dropdown with options support (string arrays or objects)
-- **DatePicker:** Date input with validation and clear functionality
-- **FileUpload:** Drag-and-drop file upload with progress and validation
+## Table of Contents
 
-### Demo Page
-- **Route:** `/demo`
-- **Purpose:** Showcase all form components with live examples
-- **Features:** Interactive form with real-time data preview
+- About
+- Features
+- Tech stack
+- Repository structure
+- Environment & configuration
+- Development (run locally)
+- Linting & type-checking
+- Testing
+- Building for production
+- Useful notes about API shape and payloads
+- Troubleshooting
+- Contributing
 
-### Usage Examples
+---
 
-```jsx
-// FormInput
-<FormInput
-  label="Patient Name"
-  value={name}
-  onChange={(e) => setName(e.target.value)}
-  error={nameError}
-  required
-/>
+## About
 
-// SelectField
-<SelectField
-  label="Document Type"
-  value={docType}
-  onChange={(e) => setDocType(e.target.value)}
-  options={[
-    { value: 'lab-result', label: 'Lab Result' },
-    { value: 'imaging', label: 'Medical Imaging' }
-  ]}
-/>
+The frontend is a TypeScript React application built with Vite and Material-UI (MUI). It consumes a RESTful backend API (see the backend repo) to manage clinic data: patients, staff, doctors, treatment plans, procedures, appointments, clinical documents, and finances.
 
-// DatePicker
-<DatePicker
-  label="Appointment Date"
-  value={appointmentDate}
-  onChange={setAppointmentDate}
-  minDate={new Date()}
-/>
+Primary goals:
+- Provide responsive, role-aware UI for clinic staff (Owner, Doctor, and Staff roles).
+- Centralize API calls, error handling, and normalization in small service modules.
+- Keep components composable and typed with TypeScript for maintainability.
 
-// FileUpload
-<FileUpload
-  onFilesChange={setFiles}
-  acceptedTypes={['.pdf', '.jpg', '.png']}
-  maxFileSize={10 * 1024 * 1024} // 10MB
-  maxFiles={5}
-  multiple
-/>
+---
+
+## Features
+
+- Authentication (login) and role-based routing/guards.
+- Patient list, create, edit and detailed views.
+- Staff management (list, add, update, delete).
+- Appointments (calendar, create, list).
+- Procedures and treatment plans (create/list/manage).
+- Clinical document upload & listing.
+- Patient images upload and gallery.
+- Financials: income and expense forms and lists.
+- Dashboard views for different roles with quick actions.
+
+---
+
+## Tech stack
+
+- React 18 + TypeScript
+- Vite
+- Material UI (MUI)
+- Axios for HTTP
+- ESLint + TypeScript for static checks
+- Optional: local JSON DB for demo runs (db.json)
+
+---
+
+## Repository structure
+
+Top-level important files:
+
+- `index.html`, `main.tsx` — app entry.
+- `vite.config.ts` — Vite configuration.
+- `package.json` — scripts and dependencies.
+- `tsconfig.json` — TypeScript config.
+
+Key folders:
+
+- `src/`
+  - `assets/` — images and static assets
+  - `components/` — shared UI components (TableView, MButton, ProtectedRoute, FloatingAddButton, etc.)
+  - `config/` — axios instance and central config (`src/config/axios.ts`)
+  - `context/` — React context for auth
+  - `features/` — feature areas (appointments, patients, staff, finance, dashboard, clinical-documents, medical-records, etc.)
+  - `services/` — thin API wrappers (patientService, staffService, expenseService, otherIncomeService, procedureService, clinicalDocumentService, api.ts aggregator)
+  - `hooks/` — small hooks such as `useFetch`
+  - `utils/` — helpers like `formatCurrency`
+  - `types/` — central TypeScript types
+  - `validation/` — client-side validation schemas
+
+---
+
+## Environment & configuration
+
+Required environment variables (set in `.env` or shell):
+
+- `VITE_API_BASE_URL` — base URL for the backend API (default: `http://localhost:3000/api/v1`).
+
+Example `.env` for local dev:
+
+```
+VITE_API_BASE_URL=http://localhost:3000/api/v1
+```
+
+Note: Vite requires `VITE_` prefixed env vars to be exposed to the client.
+
+---
+
+## Development (run locally)
+
+1. Install dependencies
+
+```powershell
+npm install
+```
+
+2. Start the development server
+
+```powershell
+npm run dev
+```
+
+3. Open the app
+
+- Navigate to `http://localhost:5173` (or the URL Vite prints).
+- Ensure your backend API is running and `VITE_API_BASE_URL` points to it.
+
+---
+
+## Linting & type-checking
+
+- Run ESLint autofix
+
+```powershell
+npx eslint . --fix --ext .ts,.tsx,.js,.jsx
+```
+
+- Run TypeScript type-check
+
+```powershell
+npm run type-check
+# (package.json should define `type-check` -> `tsc --noEmit`)
 ```
 
 ---
 
-This split should help both developers work efficiently and avoid stepping on each other's toes, while covering all major milestones for a production-ready frontend.rly separated for each developer per week.
+## Testing
+
+There are currently no automated tests included in this repository. We recommend adding unit tests for `services/*` and a small integration/smoke test for the main flows (create patient, create staff, create income/expense).
 
 ---
 
-| Option                  | Choice                                         |
-|-------------------------|------------------------------------------------|
-| Theme                   | Blue & White (Light) / Blue & Black (Dark)     |
-| Dark/Light Mode Switch  | iOS Switch         **implemented as IOSSwitch**|
-| Font                    | Dubai                                          |
-| Button Style            | MUI Button           **implemented as MButton**|
-| Navigation              | Icon Navigation          **as NavigationIcons**|
-| Floating Add Button     | MUI Floating Action Button**FloatingAddButton**|
+## Building for production
+
+```powershell
+npm run build
+```
+
+The output will be in `dist/`. Deploy static assets to your chosen static host (Netlify, Vercel, or a static server). Ensure the backend base URL is set appropriately for production.
 
 ---
 
-## Week 1: Project Setup & Core Scaffolding
+## API shape and payload notes (frontend expectations)
 
-### Omar Aziz: Project Setup, Routing, and Theme
+This frontend expects the backend API to follow a mostly consistent shape but some endpoints wrap data in an envelope. Notes gathered from implementation:
 
-- [x] **Install dependencies:**  
-  - [x] `@mui/material`, `@mui/icons-material`
-  - [x] `react-router`, `axios`
-- [x] **Create folder structure:**  
+- Many `GET` list endpoints return an envelope such as:
+  ```json
+  { "statusCode": 200, "data": [ /* array */ ], "timestamp": "..." }
   ```
-  src/
-    ├── features/        
-    ├── components/      
-    ├── services/         
-    ├── types/            
-    ├── hooks/            
-    ├── theme/           
-    └── router/           
+  The services normalize this by checking for `resp.data`.
+
+- `staff` endpoint (list) is expected to return `data: [ { staff_id, full_name, phone, email, role, hire_date, ... } ]`.
+
+- Creating resources (patients, staff, procedures) may require specific field names. Example staff creation payload used by frontend:
+  ```json
+  {
+    "full_name": "Jon Smith",
+    "phone": "+9647701234567",
+    "email": "jon1.sm2@gmail.com",
+    "hire_date": "2022-09-04",
+    "role": "staff",
+    "password": "securePassword123"
+  }
   ```
-- [x] **Setup basic routing:**
-  **Routes are being added in router/Router**
-  - [x] Implement React Router for main pages and navigations
-  - [x] Create placeholder pages for each feature
-- [x] **Set up MUI theme:**  
-  - [x] Create `theme/` module for custom MUI theme
 
-### Omar Ihsan: Core Features Scaffolding & Types
-
-- [x] **Scaffold initial feature modules:**  
-  - [x] `features/auth`:  
-    - Create `src/features/auth/`
-    - Add `Login.tsx` with a simple form (email, password, submit button)
-    - Add route `/login` in your router
-  - [x] `features/patients`:  
-    - Create `src/features/patients/`
-    - Add `PatientList.tsx` (table or list of patients)
-    - Add `PatientForm.tsx` (form for create/edit patient)
-    - Add routes `/patients`, `/patients/new`, `/patients/:id/edit`
-  - [x] `features/doctors`:  
-    - Create `src/features/doctors/`
-    - Add `DoctorList.tsx` (table or list of doctors)
-    - Add `DoctorForm.tsx` (form for create/edit doctor)
-    - Add routes `/doctors`, `/doctors/new`, `/doctors/:id/edit`
-- [x] **Create types and interfaces:**  
-  - [x] `types/index.ts`: Patient, Doctor, Appointment, etc.
-- [---] **API service base:**  
-    **Fake right now, must be replaced with actual api server when backend team complete it**
-  - [---] Create `services/api.ts` (Axios instance with interceptors, ***mock data*** for dev)
-- [x] **Set up hooks and basic services:**  
-  - [x] Create folder and starter file for custom hooks
+- API error handling: the axios instance logs full response data in DEV; some forms surface raw server JSON for debugging/validation.
 
 ---
 
-## Week 2: CRUD Screens & API Integration
+## Troubleshooting
 
-### Omar Aziz: Patient & Doctor CRUD + API Layer
-
-- [x] **Build patient screens:**  
-  - [x] List, Create, Edit forms (mock API, PatientList.tsx, PatientForm.tsx)
-- [x] **Build doctor screens:**  
-  - [x] List, Create, Edit forms (mock API, DoctorList.tsx, DoctorForm.tsx)
-- [ ] **Develop API services:**  
- - [x] **Develop API services:**  
-  - [x] `services/patientService.ts` (implemented inside `src/services/api.ts` as `patientAPI`)
-  - [x] `services/doctorService.ts` (implemented inside `src/services/api.ts` as `doctorAPI`)
-  - Note: A mock API is provided at `src/services/api.ts` (exports `patientAPI`, `doctorAPI`, `medicalRecordAPI`, etc.).
-    Use these for local CRUD testing — no backend required for basic development. Open the `/patients` and `/doctors` routes to exercise create/edit/delete flows.
- - [x] **Integrate react-query:**  
-  - [x] For data fetching and caching (QueryClient wired in `src/main.tsx`, components use `@tanstack/react-query`)
-- [ ] **Validation:**  
-  - [ ] Validation schemas for patient/doctor forms (not implemented)
-
-### Omar Ihsan: Appointments, Treatment Plans, Medical Records
-
-- [x] **Appointment screens:**  
-  - [x] List, filter by doctor/status, create form
-- [x] **Treatment plans:**  
-  - [x] Dynamic form steps, status control
-- [x] **Medical records:**  
-  - [x] Diagnosis, findings, treatment
-- [x] **Develop API services:**  
-  - [x] `services/appointmentService.ts`
-  - [x] `services/treatmentPlanService.ts`
-- [---] **Validation:**  
-  - [ ] Validation schemas for appointments/treatment plans (TypeScript-based)
+- 400 responses when creating records: inspect the server response body in the browser console network tab — many backend validation errors are returned as JSON; frontend sometimes stringifies them for display.
+- CORS or network errors: ensure backend `VITE_API_BASE_URL` is correct and the backend allows traffic from the dev server origin.
+- Lint/type errors after mass edits: run the commands under "Linting & type-checking" and follow TypeScript errors to find missing fields or incorrect payload shapes.
 
 ---
 
-## Week 3: Polish, Dashboard, and QA
+## Contributing
 
-### Omar Aziz: Dashboard & UI Components
-
-- [ ] **Dashboard module:**  
-  - [ *] `features/dashboard`: Total patients, upcoming appointments, active plans (not implemented)
-  - [ *] Use MUI `Card`, `Grid`, `Typography`
-  - [* ] (Optional) Add charts with `recharts`
-- [ ] **Reusable UI components:**  
-  - [ ] `components/TableView`: Table with pagination (implemented at `src/components/TableView.tsx`)
-    - Usage: import { TableView } from 'src/components' — provides a simple client-side paginated table.
-  - [ *] `components/StatusBadge`: Appointment/treatment status (not implemented)
-- [ ] **Role-based access wrappers:**  
-  - [ ] Implement wrappers if needed (not implemented)
-
-### Omar Ihsan: File Uploads, Testing, Documentation
-
-- [x] **File uploads:**  
-  - [x] `features/clinical-documents`: Upload + preview (implemented with mock data)
-  - [x] Drag-and-drop, file type validation (implemented with full validation)
-- [x] **Form Components:**  
-  - [x] `components/FormInput` (implemented with error handling)
-  - [x] `SelectField` (implemented with options support)
-  - [x] `DatePicker` (implemented with validation)
-  - [x] `FileUpload` (implemented with drag-and-drop)
-- [ ] **Testing:**  
-  - [ ] Unit tests for key components using `vitest` or `jest` (not implemented)
-  - [ ] Manual test flows: login → create patient → schedule appointment → add treatment plan → upload document (not documented)
- - [x] **Documentation:**  
-  - [x] Update `README.md` with setup, folder structure, and dev guide
-  - [ ] Document API endpoints and screen responsibilities (not completed)
-  - [ ] (Optional) Record Loom walkthrough for future devs (not completed)
+- Create a feature branch from `main`.
+- Run lint and type-check locally before opening a PR.
+- If you modify API payloads, update `src/services/*` normalization logic and `src/types`.
 
 ---
 
-## Collaboration Tips
+## Acknowledgements
 
-  - [ ] **Daily sync:** 15-minute standup or async check-in.
-  - [ ] **Branching:** Each member works on their own feature branches.
-  - [ ] **Code review:** Peer review before merging to main.
-  - [ ] **Issue tracking:** Use GitHub Issues or Projects to track progress/tasks.
+- Built with React, Vite, TypeScript, and Material-UI.
+- Some automated code changes and cleanup were performed during development to normalize API shapes, remove comments, and enforce lint rules.
 
 ---
 
-This split should help both developers work efficiently and avoid stepping on each other’s toes, while covering all major milestones for a production-ready frontend.
+If you'd like I can also:
+- Add a `README` section mapping each frontend route to the backend endpoint it consumes.
+- Add a minimal GitHub Actions CI to run lint + type-check on PRs.
+- Add a small set of unit tests for `staffService` and `patientService`.
+
+Which of those would you like next?
