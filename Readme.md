@@ -205,9 +205,4 @@ This frontend expects the backend API to follow a mostly consistent shape but so
 
 ---
 
-If you'd like I can also:
-- Add a `README` section mapping each frontend route to the backend endpoint it consumes.
-- Add a minimal GitHub Actions CI to run lint + type-check on PRs.
-- Add a small set of unit tests for `staffService` and `patientService`.
-
-Which of those would you like next?
+© Clinic Management System FrontEnd Team - QafLab
