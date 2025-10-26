@@ -19,7 +19,6 @@ This README documents how the project is organized, how to run and develop the a
 - API expectations & payload notes
 - Troubleshooting & debugging tips
 - Contributing
-- Next steps & suggestions
 - License & acknowledgements
 
 ---
@@ -212,19 +211,6 @@ If you run into a runtime bug after the automated comment-stripper/cleanup steps
 Recommended PR checks to add (CI):
 - `npm run type-check` (tsc --noEmit)
 - `npx eslint . --ext .ts,.tsx --max-warnings=0`
-
----
-
-## Next steps & suggestions
-
-Here are a few small improvements you might want to add next:
-
-1. Add a lightweight CI pipeline (GitHub Actions) to run `type-check` + `eslint` on PRs.
-2. Add a couple of unit tests for `src/services/staffService.ts` and `src/services/patientService.ts`.
-3. Replace raw validation JSON in forms with a user-friendly, field-level error UI.
-4. Add a `routes-to-api.md` that maps frontend routes to backend endpoints (useful when the backend evolves).
-
-If you'd like, I can implement any of the items above — tell me which one to do first.
 
 ---
 
