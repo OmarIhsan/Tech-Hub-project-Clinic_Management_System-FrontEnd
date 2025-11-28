@@ -31,9 +31,12 @@ import {
 import { patientAPI, clinicalDocumentService } from '../../services/api';
 import { Patient, ClinicalDocument } from '../../types';
 import DocumentUploadDialog from '../clinical-documents/DocumentUploadDialog';
+import { useAuthContext } from '../../context/useAuthContext';
+import { canCreatePatient, canDeletePatient, canUploadDocument, UserRole } from '../../utils/permissions';
 
 const PatientList = () => {
   const navigate = useNavigate();
+  const { user } = useAuthContext();
   const [actionLoading, setActionLoading] = useState<number | null>(null);
   const [patients, setPatients] = useState<Patient[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -127,20 +130,24 @@ const PatientList = () => {
           Patients Management
         </Typography>
         <Box display="flex" gap={2}>
-          <Button
-            variant="outlined"
-            startIcon={<UploadIcon />}
-            onClick={() => setUploadDialogOpen(true)}
-          >
-            Upload Document
-          </Button>
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={() => navigate('/patients/new')}
-          >
-            Add Patient
-          </Button>
+          {canUploadDocument(user?.role as UserRole | undefined) && (
+            <Button
+              variant="outlined"
+              startIcon={<UploadIcon />}
+              onClick={() => setUploadDialogOpen(true)}
+            >
+              Upload Document
+            </Button>
+          )}
+          {canCreatePatient(user?.role as UserRole | undefined) && (
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={() => navigate('/patients/new')}
+            >
+              Add Patient
+            </Button>
+          )}
         </Box>
       </Box>
 
@@ -211,31 +218,39 @@ const PatientList = () => {
                           <Chip label={patient.blood_group || 'N/A'} size="small" variant="outlined" />
                         </TableCell>
                         <TableCell align="center">
-                          <Button
-                            size="small"
-                            variant="contained"
-                            onClick={() => navigate(`/patients/${patient.patient_id}`)}
-                            sx={{ mr: 1 }}
-                          >
-                            View
-                          </Button>
-                          <IconButton
-                            size="small"
-                            color="primary"
-                            onClick={() => navigate(`/patients/${patient.patient_id}/edit`)}
-                            title="Edit"
-                          >
-                            <EditIcon />
-                          </IconButton>
-                          <IconButton
-                            size="small"
-                            color="error"
-                            onClick={() => handleDelete(patient.patient_id)}
-                            disabled={actionLoading === patient.patient_id}
-                            title="Delete"
-                          >
-                            <DeleteIcon />
-                          </IconButton>
+                          {(canCreatePatient(user?.role as UserRole | undefined) || canDeletePatient(user?.role as UserRole | undefined)) && (
+                            <>
+                              <Button
+                                size="small"
+                                variant="contained"
+                                onClick={() => navigate(`/patients/${patient.patient_id}`)}
+                                sx={{ mr: 1 }}
+                              >
+                                View
+                              </Button>
+                              {canCreatePatient(user?.role as UserRole | undefined) && (
+                                <IconButton
+                                  size="small"
+                                  color="primary"
+                                  onClick={() => navigate(`/patients/${patient.patient_id}/edit`)}
+                                  title="Edit"
+                                >
+                                  <EditIcon />
+                                </IconButton>
+                              )}
+                              {canDeletePatient(user?.role as UserRole | undefined) && (
+                                <IconButton
+                                  size="small"
+                                  color="error"
+                                  onClick={() => handleDelete(patient.patient_id)}
+                                  disabled={actionLoading === patient.patient_id}
+                                  title="Delete"
+                                >
+                                  <DeleteIcon />
+                                </IconButton>
+                              )}
+                            </>
+                          )}
                         </TableCell>
                       </TableRow>
                     ))

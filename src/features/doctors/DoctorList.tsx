@@ -18,6 +18,7 @@ import FloatingAddButton from '../../components/FloatingAddButton';
 import { doctorAPI } from '../../services/api';
 import { Doctor } from '../../types';
 import { useAuthContext } from '../../context/useAuthContext';
+import { canManageDoctors, UserRole } from '../../utils/permissions';
 
 const DoctorList: React.FC = () => {
   const navigate = useNavigate();
@@ -111,7 +112,7 @@ const DoctorList: React.FC = () => {
                 <TableCell>Gender</TableCell>
                 <TableCell>Phone</TableCell>
                 <TableCell>Email</TableCell>
-                <TableCell>Actions</TableCell>
+                {canManageDoctors(user.role as UserRole | undefined) && <TableCell>Actions</TableCell>}
               </TableRow>
             </TableHead>
             <TableBody>
@@ -124,30 +125,32 @@ const DoctorList: React.FC = () => {
                       <TableCell>{doctor.gender ?? '-'}</TableCell>
                       <TableCell>{doctor.phone ?? '-'}</TableCell>
                       <TableCell>{doctor.email ?? '-'}</TableCell>
-                      <TableCell>
-                        <MOutlineButton
-                          component={Link}
-                          to={`/doctors/${id}/edit`}
-                          size="small"
-                          sx={{ mr: 1 }}
-                        >
-                          Edit
-                        </MOutlineButton>
-                        <MOutlineButton
-                          color="error"
-                          size="small"
-                          onClick={() => handleDelete(Number(id))}
-                          disabled={actionLoading === Number(id)}
-                        >
-                          {actionLoading === Number(id) ? 'Deleting...' : 'Delete'}
-                        </MOutlineButton>
-                      </TableCell>
+                      {canManageDoctors(user.role as UserRole | undefined) && (
+                        <TableCell>
+                          <MOutlineButton
+                            component={Link}
+                            to={`/doctors/${id}/edit`}
+                            size="small"
+                            sx={{ mr: 1 }}
+                          >
+                            Edit
+                          </MOutlineButton>
+                          <MOutlineButton
+                            color="error"
+                            size="small"
+                            onClick={() => handleDelete(Number(id))}
+                            disabled={actionLoading === Number(id)}
+                          >
+                            {actionLoading === Number(id) ? 'Deleting...' : 'Delete'}
+                          </MOutlineButton>
+                        </TableCell>
+                      )}
                     </TableRow>
                   );
                 })
               ) : (
                 <TableRow>
-                  <TableCell colSpan={5} align="center">
+                  <TableCell colSpan={canManageDoctors(user.role as UserRole | undefined) ? 5 : 4} align="center">
                     No doctors found.
                   </TableCell>
                 </TableRow>
@@ -156,11 +159,12 @@ const DoctorList: React.FC = () => {
           </Table>
         </Paper>
       </Box>
-
-      <FloatingAddButton
-        onClick={() => navigate('/doctors/new')}
-        ariaLabel="Add new doctor"
-      />
+  {canManageDoctors(user.role as UserRole | undefined) && (
+        <FloatingAddButton
+          onClick={() => navigate('/doctors/new')}
+          ariaLabel="Add new doctor"
+        />
+      )}
     </Container>
   );
 };

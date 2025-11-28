@@ -9,10 +9,12 @@ import {
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { authAPI } from '../../services/api';
+import { useAuthContext } from '../../context/useAuthContext';
 import MButton from '../../components/MButton';
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
+  const auth = useAuthContext();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -23,8 +25,10 @@ const Login: React.FC = () => {
     setError(null);
     setLoading(true);
     try {
-      await authAPI.login({ email, password });
-      navigate('/');
+      const authData = await authAPI.login({ email, password });
+      auth.login(authData.user, authData.access_token);
+      auth.refreshAfterLogin();
+      navigate('/dashboard');
     } catch (err: unknown) {
       const axiosErr = err as unknown;
   const status = (axiosErr as { response?: { status?: number; data?: unknown } })?.response?.status;

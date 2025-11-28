@@ -8,12 +8,16 @@ export function useAuthContext(): AuthContextType {
       console.warn('useAuthContext called outside of an AuthProvider - returning development fallback.');
       return {
         user: null,
-        login: async () => ({ success: false, error: 'Auth provider unavailable (dev fallback)' }),
+        token: null,
+        login: () => {},
+        loginWithCredentials: async () => ({ success: false, error: 'Auth provider unavailable (dev fallback)' }),
         register: async () => ({ success: false, error: 'Auth provider unavailable (dev fallback)' }),
         logout: () => {},
-        isAuthenticated: false,
+        isAuthenticated: () => false,
         loading: false,
         isAdmin: () => false,
+        getCurrentUser: () => null,
+        refreshAfterLogin: () => {},
       } as AuthContextType;
     }
 

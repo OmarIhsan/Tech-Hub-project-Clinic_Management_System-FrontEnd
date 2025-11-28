@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import type { ReactNode } from 'react';
 import { authAPI } from '../services/api';
 import { Staff, StaffRole } from '../types';
@@ -17,7 +17,9 @@ export interface User {
 
 export interface AuthContextType {
   user: User | null;
-  login: (email: string, password: string) => Promise<AuthResult>;
+  token: string | null;
+  login: (user: Staff, token: string) => void;
+  loginWithCredentials: (email: string, password: string) => Promise<AuthResult>;
   register: (
     email: string,
     password: string,
@@ -26,9 +28,11 @@ export interface AuthContextType {
     role?: StaffRole
   ) => Promise<AuthResult>;
   logout: () => void;
-  isAuthenticated: boolean;
+  isAuthenticated: () => boolean;
   loading: boolean;
   isAdmin: () => boolean;
+  getCurrentUser: () => User | null;
+  refreshAfterLogin: () => void;
 }
 
 interface AuthProviderProps {
@@ -40,12 +44,13 @@ export { AuthContext as LocalAuthContext };
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    const token = localStorage.getItem('accessToken');
+    const storedToken = localStorage.getItem('accessToken');
     const userData = localStorage.getItem('user');
-    if (token && userData) {
+    if (storedToken && userData) {
       try {
         const parsedUser: Staff = JSON.parse(userData);
         setUser({
@@ -54,6 +59,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           name: parsedUser.full_name,
           role: parsedUser.role,
         });
+        setToken(storedToken);
       } catch (error) {
         console.error('Error parsing user data:', error);
         localStorage.removeItem('accessToken');
@@ -63,20 +69,23 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setLoading(false);
   }, []);
 
-  const login = async (email: string, password: string): Promise<AuthResult> => {
+  const login = useCallback((staff: Staff, accessToken: string) => {
+    setUser({
+      staff_id: staff.staff_id,
+      email: staff.email,
+      name: staff.full_name,
+      role: staff.role,
+    });
+    setToken(accessToken);
+    localStorage.setItem('accessToken', accessToken);
+    localStorage.setItem('user', JSON.stringify(staff));
+  }, []);
+
+  const loginWithCredentials = async (email: string, password: string): Promise<AuthResult> => {
     try {
       setLoading(true);
-
       const response = await authAPI.login({ email, password });
-      
-      const userObj: User = {
-        staff_id: response.user.staff_id,
-        email: response.user.email,
-        name: response.user.full_name,
-        role: response.user.role,
-      };
-
-      setUser(userObj);
+      login(response.user, response.access_token);
       return { success: true };
     } catch (error: unknown) {
       console.error('Login error:', error);
@@ -105,15 +114,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         phone,
         role,
       });
-
-      const userObj: User = {
-        staff_id: response.user.staff_id,
-        email: response.user.email,
-        name: response.user.full_name,
-        role: response.user.role,
-      };
-
-      setUser(userObj);
+      login(response.user, response.access_token);
       return { success: true };
     } catch (error: unknown) {
       console.error('Registration error:', error);
@@ -128,20 +129,30 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const logout = (): void => {
     authAPI.logout();
     setUser(null);
+    setToken(null);
   };
 
-  const isAdmin = (): boolean => {
-    return user?.role === StaffRole.OWNER;
-  };
+  const isAdmin = (): boolean => user?.role === StaffRole.OWNER;
+
+  const isAuthenticated = useCallback(() => !!user && !!token, [user, token]);
+
+  const getCurrentUser = useCallback(() => user, [user]);
+
+  const refreshAfterLogin = useCallback(() => {
+  }, []);
 
   const value: AuthContextType = {
     user,
+    token,
     login,
+    loginWithCredentials,
     register,
     logout,
-    isAuthenticated: !!user,
+    isAuthenticated,
     loading,
     isAdmin,
+    getCurrentUser,
+    refreshAfterLogin,
   };
 
   return React.createElement(AuthContext.Provider, { value }, children);

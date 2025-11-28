@@ -39,31 +39,45 @@ const StatCard: React.FC<StatCardProps> = ({
     onClick,
 }) => (
     <Paper
-        sx={{
+        sx={(theme) => ({
             cursor: onClick ? 'pointer' : 'default',
             transition: 'transform 0.2s',
             '&:hover': onClick ? { transform: 'translateY(-4px)' } : {},
-        }}
+            backgroundColor: theme.palette.mode === 'dark' ? theme.palette.background.paper : theme.palette.background.default,
+        })}
         onClick={onClick}
         elevation={1}
     >
         <Box sx={{ display: 'flex', alignItems: 'center', p: 2 }}>
-            <Box
-                sx={{
+                    <Box
+                        sx={(theme) => ({
                     p: 1,
                     borderRadius: 1,
-                    bgcolor: `${color}.lighter`,
-                    color: `${color}.main`,
                     mr: 2,
-                }}
+                            backgroundColor:
+                                color === 'primary' ? theme.palette.primary.light :
+                                color === 'secondary' ? theme.palette.secondary.light :
+                                color === 'info' ? theme.palette.info.light :
+                                color === 'success' ? theme.palette.success.light :
+                                color === 'warning' ? theme.palette.warning.light :
+                                color === 'error' ? theme.palette.error.light : theme.palette.primary.light,
+                            color:
+                                color === 'primary' ? theme.palette.primary.main :
+                                color === 'secondary' ? theme.palette.secondary.main :
+                                color === 'info' ? theme.palette.info.main :
+                                color === 'success' ? theme.palette.success.main :
+                                color === 'warning' ? theme.palette.warning.main :
+                                color === 'error' ? theme.palette.error.main : theme.palette.primary.main,
+                    border: `1px solid ${theme.palette.divider}`,
+                })}
             >
                 {icon}
             </Box>
             <Box>
-                <Typography variant="h4" fontWeight={600}>
+                <Typography variant="h4" fontWeight={600} color="text.primary">
                     {value}
                 </Typography>
-                <Typography variant="body2" color="textSecondary">
+                <Typography variant="body2" color="text.secondary">
                     {title}
                 </Typography>
             </Box>
@@ -106,11 +120,12 @@ const RoleDashboard: React.FC = () => {
                 fetchers.push(treatmentPlanService.getAll());
                 names.push('treatment-plans');
 
-                fetchers.push(expenseService.getAll());
-                names.push('expenses');
-
-                fetchers.push(otherIncomeService.getAll());
-                names.push('incomes');
+                if (user && user.role === StaffRole.OWNER) {
+                    fetchers.push(expenseService.getAll());
+                    names.push('expenses');
+                    fetchers.push(otherIncomeService.getAll());
+                    names.push('incomes');
+                }
 
                 const settled = await Promise.allSettled(fetchers);
                 const extractByName = (name: string) => {
@@ -188,92 +203,86 @@ const RoleDashboard: React.FC = () => {
                             treatmentsCount = countFromResult(tpRes);
                         }
 
-                                const expensesRes = extractByName('expenses');
-                                const expensesCount = countFromResult(expensesRes);
+                                let expensesCount = 0;
                                 let expensesAmount = 0;
-                                try {
-                                    if (expensesRes) {
-
-                                                let arr: unknown[] = [];
-                                                if (Array.isArray(expensesRes)) arr = expensesRes as unknown[];
-                                                else if (expensesRes && typeof expensesRes === 'object') {
-                                                    const er = expensesRes as Record<string, unknown>;
-                                                    if (Array.isArray(er.data)) arr = er.data as unknown[];
-                                                    else if (er.data && typeof er.data === 'object') {
-                                                        const inner = er.data as Record<string, unknown>;
-                                                        if (Array.isArray(inner.data)) arr = inner.data as unknown[];
-                                                    }
+                                let incomesCount = 0;
+                                let incomesAmount = 0;
+                                if (user?.role === StaffRole.OWNER) {
+                                    const expensesRes = extractByName('expenses');
+                                    expensesCount = countFromResult(expensesRes);
+                                    try {
+                                        if (expensesRes) {
+                                            let arr: unknown[] = [];
+                                            if (Array.isArray(expensesRes)) arr = expensesRes as unknown[];
+                                            else if (expensesRes && typeof expensesRes === 'object') {
+                                                const er = expensesRes as Record<string, unknown>;
+                                                if (Array.isArray(er.data)) arr = er.data as unknown[];
+                                                else if (er.data && typeof er.data === 'object') {
+                                                    const inner = er.data as Record<string, unknown>;
+                                                    if (Array.isArray(inner.data)) arr = inner.data as unknown[];
                                                 }
-
-                                        expensesAmount = arr.reduce((sum: number, item: unknown) => {
-                                            if (!item || typeof item !== 'object') return sum;
-                                            const it = item as Record<string, unknown>;
-                                            const a = it.amount ?? it['amount'];
-                                            if (typeof a === 'number') return sum + a;
-                                            if (typeof a === 'string') {
-                                                const parsed = Number(String(a).replace(/,/g, ''));
-                                                return sum + (Number.isFinite(parsed) ? parsed : 0);
                                             }
-                                            return sum;
-                                        }, 0) as number;
+                                            expensesAmount = arr.reduce((sum: number, item: unknown) => {
+                                                if (!item || typeof item !== 'object') return sum;
+                                                const it = item as Record<string, unknown>;
+                                                const a = it.amount ?? it['amount'];
+                                                if (typeof a === 'number') return sum + a;
+                                                if (typeof a === 'string') {
+                                                    const parsed = Number(String(a).replace(/,/g, ''));
+                                                    return sum + (Number.isFinite(parsed) ? parsed : 0);
+                                                }
+                                                return sum;
+                                            }, 0) as number;
+                                        }
+                                    } catch (err) {
+                                        console.error('RoleDashboard: failed to compute expenses amount', err);
                                     }
-                                } catch (err) {
-                                    console.error('RoleDashboard: failed to compute expenses amount', err);
+
+                                    try {
+                                        const incomesRes = extractByName('incomes');
+                                        incomesCount = countFromResult(incomesRes);
+                                        if (incomesRes) {
+                                            let arr: unknown[] = [];
+                                            if (Array.isArray(incomesRes)) arr = incomesRes as unknown[];
+                                            else if (typeof incomesRes === 'object' && Array.isArray((incomesRes as Record<string, unknown>).data)) {
+                                                arr = ((incomesRes as Record<string, unknown>).data as unknown[]);
+                                            } else if (incomesRes && typeof incomesRes === 'object') {
+                                                const ir = incomesRes as Record<string, unknown>;
+                                                if (Array.isArray(ir.data)) arr = ir.data as unknown[];
+                                                else if (ir.data && typeof ir.data === 'object') {
+                                                    const inner = ir.data as Record<string, unknown>;
+                                                    if (Array.isArray(inner.data)) arr = inner.data as unknown[];
+                                                }
+                                            }
+                                            incomesAmount = arr.reduce((sum: number, item: unknown) => {
+                                                if (!item || typeof item !== 'object') return sum;
+                                                const it = item as Record<string, unknown>;
+                                                const a = it.amount ?? it['amount'];
+                                                if (typeof a === 'number') return sum + a;
+                                                if (typeof a === 'string') {
+                                                    const parsed = Number(String(a).replace(/,/g, ''));
+                                                    return sum + (Number.isFinite(parsed) ? parsed : 0);
+                                                }
+                                                return sum;
+                                            }, 0) as number;
+                                        }
+                                    } catch (err) {
+                                        console.error('RoleDashboard: failed to compute incomes amount', err);
+                                    }
                                 }
 
-                        setStats(prev => ({
-                            ...prev,
-                            patients: patientsCount,
-                            doctors: doctorsCount,
-                            staff: staffCount,
-                            appointments: appointmentsCount,
-                            treatments: treatmentsCount,
-                            expenses: expensesCount,
-                            expensesAmount: expensesAmount,
-
-                            income: 0,
-                            incomeAmount: 0,
-                        }));
-
-                        try {
-                            const incomesRes = extractByName('incomes');
-                            const incomesCount = countFromResult(incomesRes);
-                            let incomesAmount = 0;
-                            if (incomesRes) {
-                                let arr: unknown[] = [];
-                                if (Array.isArray(incomesRes)) arr = incomesRes as unknown[];
-                                else if (typeof incomesRes === 'object' && Array.isArray((incomesRes as Record<string, unknown>).data)) {
-                                    arr = ((incomesRes as Record<string, unknown>).data as unknown[]);
-                                } else if (incomesRes && typeof incomesRes === 'object') {
-                                    const ir = incomesRes as Record<string, unknown>;
-                                    if (Array.isArray(ir.data)) arr = ir.data as unknown[];
-                                    else if (ir.data && typeof ir.data === 'object') {
-                                        const inner = ir.data as Record<string, unknown>;
-                                        if (Array.isArray(inner.data)) arr = inner.data as unknown[];
-                                    }
-                                }
-
-                                incomesAmount = arr.reduce((sum: number, item: unknown) => {
-                                    if (!item || typeof item !== 'object') return sum;
-                                    const it = item as Record<string, unknown>;
-                                    const a = it.amount ?? it['amount'];
-                                    if (typeof a === 'number') return sum + a;
-                                    if (typeof a === 'string') {
-                                        const parsed = Number(String(a).replace(/,/g, ''));
-                                        return sum + (Number.isFinite(parsed) ? parsed : 0);
-                                    }
-                                    return sum;
-                                }, 0) as number;
-                            }
-
-                            setStats(prev => ({
-                                ...prev,
-                                income: incomesCount,
-                                incomeAmount: incomesAmount,
-                            }));
-                        } catch (err) {
-                            console.error('RoleDashboard: failed to compute incomes amount', err);
-                        }
+                                setStats(prev => ({
+                                    ...prev,
+                                    patients: patientsCount,
+                                    doctors: doctorsCount,
+                                    staff: staffCount,
+                                    appointments: appointmentsCount,
+                                    treatments: treatmentsCount,
+                                    expenses: expensesCount,
+                                    expensesAmount,
+                                    income: incomesCount,
+                                    incomeAmount: incomesAmount,
+                                }));
             } catch (err) {
                 console.error('Failed to load dashboard counts', err);
                 setStats({ patients: 0, appointments: 0, treatments: 0, expenses: 0, expensesAmount: 0, income: 0, incomeAmount: 0, doctors: 0, staff: 0 });
@@ -338,13 +347,7 @@ const RoleDashboard: React.FC = () => {
                                 color="info"
                                 onClick={() => navigate('/appointments')}
                             />
-                            <StatCard
-                                title="Income (Total)"
-                                value={formatCurrency(stats.incomeAmount || 0, 'USD')}
-                                icon={<AssignmentIcon />}
-                                color="success"
-                                onClick={() => navigate('/finance/income')}
-                            />
+                            {/* Financial stats removed for Doctor per permissions matrix */}
                             <StatCard
                                 title="Expenses (Total)"
                                 value={formatCurrency(stats.expensesAmount || 0, 'USD')}
@@ -709,12 +712,7 @@ const RoleDashboard: React.FC = () => {
                                 color="info"
                                 onClick={() => navigate('/appointments')}
                             />
-                            <StatCard
-                                title="Expenses (View Only)"
-                                value={stats.expenses}
-                                icon={<AttachMoneyIcon />}
-                                color="warning"
-                            />
+                            {/* Staff should not view financial stats; removed expenses card */}
                         </Box>
                         <Box sx={{ mt: 4 }}>
                             <Box
@@ -795,7 +793,14 @@ const RoleDashboard: React.FC = () => {
     };
 
     return (
-        <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+        <Container
+            maxWidth="lg"
+            sx={(theme) => ({
+                mt: 4,
+                mb: 4,
+                color: theme.palette.text.primary,
+            })}
+        >
             {renderDashboardContent()}
         </Container>
     );

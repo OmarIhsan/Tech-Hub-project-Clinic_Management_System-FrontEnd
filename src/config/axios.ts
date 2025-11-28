@@ -30,7 +30,22 @@ api.interceptors.request.use(
 );
 
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    try {
+      const d = response.data;
+      if (d && typeof d === 'object' && 'statusCode' in d && 'data' in d) {
+        const envelope = d as { statusCode: number; data: unknown; timestamp?: string };
+        response.data = {
+          statusCode: envelope.statusCode,
+          timestamp: envelope.timestamp,
+          data: envelope.data,
+        };
+      }
+    } catch (err) {
+      console.error('axios envelope normalization failed', err);
+    }
+    return response;
+  },
   (error: AxiosError) => {
     if (error.response?.status === 401) {
       localStorage.removeItem('accessToken');

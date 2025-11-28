@@ -6,140 +6,69 @@ import EventNoteIcon from '@mui/icons-material/EventNote';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import DescriptionIcon from '@mui/icons-material/Description';
 import HomeIcon from '@mui/icons-material/Home';
-import AddIcon from '@mui/icons-material/Add';
-import EditIcon from '@mui/icons-material/Edit';
 import MedicalServicesIcon from '@mui/icons-material/MedicalServices';
+import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuthContext } from '../context/useAuthContext';
-import { StaffRole } from '../types';
+import { getAvailableRoutes, UserRole } from '../utils/permissions';
 
-const getTabValue = (pathname: string, role?: StaffRole): number => {
-  if (pathname === '/' || pathname.includes('/dashboard')) return 0;
-  
-  if (role === StaffRole.STAFF) {
-    if (pathname.includes('/staff/add')) return 1;
-    if (pathname.includes('/staff/update')) return 2;
-    return 0;
-  }
-  
-  if (role === StaffRole.DOCTOR) {
-    if (pathname.includes('/patients')) return 1;
-    if (pathname.includes('/appointments')) return 2;
-    if (pathname.includes('/procedures')) return 3;
-    return 0;
-  }
+interface RouteMeta {
+  path: string;
+  label: string;
+  icon: React.ReactNode;
+}
 
-  if (pathname.includes('/patients')) return 1;
-  if (pathname.includes('/doctors')) return 2;
-  if (pathname.includes('/appointments')) return 3;
-  if (pathname.includes('/treatment-plans')) return 4;
-  if (pathname.includes('/documents')) return 5;
-  
-  return 0;
+const ROUTE_ICONS: Record<string, RouteMeta> = {
+  '/': { path: '/', label: 'Home', icon: <HomeIcon /> },
+  '/dashboard': { path: '/dashboard', label: 'Home', icon: <HomeIcon /> },
+  '/patients': { path: '/patients', label: 'Patients', icon: <PeopleIcon /> },
+  '/appointments': { path: '/appointments', label: 'Appointments', icon: <EventNoteIcon /> },
+  '/doctors': { path: '/doctors', label: 'Doctors', icon: <LocalHospitalIcon /> },
+  '/treatment-plans': { path: '/treatment-plans', label: 'Treatments', icon: <AssignmentIcon /> },
+  '/clinical-documents': { path: '/clinical-documents', label: 'Documents', icon: <DescriptionIcon /> },
+  '/procedures': { path: '/procedures', label: 'Procedures', icon: <MedicalServicesIcon /> },
+  '/staff': { path: '/staff', label: 'Staff', icon: <LocalHospitalIcon /> },
+  '/finance': { path: '/finance', label: 'Finance', icon: <AttachMoneyIcon /> },
 };
 
-const NavigationIcons = () => {
+const NavigationIcons: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuthContext();
-  const [value, setValue] = React.useState(getTabValue(location.pathname, user?.role));
+
+  const allowedRoutePaths = React.useMemo(() => {
+    const routes = getAvailableRoutes(user?.role as UserRole | undefined);
+    return routes.map(r => (r === '/dashboard' ? '/' : r));
+  }, [user?.role]);
+
+  const navItems: RouteMeta[] = React.useMemo(() => {
+    return allowedRoutePaths
+      .filter(p => p in ROUTE_ICONS)
+      .map(p => ROUTE_ICONS[p]);
+  }, [allowedRoutePaths]);
+
+  const currentIndex = navItems.findIndex(i => location.pathname === i.path || (i.path === '/' && location.pathname === '/dashboard'));
+  const [value, setValue] = React.useState(currentIndex >= 0 ? currentIndex : 0);
 
   React.useEffect(() => {
-    setValue(getTabValue(location.pathname, user?.role));
-  }, [location.pathname, user?.role]);
+    const idx = navItems.findIndex(i => location.pathname === i.path || (i.path === '/' && location.pathname === '/dashboard'));
+    setValue(idx >= 0 ? idx : 0);
+  }, [location.pathname, navItems]);
 
-  const handleChange = (event: React.SyntheticEvent, newValue: number) => {
+  const handleChange = (_event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
-    
-    if (newValue === 0) {
-      navigate('/');
-      return;
-    }
-    
-    if (user?.role === StaffRole.STAFF) {
-      switch (newValue) {
-        case 1:
-          navigate('/staff/add');
-          break;
-        case 2:
-          navigate('/staff/update');
-          break;
-      }
-      return;
-    }
-    
-    if (user?.role === StaffRole.DOCTOR) {
-      switch (newValue) {
-        case 1:
-          navigate('/patients');
-          break;
-        case 2:
-          navigate('/appointments');
-          break;
-        case 3:
-          navigate('/procedures');
-          break;
-      }
-      return;
-    }
-    
-    switch (newValue) {
-      case 1:
-        navigate('/patients');
-        break;
-      case 2:
-        navigate('/doctors');
-        break;
-      case 3:
-        navigate('/appointments');
-        break;
-      case 4:
-        navigate('/treatment-plans');
-        break;
-      case 5:
-        navigate('/documents');
-        break;
-    }
+    const item = navItems[newValue];
+    if (item) navigate(item.path);
   };
 
-  const renderNavigation = () => {
-    if (user?.role === StaffRole.STAFF) {
-      return (
-        <>
-          <BottomNavigationAction label="Home" icon={<HomeIcon />} />
-          <BottomNavigationAction label="Add" icon={<AddIcon />} />
-          <BottomNavigationAction label="Update" icon={<EditIcon />} />
-        </>
-      );
-    }
-    
-    if (user?.role === StaffRole.DOCTOR) {
-      return (
-        <>
-          <BottomNavigationAction label="Home" icon={<HomeIcon />} />
-          <BottomNavigationAction label="Patients" icon={<PeopleIcon />} />
-          <BottomNavigationAction label="Appointments" icon={<EventNoteIcon />} />
-          <BottomNavigationAction label="Procedures" icon={<MedicalServicesIcon />} />
-        </>
-      );
-    }
-    
-    return (
-      <>
-        <BottomNavigationAction label="Home" icon={<HomeIcon />} />
-        <BottomNavigationAction label="Patients" icon={<PeopleIcon />} />
-        <BottomNavigationAction label="Doctors" icon={<LocalHospitalIcon />} />
-        <BottomNavigationAction label="Appointments" icon={<EventNoteIcon />} />
-        <BottomNavigationAction label="Treatments" icon={<AssignmentIcon />} />
-        <BottomNavigationAction label="Documents" icon={<DescriptionIcon />} />
-      </>
-    );
-  };
+  if (!user) return null;
 
   return (
     <Paper sx={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 1000 }} elevation={3}>
       <BottomNavigation value={value} onChange={handleChange} showLabels>
-        {renderNavigation()}
+        {navItems.map(item => (
+          <BottomNavigationAction key={item.path} label={item.label} icon={item.icon} />
+        ))}
       </BottomNavigation>
     </Paper>
   );
