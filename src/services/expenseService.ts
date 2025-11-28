@@ -26,7 +26,8 @@ export const expenseService = {
   return { data: Array.isArray(data) ? (data as Expense[]) : [] };
     } catch (error) {
       console.error('Error fetching expenses:', error);
-      throw new Error('Failed to fetch expenses');
+      // Rethrow original error so callers can inspect response (status, data)
+      throw error;
     }
   },
 
@@ -42,6 +43,18 @@ export const expenseService = {
     }
   },
 
+  getMine: async (): Promise<{ data: Expense[] }> => {
+    try {
+      const response = await api.get('/expenses/mine');
+      const resp = response.data;
+      const data = resp && typeof resp === 'object' && 'data' in resp ? resp.data : resp;
+      return { data: Array.isArray(data) ? (data as Expense[]) : [] };
+    } catch (error) {
+      console.error('Error fetching current user expenses:', error);
+      throw error;
+    }
+  },
+
   create: async (expenseData: CreateExpenseData): Promise<{ data: Expense }> => {
     try {
   const response = await api.post('/expenses', expenseData);
@@ -50,7 +63,7 @@ export const expenseService = {
   return { data: data as Expense };
     } catch (error) {
       console.error('Error creating expense:', error);
-      throw new Error('Failed to create expense');
+      throw error;
     }
   },
 
@@ -62,6 +75,7 @@ export const expenseService = {
   return { data: data as Expense };
     } catch (error) {
       console.error('Error updating expense:', error);
+      // Rethrow original error so callers can inspect server response
       throw error;
     }
   },

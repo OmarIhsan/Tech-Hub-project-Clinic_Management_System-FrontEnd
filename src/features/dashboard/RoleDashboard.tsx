@@ -22,6 +22,7 @@ import { patientAPI } from '../../services/patientService';
 import { doctorAPI, appointmentService, treatmentPlanService, expenseService, otherIncomeService } from '../../services/api';
 import { formatCurrency } from '../../utils/format';
 import staffAPI from '../../services/staffService';
+import { Expense } from '../../types';
 
 type StatCardProps = {
     title: string;
@@ -120,8 +121,11 @@ const RoleDashboard: React.FC = () => {
                 fetchers.push(treatmentPlanService.getAll());
                 names.push('treatment-plans');
 
-                const expenseParams = user?.role === StaffRole.STAFF && user?.staff_id ? { staff_id: user.staff_id } : undefined;
-                fetchers.push(expenseService.getAll(expenseParams));
+                if (user?.role === StaffRole.STAFF) {
+                    fetchers.push(expenseService.getMine());
+                } else {
+                    fetchers.push(expenseService.getAll());
+                }
                 names.push('expenses');
                 if (user && user.role === StaffRole.OWNER) {
                     fetchers.push(otherIncomeService.getAll());
@@ -159,6 +163,18 @@ const RoleDashboard: React.FC = () => {
                                     if (typeof inner.count === 'number') return inner.count;
                                 }
                                 if (typeof r.count === 'number') return r.count;
+                            }
+                            return 0;
+                        };
+
+                        const resolveAmount = (item: unknown): number => {
+                            if (!item || typeof item !== 'object') return 0;
+                            const it = item as Record<string, unknown>;
+                            const v = it.amount ?? it['amount'];
+                            if (typeof v === 'number') return v;
+                            if (typeof v === 'string') {
+                                const parsed = Number(String(v).replace(/,/g, ''));
+                                return Number.isFinite(parsed) ? parsed : 0;
                             }
                             return 0;
                         };
@@ -208,32 +224,66 @@ const RoleDashboard: React.FC = () => {
                                 let expensesAmount = 0;
                                 let incomesCount = 0;
                                 let incomesAmount = 0;
-                                // expensesRes will be either all expenses (for owner) or filtered by staff_id (for staff)
                                 const expensesRes = extractByName('expenses');
                                 expensesCount = countFromResult(expensesRes);
                                 try {
-                                    if (expensesRes) {
-                                        let arr: unknown[] = [];
-                                        if (Array.isArray(expensesRes)) arr = expensesRes as unknown[];
-                                        else if (expensesRes && typeof expensesRes === 'object') {
-                                            const er = expensesRes as Record<string, unknown>;
-                                            if (Array.isArray(er.data)) arr = er.data as unknown[];
-                                            else if (er.data && typeof er.data === 'object') {
-                                                const inner = er.data as Record<string, unknown>;
-                                                if (Array.isArray(inner.data)) arr = inner.data as unknown[];
+                                    if (user?.role === StaffRole.STAFF && user?.staff_id) {
+                                        try {
+                                            const resp = await expenseService.getAll({ staff_id: user.staff_id });
+                                            const srvArr = Array.isArray(resp?.data) ? resp.data : [];
+                                            const storedKey = `expenses_local_staff_${user.staff_id}`;
+                                            const localJson = localStorage.getItem(storedKey);
+                                            const localArr = localJson ? (JSON.parse(localJson) as Expense[]) : [];
+
+                                            const mergedMap = new Map<string, Expense>();
+                                            localArr.forEach((e) => {
+                                                const maybeId = (e as Expense).expense_id;
+                                                const fallback = `local-${(e as Expense).createdAt || (e as Expense).expense_date || Math.random()}`;
+                                                const key = typeof maybeId === 'number' ? String(maybeId) : fallback;
+                                                mergedMap.set(key, e);
+                                            });
+                                            (srvArr as Expense[]).forEach((e) => mergedMap.set(String((e as Expense).expense_id), e as Expense));
+                                            const merged = Array.from(mergedMap.values()) as Expense[];
+
+                                            expensesCount = merged.length;
+                                            expensesAmount = merged.reduce((sum: number, item: Expense) => sum + resolveAmount(item), 0);
+                                        } catch (err: unknown) {
+                                            const anyErr = err as { response?: { status?: number } } | undefined;
+                                            const status = anyErr?.response?.status;
+                                            const storedKey = `expenses_local_staff_${user.staff_id}`;
+                                            const localJson = localStorage.getItem(storedKey);
+                                            const localArr = localJson ? (JSON.parse(localJson) as Expense[]) : [];
+                                            if (status === 401 || status === 403 || status === 404) {
+                                                expensesCount = localArr.length;
+                                                expensesAmount = localArr.reduce((sum: number, item: Expense) => sum + resolveAmount(item), 0);
+                                            } else {
+                                                console.error('RoleDashboard: failed to fetch staff expenses', err);
                                             }
                                         }
-                                        expensesAmount = arr.reduce((sum: number, item: unknown) => {
-                                            if (!item || typeof item !== 'object') return sum;
-                                            const it = item as Record<string, unknown>;
-                                            const a = it.amount ?? it['amount'];
-                                            if (typeof a === 'number') return sum + a;
-                                            if (typeof a === 'string') {
-                                                const parsed = Number(String(a).replace(/,/g, ''));
-                                                return sum + (Number.isFinite(parsed) ? parsed : 0);
+                                    } else {
+                                        if (expensesRes) {
+                                            let arr: unknown[] = [];
+                                            if (Array.isArray(expensesRes)) arr = expensesRes as unknown[];
+                                            else if (expensesRes && typeof expensesRes === 'object') {
+                                                const er = expensesRes as Record<string, unknown>;
+                                                if (Array.isArray(er.data)) arr = er.data as unknown[];
+                                                else if (er.data && typeof er.data === 'object') {
+                                                    const inner = er.data as Record<string, unknown>;
+                                                    if (Array.isArray(inner.data)) arr = inner.data as unknown[];
+                                                }
                                             }
-                                            return sum;
-                                        }, 0) as number;
+                                            expensesAmount = arr.reduce((sum: number, item: unknown) => {
+                                                if (!item || typeof item !== 'object') return sum;
+                                                const it = item as Record<string, unknown>;
+                                                const a = it.amount ?? it['amount'];
+                                                if (typeof a === 'number') return sum + a;
+                                                if (typeof a === 'string') {
+                                                    const parsed = Number(String(a).replace(/,/g, ''));
+                                                    return sum + (Number.isFinite(parsed) ? parsed : 0);
+                                                }
+                                                return sum;
+                                            }, 0) as number;
+                                        }
                                     }
                                 } catch (err) {
                                     console.error('RoleDashboard: failed to compute expenses amount', err);
@@ -721,7 +771,13 @@ const RoleDashboard: React.FC = () => {
                                 color="info"
                                 onClick={() => navigate('/appointments')}
                             />
-                            {/* Staff should not view financial stats; removed expenses card */}
+                            <StatCard
+                                title="Total Expenses"
+                                value={formatCurrency(stats.expensesAmount || 0, 'USD')}
+                                icon={<AttachMoneyIcon />}
+                                color="info"
+                                onClick={() => navigate('/finance/expenses')}
+                            />
                         </Box>
                         <Box sx={{ mt: 4 }}>
                             <Box
@@ -748,6 +804,14 @@ const RoleDashboard: React.FC = () => {
                                     onClick={() => navigate('/appointments/new')}
                                 >
                                     New Appointment
+                                </MButton>
+                                <MButton
+                                    fullWidth
+                                    variant="outlined"
+                                    startIcon={<ReceiptLongIcon />}
+                                    onClick={() => navigate('/finance/expenses')}
+                                >
+                                    View Expenses
                                 </MButton>
                             </Box>
                         </Box>

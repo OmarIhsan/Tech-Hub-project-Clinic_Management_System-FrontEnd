@@ -130,7 +130,16 @@ const ExpenseForm = () => {
       if (isEditMode && id) {
         await expenseService.update(id, expenseData);
       } else {
-        await expenseService.create(expenseData);
+        const created = await expenseService.create(expenseData);
+        try {
+          const storedKey = `expenses_local_staff_${user.staff_id}`;
+          const existingJson = localStorage.getItem(storedKey);
+          const existing = existingJson ? JSON.parse(existingJson) as unknown[] : [];
+          existing.unshift(created.data);
+          localStorage.setItem(storedKey, JSON.stringify(existing.slice(0, 200)));
+        } catch (cacheErr) {
+          console.warn('Failed to cache created expense locally', cacheErr);
+        }
       }
 
       navigate('/finance/expenses');

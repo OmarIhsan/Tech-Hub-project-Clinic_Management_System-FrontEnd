@@ -35,7 +35,7 @@ import {
   GetApp as ExportIcon,
 } from '@mui/icons-material';
 import { expenseService } from '../../services/api';
-import { Expense } from '../../types';
+import { Expense, StaffRole } from '../../types';
 import MButton from '../../components/MButton';
 import MOutlineButton from '../../components/MOutlineButton';
 import { useAuthContext } from '../../context/useAuthContext';
@@ -56,13 +56,55 @@ const ExpenseList = () => {
     try {
       setLoading(true);
       setError('');
-      const params: Record<string, unknown> | undefined = user?.role === 'staff' && user?.staff_id ? { staff_id: user.staff_id } : undefined;
-      const response = await expenseService.getAll(params);
-      const data = response.data || [];
-      setExpenses(Array.isArray(data) ? data : []);
+
+      if (user?.role === StaffRole.STAFF && user?.staff_id) {
+        try {
+          const resp = await expenseService.getAll({ staff_id: user.staff_id });
+          const srvArr = Array.isArray(resp?.data) ? resp.data : [];
+          const storedKey = `expenses_local_staff_${user.staff_id}`;
+          const localJson = localStorage.getItem(storedKey);
+          const localArr = localJson ? (JSON.parse(localJson) as Expense[]) : [];
+          const mergedMap = new Map<string, Expense>();
+          localArr.forEach((e) => {
+            const maybeId = (e as Expense).expense_id;
+            const fallback = `local-${(e as Expense).createdAt || (e as Expense).expense_date || Math.random()}`;
+            const key = typeof maybeId === 'number' ? String(maybeId) : fallback;
+            mergedMap.set(key, e);
+          });
+          srvArr.forEach((e: Expense) => mergedMap.set(String(e.expense_id), e));
+          const merged = Array.from(mergedMap.values()) as Expense[];
+          setExpenses(merged);
+          return;
+        } catch (err: unknown) {
+          const anyErr = err as { response?: { status?: number } } | undefined;
+          const status = anyErr?.response?.status;
+          if (status === 403 || status === 401 || status === 404) {
+            const storedKey = `expenses_local_staff_${user.staff_id}`;
+            const localJson = localStorage.getItem(storedKey);
+            const localArr = localJson ? (JSON.parse(localJson) as Expense[]) : [];
+            if (localArr.length > 0) {
+              setExpenses(localArr);
+            } else {
+              setExpenses([]);
+              setError(
+                "You don't have permission to list expenses from the server. Staff may record expenses, but viewing server-side records is restricted to owners. Your local records (if any) are shown." 
+              );
+            }
+            return;
+          }
+          throw err;
+        }
+      }
+
+      const response = await expenseService.getAll();
+      const data = response?.data || [];
+      const arr = Array.isArray(data) ? data : [];
+      setExpenses(arr as Expense[]);
     } catch (err: unknown) {
       console.error('Failed to fetch expenses:', err);
-      setError('Failed to load expenses. Please try again.');
+      const anyErr = err as { response?: { data?: { message?: string } }; message?: string } | undefined;
+      const msg = anyErr?.response?.data?.message || anyErr?.message || 'Failed to load expenses. Please try again.';
+      setError(msg);
       setExpenses([]);
     } finally {
       setLoading(false);
@@ -149,18 +191,6 @@ const ExpenseList = () => {
     });
   };
 
-  const getCategoryColor = (category: string): 'error' | 'warning' | 'info' | 'default' => {
-    switch (category) {
-      case 'Salary':
-        return 'error';
-      case 'Rent':
-        return 'warning';
-      case 'Utilities':
-        return 'info';
-      default:
-        return 'default';
-    }
-  };
 
   if (loading) {
     return (
@@ -174,7 +204,7 @@ const ExpenseList = () => {
     <Container maxWidth="xl" sx={{ py: 4 }}>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
         <Box>
-          <Typography variant="h4" fontWeight="bold" gutterBottom>
+          <Typography variant="h4" fontWeight="bold" gutterBottom sx={{ color: 'text.primary' }}>
             Expenses
           </Typography>
           <Typography variant="body2" color="text.secondary">
@@ -182,10 +212,12 @@ const ExpenseList = () => {
           </Typography>
         </Box>
         <Box display="flex" gap={2}>
-          <MOutlineButton startIcon={<ExportIcon />} onClick={handleExport}>
-            Export CSV
-          </MOutlineButton>
-          {(user?.role === 'owner' || user?.role === 'staff') && (
+          {user?.role === StaffRole.OWNER && (
+            <MOutlineButton startIcon={<ExportIcon />} onClick={handleExport}>
+              Export CSV
+            </MOutlineButton>
+          )}
+          {(user?.role === StaffRole.OWNER || user?.role === StaffRole.STAFF) && (
             <MButton startIcon={<AddIcon />} onClick={() => navigate('/finance/expenses/new')}>
               Record Expense
             </MButton>
@@ -199,16 +231,16 @@ const ExpenseList = () => {
         </Alert>
       )}
 
-      <Card sx={{ mb: 3, bgcolor: '#fff3e0' }}>
+      <Card sx={{ mb: 3, bgcolor: '#e3f2fd' }}>
         <CardContent>
           <Box display="flex" alignItems="center" justifyContent="space-between">
             <Box display="flex" alignItems="center" gap={2}>
-              <ExpenseIcon sx={{ fontSize: 40, color: 'error.main' }} />
+              <ExpenseIcon sx={{ fontSize: 40, color: 'primary.main' }} />
               <Box>
                 <Typography variant="body2" color="text.secondary">
                   Total Expenses
                 </Typography>
-                <Typography variant="h4" fontWeight="bold" color="error.main">
+                <Typography variant="h4" fontWeight="bold" color="primary.main">
                   {formatCurrency(totalExpenses)}
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
@@ -319,53 +351,51 @@ const ExpenseList = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {filteredExpenses.map((expense) => (
-                <TableRow key={expense.expense_id} hover>
-                  <TableCell>{formatDate(expense.expense_date)}</TableCell>
-                  <TableCell>
-                    <Typography variant="body2" color="error.main" fontWeight="bold">
-                      {formatCurrency(expense.amount)}
-                    </Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Chip
-                      label={expense.category || 'Other'}
-                      size="small"
-                      color={getCategoryColor(expense.category || '')}
-                    />
-                  </TableCell>
-                  <TableCell sx={{ maxWidth: 300 }}>
-                    <Typography variant="body2" noWrap>
-                      {expense.description || '-'}
-                    </Typography>
-                  </TableCell>
-                  <TableCell>{expense.recordedByStaff ? expense.recordedByStaff.full_name : 'Unknown'}</TableCell>
-                  <TableCell align="center">
-                    {user?.role === 'owner' ? (
-                      <>
-                        <IconButton
-                          size="small"
-                          color="primary"
-                          onClick={() => navigate(`/finance/expenses/${expense.expense_id}/edit`)}
-                          title="Edit"
-                        >
-                          <EditIcon fontSize="small" />
-                        </IconButton>
-                        <IconButton
-                          size="small"
-                          color="error"
-                          onClick={() => handleDeleteClick(expense)}
-                          title="Delete"
-                        >
-                          <DeleteIcon fontSize="small" />
-                        </IconButton>
-                      </>
-                    ) : (
-                      <Typography variant="body2" color="text.secondary">—</Typography>
-                    )}
-                  </TableCell>
-                </TableRow>
-              ))}
+              {filteredExpenses.map((expense) => {
+                return (
+                  <TableRow key={expense.expense_id} hover>
+                    <TableCell>{formatDate(expense.expense_date)}</TableCell>
+                    <TableCell>
+                      <Typography variant="body2" color="primary.main" fontWeight="bold">
+                        {formatCurrency(expense.amount)}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Chip label={expense.category || 'Other'} size="small" color="primary" />
+                    </TableCell>
+                    <TableCell sx={{ maxWidth: 300 }}>
+                      <Typography variant="body2" noWrap>
+                        {expense.description || '-'}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>{expense.recordedByStaff ? expense.recordedByStaff.full_name : 'Unknown'}</TableCell>
+                    <TableCell align="center">
+                      {user?.role === StaffRole.OWNER ? (
+                        <>
+                          <IconButton
+                            size="small"
+                            color="primary"
+                            onClick={() => navigate(`/finance/expenses/${expense.expense_id}/edit`)}
+                            title="Edit"
+                          >
+                            <EditIcon fontSize="small" />
+                          </IconButton>
+                          <IconButton
+                            size="small"
+                            color="primary"
+                            onClick={() => handleDeleteClick(expense)}
+                            title="Delete"
+                          >
+                            <DeleteIcon fontSize="small" />
+                          </IconButton>
+                        </>
+                        ) : (
+                        <Typography variant="body2" color="text.secondary">—</Typography>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         </TableContainer>
@@ -384,7 +414,7 @@ const ExpenseList = () => {
         </DialogContent>
         <DialogActions>
           <MOutlineButton onClick={() => setDeleteDialogOpen(false)}>Cancel</MOutlineButton>
-          <MButton onClick={handleDelete} color="error">
+          <MButton onClick={handleDelete} color="primary">
             Delete
           </MButton>
         </DialogActions>
