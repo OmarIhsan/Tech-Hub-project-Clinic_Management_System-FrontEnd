@@ -120,8 +120,6 @@ const RoleDashboard: React.FC = () => {
                 fetchers.push(treatmentPlanService.getAll());
                 names.push('treatment-plans');
 
-                // Always fetch expenses, but pass staff_id when the current user is STAFF so
-                // the backend returns only their expenses. Owner receives all expenses.
                 const expenseParams = user?.role === StaffRole.STAFF && user?.staff_id ? { staff_id: user.staff_id } : undefined;
                 fetchers.push(expenseService.getAll(expenseParams));
                 names.push('expenses');
