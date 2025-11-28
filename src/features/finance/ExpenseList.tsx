@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Container,
@@ -38,6 +38,7 @@ import { expenseService } from '../../services/api';
 import { Expense } from '../../types';
 import MButton from '../../components/MButton';
 import MOutlineButton from '../../components/MOutlineButton';
+import { useAuthContext } from '../../context/useAuthContext';
 
 const ExpenseList = () => {
   const navigate = useNavigate();
@@ -49,16 +50,14 @@ const ExpenseList = () => {
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  const { user } = useAuthContext();
 
-  useEffect(() => {
-    fetchExpenses();
-  }, []);
-
-  const fetchExpenses = async () => {
+  const fetchExpenses = useCallback(async () => {
     try {
       setLoading(true);
       setError('');
-      const response = await expenseService.getAll();
+      const params: Record<string, unknown> | undefined = user?.role === 'staff' && user?.staff_id ? { staff_id: user.staff_id } : undefined;
+      const response = await expenseService.getAll(params);
       const data = response.data || [];
       setExpenses(Array.isArray(data) ? data : []);
     } catch (err: unknown) {
@@ -68,7 +67,11 @@ const ExpenseList = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    fetchExpenses();
+  }, [fetchExpenses]);
 
   const handleDelete = async () => {
     if (!expenseToDelete) return;
@@ -182,9 +185,11 @@ const ExpenseList = () => {
           <MOutlineButton startIcon={<ExportIcon />} onClick={handleExport}>
             Export CSV
           </MOutlineButton>
-          <MButton startIcon={<AddIcon />} onClick={() => navigate('/finance/expenses/new')}>
-            Record Expense
-          </MButton>
+          {(user?.role === 'owner' || user?.role === 'staff') && (
+            <MButton startIcon={<AddIcon />} onClick={() => navigate('/finance/expenses/new')}>
+              Record Expense
+            </MButton>
+          )}
         </Box>
       </Box>
 
@@ -336,22 +341,28 @@ const ExpenseList = () => {
                   </TableCell>
                   <TableCell>{expense.recordedByStaff ? expense.recordedByStaff.full_name : 'Unknown'}</TableCell>
                   <TableCell align="center">
-                    <IconButton
-                      size="small"
-                      color="primary"
-                      onClick={() => navigate(`/finance/expenses/${expense.expense_id}/edit`)}
-                      title="Edit"
-                    >
-                      <EditIcon fontSize="small" />
-                    </IconButton>
-                    <IconButton
-                      size="small"
-                      color="error"
-                      onClick={() => handleDeleteClick(expense)}
-                      title="Delete"
-                    >
-                      <DeleteIcon fontSize="small" />
-                    </IconButton>
+                    {user?.role === 'owner' ? (
+                      <>
+                        <IconButton
+                          size="small"
+                          color="primary"
+                          onClick={() => navigate(`/finance/expenses/${expense.expense_id}/edit`)}
+                          title="Edit"
+                        >
+                          <EditIcon fontSize="small" />
+                        </IconButton>
+                        <IconButton
+                          size="small"
+                          color="error"
+                          onClick={() => handleDeleteClick(expense)}
+                          title="Delete"
+                        >
+                          <DeleteIcon fontSize="small" />
+                        </IconButton>
+                      </>
+                    ) : (
+                      <Typography variant="body2" color="text.secondary">—</Typography>
+                    )}
                   </TableCell>
                 </TableRow>
               ))}

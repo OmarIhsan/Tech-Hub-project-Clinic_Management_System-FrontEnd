@@ -120,9 +120,12 @@ const RoleDashboard: React.FC = () => {
                 fetchers.push(treatmentPlanService.getAll());
                 names.push('treatment-plans');
 
+                // Always fetch expenses, but pass staff_id when the current user is STAFF so
+                // the backend returns only their expenses. Owner receives all expenses.
+                const expenseParams = user?.role === StaffRole.STAFF && user?.staff_id ? { staff_id: user.staff_id } : undefined;
+                fetchers.push(expenseService.getAll(expenseParams));
+                names.push('expenses');
                 if (user && user.role === StaffRole.OWNER) {
-                    fetchers.push(expenseService.getAll());
-                    names.push('expenses');
                     fetchers.push(otherIncomeService.getAll());
                     names.push('incomes');
                 }
@@ -207,37 +210,38 @@ const RoleDashboard: React.FC = () => {
                                 let expensesAmount = 0;
                                 let incomesCount = 0;
                                 let incomesAmount = 0;
-                                if (user?.role === StaffRole.OWNER) {
-                                    const expensesRes = extractByName('expenses');
-                                    expensesCount = countFromResult(expensesRes);
-                                    try {
-                                        if (expensesRes) {
-                                            let arr: unknown[] = [];
-                                            if (Array.isArray(expensesRes)) arr = expensesRes as unknown[];
-                                            else if (expensesRes && typeof expensesRes === 'object') {
-                                                const er = expensesRes as Record<string, unknown>;
-                                                if (Array.isArray(er.data)) arr = er.data as unknown[];
-                                                else if (er.data && typeof er.data === 'object') {
-                                                    const inner = er.data as Record<string, unknown>;
-                                                    if (Array.isArray(inner.data)) arr = inner.data as unknown[];
-                                                }
+                                // expensesRes will be either all expenses (for owner) or filtered by staff_id (for staff)
+                                const expensesRes = extractByName('expenses');
+                                expensesCount = countFromResult(expensesRes);
+                                try {
+                                    if (expensesRes) {
+                                        let arr: unknown[] = [];
+                                        if (Array.isArray(expensesRes)) arr = expensesRes as unknown[];
+                                        else if (expensesRes && typeof expensesRes === 'object') {
+                                            const er = expensesRes as Record<string, unknown>;
+                                            if (Array.isArray(er.data)) arr = er.data as unknown[];
+                                            else if (er.data && typeof er.data === 'object') {
+                                                const inner = er.data as Record<string, unknown>;
+                                                if (Array.isArray(inner.data)) arr = inner.data as unknown[];
                                             }
-                                            expensesAmount = arr.reduce((sum: number, item: unknown) => {
-                                                if (!item || typeof item !== 'object') return sum;
-                                                const it = item as Record<string, unknown>;
-                                                const a = it.amount ?? it['amount'];
-                                                if (typeof a === 'number') return sum + a;
-                                                if (typeof a === 'string') {
-                                                    const parsed = Number(String(a).replace(/,/g, ''));
-                                                    return sum + (Number.isFinite(parsed) ? parsed : 0);
-                                                }
-                                                return sum;
-                                            }, 0) as number;
                                         }
-                                    } catch (err) {
-                                        console.error('RoleDashboard: failed to compute expenses amount', err);
+                                        expensesAmount = arr.reduce((sum: number, item: unknown) => {
+                                            if (!item || typeof item !== 'object') return sum;
+                                            const it = item as Record<string, unknown>;
+                                            const a = it.amount ?? it['amount'];
+                                            if (typeof a === 'number') return sum + a;
+                                            if (typeof a === 'string') {
+                                                const parsed = Number(String(a).replace(/,/g, ''));
+                                                return sum + (Number.isFinite(parsed) ? parsed : 0);
+                                            }
+                                            return sum;
+                                        }, 0) as number;
                                     }
+                                } catch (err) {
+                                    console.error('RoleDashboard: failed to compute expenses amount', err);
+                                }
 
+                                if (user?.role === StaffRole.OWNER) {
                                     try {
                                         const incomesRes = extractByName('incomes');
                                         incomesCount = countFromResult(incomesRes);
@@ -346,6 +350,13 @@ const RoleDashboard: React.FC = () => {
                                 icon={<EventIcon />}
                                 color="info"
                                 onClick={() => navigate('/appointments')}
+                            />
+                            <StatCard
+                                title="Expense Records"
+                                value={stats.expenses}
+                                icon={<AttachMoneyIcon />}
+                                color="error"
+                                onClick={() => navigate('/finance/expenses')}
                             />
                             {/* Financial stats removed for Doctor per permissions matrix */}
                             <StatCard
@@ -739,37 +750,6 @@ const RoleDashboard: React.FC = () => {
                                     onClick={() => navigate('/appointments/new')}
                                 >
                                     New Appointment
-                                </MButton>
-                                <MButton
-                                    fullWidth
-                                    variant="outlined"
-                                    onClick={() => navigate('/patient-images')}
-                                >
-                                    Patient Images
-                                </MButton>
-                                <MButton
-                                    fullWidth
-                                    variant="outlined"
-                                    startIcon={<DescriptionIcon />}
-                                    onClick={() => navigate('/documents')}
-                                >
-                                    Documents
-                                </MButton>
-
-                                <MButton
-                                    fullWidth
-                                    variant="contained"
-                                    startIcon={<DescriptionIcon />}
-                                    onClick={() => navigate('/clinical-documents/new')}
-                                >
-                                    Upload Document
-                                </MButton>
-                                <MButton
-                                    fullWidth
-                                    variant="outlined"
-                                    onClick={() => navigate('/medical-records/new')}
-                                >
-                                    New Medical Record
                                 </MButton>
                             </Box>
                         </Box>

@@ -72,13 +72,13 @@ const AppRouter = () => (
     <Route path="/staff/add" element={<ProtectedRoute allowedRoles={[StaffRole.OWNER]}><StaffAddWorkflow /></ProtectedRoute>} />
     <Route path="/staff/update" element={<ProtectedRoute allowedRoles={[StaffRole.OWNER]}><StaffUpdateWorkflow /></ProtectedRoute>} />
 
-    <Route path="/finance" element={<ProtectedRoute allowedRoles={[StaffRole.OWNER]}><FinanceDashboard /></ProtectedRoute>} />
-    <Route path="/finance/expenses" element={<ProtectedRoute allowedRoles={[StaffRole.OWNER]}><ExpenseList /></ProtectedRoute>} />
-    <Route path="/finance/expenses/new" element={<ProtectedRoute allowedRoles={[StaffRole.OWNER]}><ExpenseForm /></ProtectedRoute>} />
-    <Route path="/finance/expenses/:id/edit" element={<ProtectedRoute allowedRoles={[StaffRole.OWNER]}><ExpenseForm /></ProtectedRoute>} />
-    <Route path="/finance/income" element={<ProtectedRoute allowedRoles={[StaffRole.OWNER]}><IncomeList /></ProtectedRoute>} />
-    <Route path="/finance/income/new" element={<ProtectedRoute allowedRoles={[StaffRole.OWNER]}><IncomeForm /></ProtectedRoute>} />
-    <Route path="/finance/income/:id/edit" element={<ProtectedRoute allowedRoles={[StaffRole.OWNER]}><IncomeForm /></ProtectedRoute>} />
+  <Route path="/finance" element={<ProtectedRoute allowedRoles={[StaffRole.OWNER]}><FinanceDashboard /></ProtectedRoute>} />
+  <Route path="/finance/expenses" element={<ProtectedRoute allowedRoles={[StaffRole.OWNER, StaffRole.STAFF]}><ExpenseList /></ProtectedRoute>} />
+  <Route path="/finance/expenses/new" element={<ProtectedRoute allowedRoles={[StaffRole.OWNER, StaffRole.STAFF]}><ExpenseForm /></ProtectedRoute>} />
+  <Route path="/finance/expenses/:id/edit" element={<ProtectedRoute allowedRoles={[StaffRole.OWNER]}><ExpenseForm /></ProtectedRoute>} />
+  <Route path="/finance/income" element={<ProtectedRoute allowedRoles={[StaffRole.OWNER]}><IncomeList /></ProtectedRoute>} />
+  <Route path="/finance/income/new" element={<ProtectedRoute allowedRoles={[StaffRole.OWNER]}><IncomeForm /></ProtectedRoute>} />
+  <Route path="/finance/income/:id/edit" element={<ProtectedRoute allowedRoles={[StaffRole.OWNER]}><IncomeForm /></ProtectedRoute>} />
 
     <Route path="/demo" element={<ProtectedRoute allowedRoles={[StaffRole.OWNER, StaffRole.DOCTOR, StaffRole.STAFF]}><FormComponentsDemo /></ProtectedRoute>} />
   </Routes>

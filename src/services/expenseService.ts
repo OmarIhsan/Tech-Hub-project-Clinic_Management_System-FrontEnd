@@ -18,7 +18,7 @@ interface UpdateExpenseData {
 }
 
 export const expenseService = {
-  getAll: async (params?: { offset?: number; limit?: number; dateFrom?: string; dateTo?: string; category?: string }): Promise<{ data: Expense[] }> => {
+  getAll: async (params?: { offset?: number; limit?: number; dateFrom?: string; dateTo?: string; category?: string; staff_id?: number }): Promise<{ data: Expense[] }> => {
     try {
   const response = await api.get('/expenses', { params });
   const resp = response.data;
